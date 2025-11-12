@@ -39,7 +39,7 @@ const slides: Slide[] = [
   },
 ];
 
-const HeroSlider: React.FC = () => {
+const HeroSlider: React.FC = ({}) => {
   const settings = {
     dots: true,
     infinite: true,
@@ -52,7 +52,7 @@ const HeroSlider: React.FC = () => {
     autoplaySpeed: 3000,
     appendDots: (dots: React.ReactNode) => (
       <div>
-        <ul className="pagination-style absolute bottom-15 inset-x-0 mx-auto flex justify-end text-center z-10 gap-1 shadow">
+        <ul className="pagination-style absolute bottom-7 px-2 right-0 py-1 rounded-2xl border-2 mx-auto flex justify-end text-center z-10 gap-1 shadow">
           {dots}
         </ul>
       </div>
@@ -69,20 +69,35 @@ const HeroSlider: React.FC = () => {
     <div className="w-full mt-3 relative overflow-hidden">
       <Slider {...settings}>
         {slides.map((slide: any, index: number) => (
-          <Link
-            key={slide?._id || index}
-            href={slide?.bannerLink || "#"}
-            className="relative block w-full"
-          >
-            <Image
-              src={slide?.slideBanner}
-              alt={slide?.sliderTitle || "Slide Banner"}
-              width={1320}
-              height={480}
-              priority={index === 0}
-              className="w-full md:aspect-[1320/480] object-cover rounded-[5px] shadow"
-            />
-          </Link>
+          <>
+            {slide.link ? (
+              <Link
+                key={slide?._id || index}
+                href={slide?.bannerLink || "#"}
+                className="relative block w-full"
+              >
+                <Image
+                  src={slide?.slideBanner}
+                  alt={slide?.sliderTitle || "Slide Banner"}
+                  width={1320}
+                  height={480}
+                  priority={index === 0}
+                  className="w-full md:aspect-1320/480 object-cover rounded-[5px] shadow"
+                />
+              </Link>
+            ) : (
+              <div className="relative block w-full">
+                <Image
+                  src={slide?.slideBanner}
+                  alt={slide?.sliderTitle || "Slide Banner"}
+                  width={1320}
+                  height={480}
+                  priority={index === 0}
+                  className="w-full md:aspect-1320/480 object-cover rounded-[5px] shadow"
+                />
+              </div>
+            )}
+          </>
         ))}
       </Slider>
     </div>
