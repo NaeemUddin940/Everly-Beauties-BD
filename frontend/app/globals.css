@@ -120,3 +120,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+body {
+  font-family: "Inter", sans-serif;
+}
+.sidebar-link.active {
+  background: rgba(232, 180, 169, 0.15);
+  border-left: 4px solid #f472b6;
+  color: #f472b6;
+}
+.sidebar-link:hover {
+  background: rgba(232, 180, 169, 0.1);
+}
+.glassmorphism {
+  background: rgba(30, 30, 46, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.chart-container {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 46, 0.8) 0%,
+    rgba(22, 33, 62, 0.8) 100%
+  );
+}
+
+
+::-webkit-scrollbar{
+  display: none;
+}

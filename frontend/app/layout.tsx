@@ -1,14 +1,6 @@
-import FooterSpinner from "@/components/Spinner/FooterSpinner";
-import { AuthProvider } from "@/components/context/AuthContext";
-import { LoadingProvider } from "@/components/context/LoadingContext";
-import { CartProvider } from "@/components/context/cart-context";
-import Header from "@/components/header/Header";
-import { ReactQueryProvider } from "@/components/providers/ReactQueryProvider";
-import StoreProvider from "@/components/providers/providers";
 import { ThemeProvider } from "@/components/ui/theme-providet";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,6 +25,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -42,21 +44,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* <ReactQueryProvider>
-            <StoreProvider>
-              <AuthProvider>
-                <LoadingProvider>
-                  <CartProvider>
-                    <Header /> */}
-                    {children}
-                    {/* <footer />
-                  </CartProvider>
-                  <FooterSpinner />
-                </LoadingProvider>
-                <Toaster position="bottom-right" />
-              </AuthProvider>
-            </StoreProvider>
-          </ReactQueryProvider> */}
+          {children}
         </ThemeProvider>
       </body>
     </html>
