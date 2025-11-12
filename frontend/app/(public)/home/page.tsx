@@ -1,3 +1,12 @@
+import Container from "@/components/common/Container";
+import HeroSlider from "./HeroSlider";
+
 export default function page() {
-  return <div>Public Page</div>;
+  return (
+    <div>
+      <Container>
+        <HeroSlider />
+      </Container>
+    </div>
+  );
 }
