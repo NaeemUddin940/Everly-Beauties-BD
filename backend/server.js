@@ -1,13 +1,14 @@
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import cors from "cors"
 import connectDB from "./db/connectDb.js";
-import productRoute from "./routes/products.route.js";
+import heroSliderRoute from "./routes/heroslider.route.js";
 const app = express();
 dotenv.config();
 const port = process.env.PORT || 8080;
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(
   cors({
     origin: ["http://localhost:3000"],
@@ -22,7 +23,8 @@ app.get("/", (req, res) => {
   res.send("Hello, Express!");
 });
 
-app.use("/api/user", productRoute);
+// app.use("/api/user", productRoute);
+app.use("/api/admin/heroslider", heroSliderRoute);
 
 // Server is Running
 app.listen(port, () => {

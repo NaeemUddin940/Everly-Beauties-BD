@@ -1,45 +1,28 @@
 "use client";
 
+import image from "@/public/images.png";
+import { useHeroSliderStore } from "@/ZustandStore/useHeroSliderStore";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 
 interface Slide {
   id: string;
-  slideBanner: string;
+  sliderImage: string;
   sliderTitle: string;
-  bannerLink?: string;
+  sliderLink?: string;
 }
 
-// Static data
-const slides: Slide[] = [
-  {
-    id: "1",
-    slideBanner:
-      "https://images.unsplash.com/photo-1496594501676-1fd9b70a89b7?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8MXw4NjEzODUwfHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=500",
-    sliderTitle: "Spring Collection 2025",
-    bannerLink: "/collection/spring",
-  },
-  {
-    id: "2",
-    slideBanner:
-      "https://images.unsplash.com/photo-1553901753-215db344677a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8Mnw4NjEzODUwfHxlbnwwfHx8fHw%3D&auto=format&fit=crop&q=60&w=500",
-    sliderTitle: "Summer Sale Up to 50%",
-    bannerLink: "/sale/summer",
-  },
-  {
-    id: "3",
-    slideBanner:
-      "https://images.unsplash.com/photo-1618783609530-e60ae69093a4?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8MTR8ODYxMzg1MHx8ZW58MHx8fHx8&auto=format&fit=crop&q=60&w=500",
-    sliderTitle: "New Arrivals",
-    bannerLink: "/new-arrivals",
-  },
-];
-
 const HeroSlider: React.FC = ({}) => {
+  const { getAllSlides, allSlides } = useHeroSliderStore();
+
+  useEffect(() => {
+    getAllSlides();
+  }, [getAllSlides]);
+
   const settings = {
     dots: true,
     infinite: true,
@@ -59,45 +42,38 @@ const HeroSlider: React.FC = ({}) => {
     ),
   };
 
-  // if (isLoading) return <p className="text-center py-10">Loading...</p>;
-  // if (error)
-  //   return (
-  //     <p className="text-center py-10 text-red-500">Failed to load slides.</p>
-  //   );
-
   return (
     <div className="w-full mt-3 relative overflow-hidden">
       <Slider {...settings}>
-        {slides.map((slide: any, index: number) => (
-          <>
-            {slide.link ? (
+        {allSlides.map((slide: any, index: number) => (
+          <div key={slide?._id}>
+            {slide.sliderImage ? (
               <Link
-                key={slide?._id || index}
-                href={slide?.bannerLink || "#"}
+                href={slide.sliderLink || "#"}
                 className="relative block w-full"
               >
                 <Image
-                  src={slide?.slideBanner}
-                  alt={slide?.sliderTitle || "Slide Banner"}
+                  src={slide.sliderImage || image}
+                  alt={slide.sliderTitle || "Slide Banner"}
                   width={1320}
                   height={480}
-                  priority={index === 0}
+                  priority={slide.order === 1}
                   className="w-full md:aspect-1320/480 object-cover rounded-[5px] shadow"
                 />
               </Link>
             ) : (
               <div className="relative block w-full">
                 <Image
-                  src={slide?.slideBanner}
-                  alt={slide?.sliderTitle || "Slide Banner"}
-                  width={1320}
-                  height={480}
-                  priority={index === 0}
+                  src={image}
+                  alt={slide.sliderTitle || "Slide Banner"}
+                  width={100}
+                  height={100}
+                  priority={slide.order === 1}
                   className="w-full md:aspect-1320/480 object-cover rounded-[5px] shadow"
                 />
               </div>
             )}
-          </>
+          </div>
         ))}
       </Slider>
     </div>

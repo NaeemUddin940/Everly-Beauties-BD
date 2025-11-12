@@ -2,7 +2,7 @@ import Logo from "@/assets/img/logo.webp";
 import Image from "next/image";
 import Link from "next/link";
 import Container from "../common/Container";
-import UserLogin from "../UserLogin/UserLogin";
+// import UserLogin from "../UserLogin/UserLogin";
 import CartWishlish from "./CartWishlish";
 import SearchInput from "./SearchInput";
 
@@ -27,7 +27,7 @@ const Middle = () => {
         </div>
 
         {/* User Login */}
-        <UserLogin />
+        {/* <UserLogin /> */}
 
         {/* Cart & Wishlist */}
         <CartWishlish />
