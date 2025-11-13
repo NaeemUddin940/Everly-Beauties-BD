@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface UsernameFormProps {
   username: string;
@@ -6,25 +6,21 @@ interface UsernameFormProps {
   handleRegister: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-const UsernameForm: React.FC<UsernameFormProps> = ({
-  username,
-  setUsername,
-  handleRegister
-}) => {
+const UsernameForm = () => {
   return (
-    <form onSubmit={handleRegister} className="space-y-6">
+    <form className="space-y-6">
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Enter your Username</legend>
         <label className="w-full input validator">
           <input
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            // value={username}
+            // onChange={(e) => setUsername(e.target.value)}
             className="w-full p-3"
             placeholder="Username"
             pattern="[A-Za-z][A-Za-z0-9\-]*"
-            minLength={3}
-            maxLength={30}
+            // minLength={3}
+            // maxLength={30}
             title="Only letters, numbers or dash"
             required
           />

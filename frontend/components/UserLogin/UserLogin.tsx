@@ -79,29 +79,29 @@ const UserLogin = () => {
               </div>
               {loginStep === "phone" && (
                 <LoginForm
-                  phoneNumber={phoneNumber}
-                  setPhoneNumber={setPhoneNumber}
+                  // phoneNumber={phoneNumber}
+                  // setPhoneNumber={setPhoneNumber}
                   // handleSendOTP={handleSendOTP}
                 />
               )}
               {loginStep === "otp" && (
                 <OtpForm
-                  timer={timer}
-                  otpValues={otpValues}
-                  setOtpValues={setOtpValues}
-                  otpInputRefs={otpInputRefs}
-                  handleVerifyOTP={handleVerifyOTP}
-                  handleResendOTP={() => setTimer(0)}
-                  formatTime={formatTime}
-                  handleOtpChange={handleOtpChange}
-                  handleKeyDown={handleKeyDown}
+                  // timer={timer}
+                  // otpValues={otpValues}
+                  // setOtpValues={setOtpValues}
+                  // otpInputRefs={otpInputRefs}
+                  // handleVerifyOTP={handleVerifyOTP}
+                  // handleResendOTP={() => setTimer(0)}
+                  // formatTime={formatTime}
+                  // handleOtpChange={handleOtpChange}
+                  // handleKeyDown={handleKeyDown}
                 />
               )}
               {loginStep === "username" && (
                 <UsernameForm
-                  username={username}
-                  setUsername={setUsername}
-                  handleRegister={handleRegister}
+                  // username={username}
+                  // setUsername={setUsername}
+                  // handleRegister={handleRegister}
                 />
               )}
             </div>

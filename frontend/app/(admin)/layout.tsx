@@ -3,7 +3,7 @@ import Topbar from "@/components/admin/Topbar";
 import { Sheet } from "@/components/ui/sheet";
 import { redirect } from "next/navigation";
 
-export default function PublicLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -14,18 +14,16 @@ export default function PublicLayout({
   }
 
   return (
-    <>
-      <Sheet>
-        <div className="hidden lg:block">
-          <Sidebar />
-        </div>
-        <div className="lg:ml-65 px-3">
-          {" "}
-          {/* optional: space for sidebar */}
-          <Topbar />
-          <main>{children}</main>
-        </div>
-      </Sheet>
-    </>
+    <Sheet>
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+      <div className="lg:ml-65 px-3">
+        {" "}
+        {/* optional: space for sidebar */}
+        <Topbar />
+        <main>{children}</main>
+      </div>
+    </Sheet>
   );
 }

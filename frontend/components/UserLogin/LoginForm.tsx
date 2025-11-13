@@ -1,20 +1,16 @@
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import React from 'react'
 
-interface LoginFormProps {
-  phoneNumber: string;
-  setPhoneNumber: (value: string) => void;
-  handleSendOTP: (e: React.FormEvent<HTMLFormElement>) => void;
-}
+// interface LoginFormProps {
+//   phoneNumber: string;
+//   setPhoneNumber: (value: string) => void;
+//   handleSendOTP: (e: React.FormEvent<HTMLFormElement>) => void;
+// }
 
-const LoginForm: React.FC<LoginFormProps> = ({
-  phoneNumber,
-  setPhoneNumber,
-  handleSendOTP,
-}) => {
+const LoginForm= () => {
   return (
     <>
-      <form onSubmit={handleSendOTP} className="space-y-4">
+      <form className="space-y-4">
         <DotLottieReact
           src="https://lottie.host/a670b150-5341-40df-b428-8f4665bdb5ea/cet8lwIE0W.lottie"
           loop
@@ -45,8 +41,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
             </svg>
             <input
               type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              // value={phoneNumber}
+              // onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full text-black bg-white p-3 tabular-nums"
               required
               placeholder="017xxxxxxxx"
