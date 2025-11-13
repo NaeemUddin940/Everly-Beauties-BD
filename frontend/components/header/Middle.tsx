@@ -5,6 +5,7 @@ import Container from "../common/Container";
 // import UserLogin from "../UserLogin/UserLogin";
 import CartWishlish from "./CartWishlish";
 import SearchInput from "./SearchInput";
+import UserLogin from "../UserLogin/UserLogin";
 
 const Middle = () => {
   return (
@@ -27,7 +28,7 @@ const Middle = () => {
         </div>
 
         {/* User Login */}
-        {/* <UserLogin /> */}
+        <UserLogin />
 
         {/* Cart & Wishlist */}
         <CartWishlish />
