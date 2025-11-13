@@ -17,7 +17,7 @@ export default function PublicLayout({
     <div className="bg-white">
       <ReactQueryProvider>
         <StoreProvider>
-          <AuthProvider>
+          {/* <AuthProvider> */}
             <LoadingProvider>
               <CartProvider>
                 <Header />
@@ -26,8 +26,8 @@ export default function PublicLayout({
               </CartProvider>
               <FooterSpinner />
             </LoadingProvider>
-            <Toaster position="bottom-right" />
-          </AuthProvider>
+            <Toaster position="top-right" />
+          {/* </AuthProvider> */}
         </StoreProvider>
       </ReactQueryProvider>
     </div>

@@ -1,14 +1,36 @@
 "use client";
+import { useAuthStore } from "@/ZustandStore/useAuthStore";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { Loader } from "lucide-react";
+import { useForm } from "react-hook-form";
 
-interface LoginFormProps {
-  wantLogin: boolean;
-}
+import { useRouter } from "next/navigation";
 
-const LoginForm = ({ wantLogin }: LoginFormProps) => {
+const LoginForm = ({ wantLogin, closeModal }) => {
+  const { register, handleSubmit, reset } = useForm();
+  const { signup, isLoading, login, checkAuth } = useAuthStore();
+  const router = useRouter();
+  const onSubmit = async (data) => {
+    const payload = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    };
+
+    if (wantLogin) {
+      await signup(payload);
+    } else {
+      await login(payload);
+      await checkAuth();
+      closeModal();
+      router.push("/");
+    }
+    reset();
+  };
+
   return (
     <>
-      <form className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <DotLottieReact
           src="https://lottie.host/a670b150-5341-40df-b428-8f4665bdb5ea/cet8lwIE0W.lottie"
           loop
@@ -22,6 +44,7 @@ const LoginForm = ({ wantLogin }: LoginFormProps) => {
             <input
               id="name"
               type="text"
+              {...register("name")}
               className="w-full text-black bg-white py-1 mt-1 px-2 focus:ring-1 border border-black rounded-md"
               required
               placeholder="Enter your name"
@@ -35,6 +58,7 @@ const LoginForm = ({ wantLogin }: LoginFormProps) => {
           <input
             id="email"
             type="email"
+            {...register("email")}
             className="w-full text-black bg-white py-1 mt-1 px-2 focus:ring-1 border border-black rounded-md"
             required
             placeholder="Enter your emai"
@@ -48,6 +72,7 @@ const LoginForm = ({ wantLogin }: LoginFormProps) => {
           <input
             id="password"
             type="password"
+            {...register("password")}
             className="w-full text-black bg-white py-1 px-2 mt-1 focus:ring-1 border border-black rounded-md"
             required
             placeholder="Enter your password"
@@ -56,9 +81,15 @@ const LoginForm = ({ wantLogin }: LoginFormProps) => {
 
         <button
           type="submit"
-          className="w-full cursor-pointer bg-linear-to-r from-[#FF8C67] to-pink-400 text-white py-3 rounded-lg hover:bg-pink-600 transition font-medium"
+          className="w-full cursor-pointer flex items-center justify-center bg-linear-to-r from-[#FF8C67] to-pink-400 text-white py-3 rounded-lg hover:bg-pink-600 transition font-medium"
         >
-          Register
+          {isLoading ? (
+            <Loader className="animate-spin text-center" />
+          ) : !wantLogin ? (
+            "Login"
+          ) : (
+            "Register"
+          )}
         </button>
       </form>
     </>

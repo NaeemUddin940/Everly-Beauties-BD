@@ -1,4 +1,6 @@
+import bcryptjs from "bcryptjs";
 import { v2 as cloudinary } from "cloudinary";
+import jwt from "jsonwebtoken";
 import sendEmail from "../config/sendEmail.js";
 import userModel from "../models/user.model.js";
 import verifyEmailTemplate from "../utils/VerifyEmailTemplate.js";
@@ -10,7 +12,7 @@ cloudinary.config({
   secure: true,
 });
 
-// ============ User Register ================== //
+// This is user Register Controller
 export async function registerUserController(req, res) {
   try {
     let user;
@@ -41,10 +43,14 @@ export async function registerUserController(req, res) {
     // Generate VerifyCode / OTP
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // if user not found in database then hashed password and create as new user
+    const salt = await bcryptjs.genSalt(10);
+    const hashPassword = await bcryptjs.hash(password, salt);
+
     user = new userModel({
       name: name,
       email: email,
-      password,
+      password: hashPassword,
       otp: verifyCode,
       otpExpires: Date.now() + 300000,
     });
@@ -60,8 +66,13 @@ export async function registerUserController(req, res) {
     });
 
     // Create a JWT token for verification purpouse
-
-    const token = await userModel.generateToken(user._id, res);
+    const token = jwt.sign(
+      {
+        email: user.email,
+        id: user._id,
+      },
+      process.env.JWT_SECRET_KEY
+    );
 
     return res.status(200).json({
       success: true,
@@ -78,7 +89,7 @@ export async function registerUserController(req, res) {
   }
 }
 
-// ============ Verify Email ================== //
+// This is user Email Verify Controller
 export async function verifyEmailController(req, res) {
   try {
     const { email, otp } = req.body;
@@ -134,7 +145,6 @@ export async function verifyEmailController(req, res) {
   }
 }
 
-// ============ Send Again Otp ================== //
 export async function sendAgainOtp(req, res) {
   try {
     const { email } = req.body;
@@ -169,7 +179,7 @@ export async function sendAgainOtp(req, res) {
   }
 }
 
-// ============ User Login ================== //
+// This is user Login Controller
 export async function loginUserController(req, res) {
   try {
     const { email, password } = req.body;
@@ -197,23 +207,39 @@ export async function loginUserController(req, res) {
     }
 
     // Match or Check password to verify user
-    const isMatchedPassword = await user.comparePassword(password);
+    const isPassMatch = await bcryptjs.compare(password, user.password);
 
     // isn't match user enterd password to registered from database password then throw this error your password is wrong, please try again.
-    if (!isMatchedPassword || !email) {
+    if (!isPassMatch) {
       return res.status(400).json({
-        message: "Please Enter Yout Valid Email & Password!",
+        message: "Your Password is Wrong, Please try again!",
         success: false,
         error: true,
       });
     }
 
-    const token = await userModel.generateToken(user._id, res);
-
     // After Login a user update his/her last login date
     await userModel.findByIdAndUpdate(user?._id, {
       last_login_date: new Date(),
     });
+
+    // This is the cookie options
+    const cookiesOption = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    };
+
+    const token = jwt.sign(
+      {
+        email: user.email,
+        id: user._id,
+      },
+      process.env.JWT_SECRET_KEY
+    );
+
+    // accessToken and refreshToken set as a cookie
+    res.cookie("token", token, cookiesOption);
 
     // and Finally if all done then verified message will be Login Successfull
     return res.status(200).json({
@@ -221,10 +247,6 @@ export async function loginUserController(req, res) {
       error: false,
       success: true,
       token,
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
     });
   } catch (error) {
     return res.status(500).json({
@@ -235,8 +257,7 @@ export async function loginUserController(req, res) {
   }
 }
 
-// ============ User Logout ================== //
-export async function logoutController(_, res) {
+export const userLogout = async (_, res) => {
   try {
     res.cookie("token", "", { maxAge: 0 });
     res.status(201).json({ success: true, message: "Log Out Successfull." });
@@ -247,463 +268,4 @@ export async function logoutController(_, res) {
       message: error.message || "Internal Server Error to LogOut!",
     });
   }
-}
-
-// This is User avatar Upload Controller
-// export async function userAvatarUploadController(req, res) {
-//   try {
-//     const userId = req.user.id;
-//     const user = await userModel.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User Not Found! Please Login First.",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     // Delete old image from Cloudinary (if exists)
-//     if (user.avatar) {
-//       const imageUrl = user.avatar;
-//       const urlArr = imageUrl.split("/");
-//       const image = urlArr[urlArr.length - 1];
-//       const imageName = image.split(".")[0];
-//       await cloudinary.uploader.destroy(imageName);
-//     }
-
-//     // Cloudinary upload options
-//     const options = {
-//       use_filename: true,
-//       unique_filename: true,
-//       overwrite: true,
-//     };
-
-//     // Upload to Cloudinary
-//     const result = await cloudinary.uploader.upload(req.file.path, options);
-
-//     // Delete local file after upload
-//     fs.unlinkSync(req.file.path);
-
-//     // Save new avatar URL in database
-//     user.avatar = result.secure_url;
-//     await user.save();
-
-//     return res.status(200).json({
-//       message: "Successfully Image Upload",
-//       _id: userId,
-//       avatar: result.secure_url,
-//       success: true,
-//     });
-//   } catch (error) {
-//     console.error("❌ Upload Error:", error);
-//     return res.status(500).json({
-//       message: error.message || "Failed to Upload Image",
-//       error: true,
-//       success: false,
-//     });
-//   }
-// }
-
-// This is User avatar Remove Controller
-// export async function userAvatarRemoveController(req, res) {
-//   try {
-//     // Get Image url From user query parameter
-//     const imageUrl = req.query.img;
-
-//     // Make an Array of this image url by split("/")
-//     const urlArr = imageUrl.split("/");
-
-//     // Take the Last element of the Array
-//     const image = urlArr[urlArr.length - 1];
-
-//     // And Finally get a name of image without extention like (.jpg, .png, .jpeg)
-//     const imageName = image.split(".")[0];
-
-//     // In Cloudinary Remove image
-//     if (imageName) {
-//       await cloudinary.uploader.destroy(imageName);
-//     }
-
-//     // Delete Image from Databse
-//     await userModel.findByIdAndUpdate(req.user.id, {
-//       avatar: "",
-//     });
-
-//     // And Finally Trow the Success Message
-//     return res.status(200).json({
-//       message: "Image Successfylly Deleted",
-//       error: false,
-//       success: true,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: error.message || "Failed to Delete Image",
-//       success: false,
-//       error: true,
-//     });
-//   }
-// }
-
-// This is user Details Update Controller
-// export async function userDetailsUpdateControlers(req, res) {
-//   try {
-//     // Get authenticated user id
-//     const userId = req.user.id;
-
-//     // Get user updated input from frontend body
-//     const { name, email, password, mobile } = req.body;
-
-//     // user is exist or not find it by id
-//     const existUser = await userModel.findById(userId);
-
-//     // If user not exist then trow this error message
-//     if (!existUser) {
-//       return res.status(404).json({
-//         message: "User Not Found. Please Login First.",
-//         success: false,
-//         error: true,
-//       });
-//     }
-
-//     // if User found then and change email and chnage email not same as before then send otp
-//     let verifyOtp = "";
-
-//     // Generate random 6 digit otp
-//     if (email !== existUser.email) {
-//       verifyOtp = Math.floor(100000 + Math.random() * 900000).toString();
-//     }
-
-//     let hashePassword = "";
-
-//     // Hashed Password by using bcrypt
-//     if (password) {
-//       const salt = await bcrypt.genSalt(10);
-//       hashePassword = await bcrypt.hash(password, salt);
-//     } else {
-//       hashePassword = existUser.password;
-//     }
-
-//     // Update user
-//     await userModel.findByIdAndUpdate(
-//       userId,
-//       {
-//         name,
-//         mobile,
-//         email,
-//         verify_email: email !== existUser.email ? true : false,
-//         password: hashePassword,
-//         otp: verifyOtp !== "" ? verifyOtp : null,
-//         otpExpires: verifyOtp !== "" ? Date.now() + 300000 : "",
-//       },
-//       { new: true }
-//     );
-
-//     // If user change email not matched in registered email then send email confirmation again
-//     if (email !== existUser.email) {
-//       await sendEmail({
-//         sendTo: email,
-//         subject: "Verify Yout OTP",
-//         text: "",
-//         html: verifyEmailTemplate(name, verifyOtp),
-//       });
-//     }
-
-//     //
-//     return res.status(200).json({
-//       message: "Successfully update user and verify otp sent to your email.",
-//       error: false,
-//       success: true,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: error.message || "Failed to Update user.",
-//       error: true,
-//       success: false,
-//     });
-//   }
-// }
-
-// This is User forgot password Controller
-// export async function userForgotPasswordController(req, res) {
-//   try {
-//     // Get Email From Frontend
-//     const { email } = req.body;
-
-//     // Check with this email in database user have or not
-//     const user = await userModel.findOne({ email });
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User Not Found With This Email, Please Register First.",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     // generate OTP
-//     const verifyOTP = generateOTP();
-//     user.otp = verifyOTP;
-//     user.otpExpires = Date.now() + 300000;
-
-//     // Send Email
-//     await sendEmail({
-//       sendTo: email,
-//       subject: `Reset your password — your OTP is ${verifyOTP}`,
-//       text: "",
-//       html: verifyForgotPasswordEmailTemplate(
-//         user.name,
-//         user.otpExpires,
-//         verifyOTP,
-//         process.env.SUPPORT_EMAIL,
-//         process.env.COMPANY_NAME
-//       ),
-//     });
-
-//     // Save it on databse
-//     await user.save();
-
-//     return res.status(200).json({
-//       message: "We have Sent a Email, Please Check Your Email",
-//       success: true,
-//       error: false,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message:
-//         error.message || "Failed to Forgot Password, Please contact our Team.",
-//       error: true,
-//       success: false,
-//     });
-//   }
-// }
-
-//  This is user Forgot Password OTP Verify Controller
-// export async function verifyForgotPasswordOTPController(req, res) {
-//   try {
-//     // get email and otp from input field
-//     const { email, otp } = req.body;
-
-//     // Check email and otp
-//     if (!email || !otp) {
-//       return res.status(400).json({
-//         message: "Provide Required field as email & otp",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     // Check with this email users found or not
-//     const user = await userModel.findOne({ email });
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "Email is not Available",
-//         error: true,
-//         succes: false,
-//       });
-//     }
-
-//     // otp Expires
-//     const currentDate = new Date().toISOString();
-//     if (user.otpExpires < currentDate) {
-//       return res.status(400).json({
-//         message: "OTP is Expired",
-//         succes: false,
-//         error: true,
-//       });
-//     }
-
-//     // Check otp is valid or not
-//     if (otp !== user.otp) {
-//       return res.status(400).json({
-//         message: "Invalid OTP.",
-//         success: false,
-//         error: true,
-//       });
-//     }
-
-//     (user.otp = ""), (user.otpExpires = "");
-//     await user.save();
-
-//     // Finally verified otp
-//     return res.status(200).json({
-//       message: "OTP Verified Successfull.",
-//       error: false,
-//       success: true,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: error.message || "Failed to verify yout OTP.",
-//     });
-//   }
-// }
-
-//  This is user Reset Password Controller
-// export async function resetPasswordController(req, res) {
-//   try {
-//     const { email, oldPassword, newPassword, confirmPassword } = req.body;
-//     console.log(email);
-//     if (!oldPassword || !newPassword || !confirmPassword) {
-//       return res.status(400).json({
-//         message: "Please Provide Required Field.",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     const user = await userModel.findOne({ email });
-//     console.log(user);
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User not found with this email.",
-//         success: false,
-//         error: true,
-//       });
-//     }
-
-//     const isPassMatch = await bcrypt.compare(oldPassword, user.password);
-
-//     if (!isPassMatch) {
-//       return res.status(400).json({
-//         message: "Old Password is incorrect.",
-//         success: false,
-//       });
-//     }
-//     if (newPassword !== confirmPassword) {
-//       return res.status(400).json({
-//         message: "New Password and Confirm Password do not Match!",
-//         succes: false,
-//         error: true,
-//       });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     const hashPassword = await bcrypt.hash(newPassword, salt);
-
-//     await userModel.findOneAndUpdate(
-//       { _id: user._id },
-//       { password: hashPassword }
-//     );
-
-//     return res.status(200).json({
-//       message: "Password changed successfully.",
-//       success: true,
-//       error: false,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: error.message || "Failed to Change Password.",
-//       success: false,
-//       error: true,
-//     });
-//   }
-// }
-
-// This is user refresToken Controller
-// export async function refreshTokenController(req, res) {
-//   try {
-//     const refreshToken =
-//       req.cookies.refreshToken || res?.headers?.authorization.split(" ")[1]; // Bearer token
-
-//     if (!refreshToken) {
-//       return res.status(400).json({
-//         mwssage: "Invalid Resfresh Token.",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     const verifyToken = jwt.verify(
-//       refreshToken,
-//       process.env.JWT_SECRET_KEY_REFRESH_TOKEN
-//     );
-
-//     if (!verifyToken) {
-//       return res.status(401).json({
-//         mwssage: "Token is expired.",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     const userId = verifyToken?._id;
-//     const newAccessToken = await generateAccessToken(userId);
-//     const cookieOptions = {
-//       httpOnly: true,
-//       secure: true,
-//       sameSite: "None",
-//     };
-
-//     res.cookie("accessToken", newAccessToken, cookieOptions);
-
-//     return res.status(200).json({
-//       message: "New Access Token Generated.",
-//       error: false,
-//       success: true,
-//       data: {
-//         accessToken: newAccessToken,
-//       },
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: error.error || "Refresh Token in valid.",
-//       error: true,
-//       success: false,
-//     });
-//   }
-// }
-
-// This is user details controller to get user details
-// export async function userDetails(req, res) {
-//   try {
-//     const userid = req.user.id;
-
-//     const user = await userModel
-//       .findById(userid)
-//       .select("-password -refresh_token");
-
-//     return res.status(200).json({
-//       message: "User Details",
-//       success: true,
-//       error: false,
-//       data: user,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       message: "Something is wrong.",
-//       success: false,
-//       error: true,
-//     });
-//   }
-// }
-
-// Update User Details
-// export const userDetailsUpdate = async (req, res) => {
-//   try {
-//     const { name, email, mobile, dob } = req.body;
-//     const userid = req.user.id;
-
-//     const updateUser = await userModel.findByIdAndUpdate(
-//       { _id: userid },
-//       {
-//         name,
-//         email,
-//         mobile,
-//         dob,
-//       }
-//     );
-//     console.log(updateUser);
-//     res.status(200).json({
-//       success: true,
-//       error: false,
-//       updateUser,
-//       message: "Successfull to Update User Details.",
-//     });
-//   } catch (error) {
-//     // Handle errors
-//     res.status(500).json({
-//       success: false,
-//       error: true,
-//       message: error.message || "Internal Server Error to Update User Details!",
-//     });
-//   }
-// };
+};

@@ -115,12 +115,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-  localStorage.removeItem("token");
-  setUser(null);
-  setToken(null);
-  toast.success("Logout Successfully!");
-};
+//   const logout = () => {
+//   localStorage.removeItem("token");
+//   setUser(null);
+//   setToken(null);
+//   toast.success("Logout Successfully!");
+// };
 
   return (
     <AuthContext.Provider value={{ user, token, loading, login, logout }}>

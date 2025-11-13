@@ -4,11 +4,15 @@ import userModel from "../models/user.model.js";
 
 export async function authenticated(req, res, next) {
   try {
-    const token = req.cookies.token;
+    const token =
+      req.cookies.token || req?.header?.authorization?.split(" ")[1];
+
     if (!token) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Unauthorized - No token Provided!" });
+      return res.status(401).json({
+        message: "Access Token Not Found! Please Login First.",
+        success: false,
+        error: true,
+      });
     }
 
     const decode = jwt.verify(token, env.JWT_SECRET_KEY);
@@ -18,7 +22,7 @@ export async function authenticated(req, res, next) {
         .status(401)
         .json({ success: true, message: "Unauthorized - Invalid token!" });
 
-    const user = await userModel.findById(decode.userId).select("-password");
+    const user = await userModel.findById(decode.id).select("-password");
     if (!user) return res.status(400).json({ message: "User not Found!" });
 
     req.user = user;

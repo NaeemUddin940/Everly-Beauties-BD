@@ -2,52 +2,52 @@
 "use client";
 
 import { Dialog } from "@headlessui/react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { LiaUser } from "react-icons/lia";
 import { RiCloseLine } from "react-icons/ri";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "@/ZustandStore/useAuthStore";
+import Image from "next/image";
 import LoginForm from "./LoginForm";
 import OtpForm from "./OtpForm";
 
 const UserLogin = () => {
-  const { login, user, logout } = useAuth();
-  // const { setLoading } = useLoading();
+  const { authUser, isAuth, logout } = useAuthStore();
+
   const [wantLogin, setWantLogin] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [loginStep, setLoginStep] = useState("phone");
-  const [timer, setTimer] = useState(120);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otpValues, setOtpValues] = useState<string[]>([
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-  const [username, setUsername] = useState("");
-  const [userExists, setUserExists] = useState<boolean | null>(null);
-  const otpInputRefs = useRef<HTMLInputElement[]>([]);
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
     setIsOpen(false);
   };
-
+  console.log(authUser);
   return (
     <div className="text-black">
-      {user ? (
+      {authUser ? (
         <div className="hidden md:flex items-center gap-2 cursor-pointer">
           <div className="border-2 border-gray-700 p-1.5 rounded-full text-xl">
-            <LiaUser />
+            {isAuth ? (
+              <Image
+                src={authUser.image}
+                alt={authUser.name}
+                height={100}
+                width={100}
+              />
+            ) : (
+              <LiaUser />
+            )}
           </div>
           <div>
-            <p className="text-[15px]">{user.name}</p>
-            <p onClick={logout} className="text-[14px] font-[600]">
-              Logout
-            </p>
+            <p className="text-xs">{authUser.name}</p>
+            <div className="flex gap-5">
+              <button onClick={logout} className="text-[14px] font-semibold">
+                Logout
+              </button>
+              <p className="text-[14px] font-semibold">{authUser.role}</p>
+            </div>
           </div>
         </div>
       ) : (
@@ -60,7 +60,7 @@ const UserLogin = () => {
           </div>
           <div>
             <p className="text-xs">Hello, Guest</p>
-            <p className="text-[14px] font-[600]">Login / Register</p>
+            <p className="text-[14px] font-semibold">Login / Register</p>
           </div>
         </div>
       )}
@@ -92,7 +92,7 @@ const UserLogin = () => {
                 />
               </div>
               {loginStep === "phone" && (
-                <LoginForm wantLogin={wantLogin} setWantLogin={setWantLogin} />
+                <LoginForm wantLogin={wantLogin} closeModal={closeModal} setWantLogin={setWantLogin} />
               )}
               {loginStep === "otp" && (
                 <OtpForm
@@ -107,13 +107,6 @@ const UserLogin = () => {
                 // handleKeyDown={handleKeyDown}
                 />
               )}
-              {/* {loginStep === "username" && (
-                <UsernameForm
-                  // username={username}
-                  // setUsername={setUsername}
-                  // handleRegister={handleRegister}
-                />
-              )} */}
             </div>
           </Dialog.Panel>
         </div>
