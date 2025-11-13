@@ -22,14 +22,16 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  // ---------- Signup ----------
+  // ======= Signup ========
   signup: async (data) => {
     set({ isLoading: true });
     try {
       const res = await axiosInstance.post("/user/register", data, {
         withCredentials: true,
       });
-      set({ authUser: res.data, isCheckingAuth: true }); // ✅ fix
+
+      localStorage.setItem("email", res.data.email);
+      set({ authUser: res.data, isCheckingAuth: true });
       if (res.data.success) {
         toast.success(res.data.message);
         set({ authUser: res.data.user, isCheckingAuth: true });
@@ -90,6 +92,33 @@ export const useAuthStore = create((set) => ({
       toast.error(msg);
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  verifyOtp: async (data) => {
+    try {
+      const res = await axiosInstance.post("/user/verify-email", data);
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      console.error("Failed to Verify OTP: ", error);
+    }
+  },
+
+  againSentOpt: async (email) => {
+    try {
+      const res = await axiosInstance.post("/user/send-otp-again", email);
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      console.error("Failed to Sent OTP :", error);
     }
   },
 }));

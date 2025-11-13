@@ -1,13 +1,11 @@
-// index.tsx
 "use client";
 
+import { useAuthStore } from "@/ZustandStore/useAuthStore";
 import { Dialog } from "@headlessui/react";
+import Image from "next/image";
 import { useState } from "react";
 import { LiaUser } from "react-icons/lia";
 import { RiCloseLine } from "react-icons/ri";
-
-import { useAuthStore } from "@/ZustandStore/useAuthStore";
-import Image from "next/image";
 import LoginForm from "./LoginForm";
 import OtpForm from "./OtpForm";
 
@@ -17,13 +15,13 @@ const UserLogin = () => {
   const [wantLogin, setWantLogin] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [loginStep, setLoginStep] = useState("phone");
+  const [loginStep, setLoginStep] = useState("email");
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => {
     setIsOpen(false);
   };
-  console.log(authUser);
+
   return (
     <div className="text-black">
       {authUser ? (
@@ -73,14 +71,20 @@ const UserLogin = () => {
               <div className="flex items-center justify-between border-b border-pink-200 pb-2 mb-6">
                 <h3 className="text-pink-500 font-semibold">
                   <button
-                    onClick={() => setWantLogin((prev) => !prev)}
+                    onClick={() => {
+                      setWantLogin((prev) => !prev);
+                      setLoginStep("email");
+                    }}
                     className="cursor-pointer hover:underline"
                   >
                     LOGIN
                   </button>{" "}
                   /{" "}
                   <button
-                    onClick={() => setWantLogin((prev) => !prev)}
+                    onClick={() => {
+                      setWantLogin((prev) => !prev);
+                      setLoginStep("email");
+                    }}
                     className="cursor-pointer hover:underline"
                   >
                     SIGN UP
@@ -91,22 +95,15 @@ const UserLogin = () => {
                   className="text-xl text-gray-500 hover:text-red-500 cursor-pointer"
                 />
               </div>
-              {loginStep === "phone" && (
-                <LoginForm wantLogin={wantLogin} closeModal={closeModal} setWantLogin={setWantLogin} />
-              )}
-              {loginStep === "otp" && (
-                <OtpForm
-                // timer={timer}
-                // otpValues={otpValues}
-                // setOtpValues={setOtpValues}
-                // otpInputRefs={otpInputRefs}
-                // handleVerifyOTP={handleVerifyOTP}
-                // handleResendOTP={() => setTimer(0)}
-                // formatTime={formatTime}
-                // handleOtpChange={handleOtpChange}
-                // handleKeyDown={handleKeyDown}
+              {loginStep === "email" && (
+                <LoginForm
+                  wantLogin={wantLogin}
+                  closeModal={closeModal}
+                  setWantLogin={setWantLogin}
+                  setLoginStep={setLoginStep}
                 />
               )}
+              {loginStep === "otp" && <OtpForm setLoginStep={setLoginStep} />}
             </div>
           </Dialog.Panel>
         </div>

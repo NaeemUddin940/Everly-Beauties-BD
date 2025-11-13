@@ -5,6 +5,7 @@ import Slide_of_features from "@/components/home/Slide_of_features";
 import { useAuthStore } from "@/ZustandStore/useAuthStore";
 import { useEffect } from "react";
 import PublicLayout from "./(public)/layout";
+import CampaignBanner from "@/components/home/CampaignBanner";
 
 export default function Page() {
   const { checkAuth } = useAuthStore();
@@ -17,6 +18,7 @@ export default function Page() {
       <Container>
         <HeroSlider />
         <Slide_of_features />
+        <CampaignBanner/>
       </Container>
     </PublicLayout>
   );

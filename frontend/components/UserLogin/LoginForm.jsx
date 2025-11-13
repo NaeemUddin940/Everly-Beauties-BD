@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 
 import { useRouter } from "next/navigation";
 
-const LoginForm = ({ wantLogin, closeModal }) => {
+const LoginForm = ({ wantLogin, closeModal, setLoginStep }) => {
   const { register, handleSubmit, reset } = useForm();
   const { signup, isLoading, login, checkAuth } = useAuthStore();
   const router = useRouter();
@@ -19,6 +19,7 @@ const LoginForm = ({ wantLogin, closeModal }) => {
 
     if (wantLogin) {
       await signup(payload);
+      setLoginStep("otp");
     } else {
       await login(payload);
       await checkAuth();
@@ -90,6 +91,12 @@ const LoginForm = ({ wantLogin, closeModal }) => {
           ) : (
             "Register"
           )}
+        </button>
+        <button
+          onClick={() => setLoginStep("otp")}
+          className="text-black cursor-pointer flex items-center text-sm hover:text-pink-500 hover:underline justify-center w-full"
+        >
+          <span>Verify OTP</span>
         </button>
       </form>
     </>

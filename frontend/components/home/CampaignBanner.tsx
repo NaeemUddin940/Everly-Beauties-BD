@@ -1,10 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Skeleton } from "@/app/components/ui/skeleton";
 
 interface CampaignThumbnail {
   large: string;
@@ -25,41 +23,45 @@ interface Banner {
   _id: string;
 }
 
-// Fetch banner (just ID)
-const fetchBanner = async (): Promise<Banner | null> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/campaign-banner`);
-  if (!res.ok) throw new Error("Failed to fetch banner");
-  const data = await res.json();
-  return data?.[0] || null;
-};
+// ✅ Static campaign data
+const campaigns: Campaign[] = [
+  {
+    _id: "1",
+    campaignName: "Winter Sale",
+    permalink: "/campaigns/winter-sale",
+    endDate: new Date(new Date().getTime() + 1 * 2 * 10 * 1000).toISOString(), // 2 days later
+    thumbnailImage: {
+      large: "/campaigns/winter-large.jpg",
+      mobile: "/campaigns/winter-mobile.jpg",
+      alt: "Winter Sale Banner",
+    },
+  },
+  {
+    _id: "2",
+    campaignName: "Summer Bonanza",
+    permalink: "/campaigns/summer-bonanza",
+    endDate: new Date(new Date().getTime() + 5 * 24 * 3600 * 1000).toISOString(),
+    thumbnailImage: {
+      large: "/campaigns/summer-large.jpg",
+      mobile: "/campaigns/summer-mobile.jpg",
+      alt: "Summer Bonanza Banner",
+    },
+  },
+];
 
-// Fetch all campaigns
-const fetchCampaigns = async (): Promise<Campaign[]> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/campaigns`);
-  if (!res.ok) throw new Error("Failed to fetch campaigns");
-  const data = await res.json();
-  return data || [];
+const banner: Banner = {
+  _id: "2", // points to the first campaign
 };
 
 export default function CampaignBanner() {
-  const { data: banner, isLoading: loadingBanner } = useQuery({
-    queryKey: ["banner"],
-    queryFn: fetchBanner,
-  });
-
-  const { data: campaigns = [], isLoading: loadingCampaigns } = useQuery({
-    queryKey: ["campaigns"],
-    queryFn: fetchCampaigns,
-  });
-
-  const campaign = banner ? campaigns.find((c) => c._id === banner._id) : null;
+  const campaign = campaigns.find((c) => c._id === banner._id) || null;
 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     if (!campaign) return;
 
-    const targetDate = new Date(campaign?.endDate);
+    const targetDate = new Date(campaign.endDate);
 
     const updateCountdown = () => {
       const now = new Date();
@@ -77,47 +79,20 @@ export default function CampaignBanner() {
     return () => clearInterval(interval);
   }, [campaign]);
 
-  const isLoading = loadingBanner || loadingCampaigns;
-  const isExpired = campaign ? new Date(campaign?.endDate).getTime() < new Date().getTime() : true;
+  if (!campaign) return null;
 
-  // ⏳ Loading
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-[5px] p-6 md:p-10 my-2 md:my-5 shadow">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 py-5 px-2">
-          <div className="order-2 md:order-1 text-center md:text-left w-full md:w-1/2">
-            <Skeleton className="h-10 w-3/4 mb-4 animate-pulse" />
-            <Skeleton className="h-6 w-5/6 mb-6 animate-pulse" />
-            <div className="py-5">
-              {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-4 w-full mb-2 animate-pulse" />
-              ))}
-            </div>
-            <div className="grid grid-flow-col gap-2 text-center auto-cols-max justify-center md:justify-start mb-6">
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-16 w-16 animate-pulse" />
-              ))}
-            </div>
-            <Skeleton className="h-10 w-32 mt-6 animate-pulse" />
-          </div>
-          <Skeleton className="hidden md:block order-1 md:order-2 h-[300px] w-full max-w-[400px] rounded-lg animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  // ❌ যদি কোনো ক্যাম্পেইন না থাকে বা টাইম শেষ হয়ে যায় → হাইড
-  if (!campaign || isExpired) return null;
+  const isExpired = new Date(campaign.endDate).getTime() < new Date().getTime();
+  if (isExpired) return null;
 
   return (
     <div className="bg-white rounded-[5px] p-6 md:p-10 my-2 md:my-5 shadow">
       <Link
-        href={campaign?.permalink || "#"}
+        href={campaign.permalink}
         className="flex flex-col md:flex-row items-center justify-between gap-8 py-5 px-2"
       >
         <div className="order-2 md:order-1 text-center md:text-left">
-          <h1 className="text-2xl md:text-4xl font-[600] uppercase text-pink-600">
-            {campaign?.campaignName}
+          <h1 className="text-2xl md:text-4xl font-semibold uppercase text-pink-600">
+            {campaign.campaignName}
           </h1>
 
           <div className="grid grid-flow-col gap-2 text-center auto-cols-max justify-center md:justify-start mt-4">
@@ -133,8 +108,8 @@ export default function CampaignBanner() {
         </div>
 
         <Image
-          src={campaign?.thumbnailImage}
-          alt={campaign?.campaignName}
+          src={campaign.thumbnailImage.large}
+          alt={campaign.thumbnailImage.alt}
           className="hidden md:block order-1 md:order-2 text-center rounded-lg w-full max-w-[400px] object-cover"
           width={750}
           height={400}
