@@ -1,12 +1,18 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import connectDB from "./db/connectDb.js";
+
+import connectDB from "./config/connectDb.js";
 import heroSliderRoute from "./routes/heroslider.route.js";
+import userRoute from "./routes/user.route.js";
+import cookieParser from "cookie-parser";
+
+
 const app = express();
 dotenv.config();
 const port = process.env.PORT || 8080;
 
+app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(
@@ -25,6 +31,8 @@ app.get("/", (req, res) => {
 
 // app.use("/api/user", productRoute);
 app.use("/api/admin/heroslider", heroSliderRoute);
+
+app.use("/api/user", userRoute);
 
 // Server is Running
 app.listen(port, () => {

@@ -1,10 +1,10 @@
 import React from "react";
 
-interface UsernameFormProps {
-  username: string;
-  setUsername: (value: string) => void;
-  handleRegister: (e: React.FormEvent<HTMLFormElement>) => void;
-}
+// interface UsernameFormProps {
+//   username: string;
+//   setUsername: (value: string) => void;
+//   handleRegister: (e: React.FormEvent<HTMLFormElement>) => void;
+// }
 
 const UsernameForm = () => {
   return (

@@ -9,11 +9,11 @@ import { RiCloseLine } from "react-icons/ri";
 import { useAuth } from "../context/AuthContext";
 import LoginForm from "./LoginForm";
 import OtpForm from "./OtpForm";
-import UsernameForm from "./UsernameForm";
 
 const UserLogin = () => {
   const { login, user, logout } = useAuth();
   // const { setLoading } = useLoading();
+  const [wantLogin, setWantLogin] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [loginStep, setLoginStep] = useState("phone");
@@ -71,39 +71,49 @@ const UserLogin = () => {
           <Dialog.Panel className="w-full max-w-md rounded-xl bg-white overflow-hidden shadow-lg">
             <div className="relative p-6">
               <div className="flex items-center justify-between border-b border-pink-200 pb-2 mb-6">
-                <h3 className="text-pink-500 font-semibold">LOGIN / SIGN UP</h3>
+                <h3 className="text-pink-500 font-semibold">
+                  <button
+                    onClick={() => setWantLogin((prev) => !prev)}
+                    className="cursor-pointer hover:underline"
+                  >
+                    LOGIN
+                  </button>{" "}
+                  /{" "}
+                  <button
+                    onClick={() => setWantLogin((prev) => !prev)}
+                    className="cursor-pointer hover:underline"
+                  >
+                    SIGN UP
+                  </button>
+                </h3>
                 <RiCloseLine
                   onClick={closeModal}
                   className="text-xl text-gray-500 hover:text-red-500 cursor-pointer"
                 />
               </div>
               {loginStep === "phone" && (
-                <LoginForm
-                  // phoneNumber={phoneNumber}
-                  // setPhoneNumber={setPhoneNumber}
-                  // handleSendOTP={handleSendOTP}
-                />
+                <LoginForm wantLogin={wantLogin} setWantLogin={setWantLogin} />
               )}
               {loginStep === "otp" && (
                 <OtpForm
-                  // timer={timer}
-                  // otpValues={otpValues}
-                  // setOtpValues={setOtpValues}
-                  // otpInputRefs={otpInputRefs}
-                  // handleVerifyOTP={handleVerifyOTP}
-                  // handleResendOTP={() => setTimer(0)}
-                  // formatTime={formatTime}
-                  // handleOtpChange={handleOtpChange}
-                  // handleKeyDown={handleKeyDown}
+                // timer={timer}
+                // otpValues={otpValues}
+                // setOtpValues={setOtpValues}
+                // otpInputRefs={otpInputRefs}
+                // handleVerifyOTP={handleVerifyOTP}
+                // handleResendOTP={() => setTimer(0)}
+                // formatTime={formatTime}
+                // handleOtpChange={handleOtpChange}
+                // handleKeyDown={handleKeyDown}
                 />
               )}
-              {loginStep === "username" && (
+              {/* {loginStep === "username" && (
                 <UsernameForm
                   // username={username}
                   // setUsername={setUsername}
                   // handleRegister={handleRegister}
                 />
-              )}
+              )} */}
             </div>
           </Dialog.Panel>
         </div>
