@@ -37,14 +37,13 @@ export default function page() {
                 {/* Live Preview */}
                 <HeroSlider />
 
+                <AddSLider />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Behavior */}
                   <Behavior />
                   {/* Display Navigation */}
                   <DIsplayAndNavigation />
                 </div>
-
-                <AddSLider />
               </div>
             </div>
           </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface CampaignThumbnail {
   large: string;
@@ -40,7 +40,9 @@ const campaigns: Campaign[] = [
     _id: "2",
     campaignName: "Summer Bonanza",
     permalink: "/campaigns/summer-bonanza",
-    endDate: new Date(new Date().getTime() + 5 * 24 * 3600 * 1000).toISOString(),
+    endDate: new Date(
+      new Date().getTime() + 5 * 24 * 3600 * 1000
+    ).toISOString(),
     thumbnailImage: {
       large: "/campaigns/summer-large.jpg",
       mobile: "/campaigns/summer-mobile.jpg",
@@ -56,7 +58,12 @@ const banner: Banner = {
 export default function CampaignBanner() {
   const campaign = campaigns.find((c) => c._id === banner._id) || null;
 
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
     if (!campaign) return;
@@ -125,7 +132,9 @@ export default function CampaignBanner() {
 function CountdownBox({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-col p-2 bg-white rounded-lg shadow-lg text-black">
-      <span className="font-mono text-3xl">{value.toString().padStart(2, "0")}</span>
+      <span className="font-mono text-3xl">
+        {value.toString().padStart(2, "0")}
+      </span>
       {label}
     </div>
   );

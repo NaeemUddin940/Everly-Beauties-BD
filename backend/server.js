@@ -1,15 +1,14 @@
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 
+import cookieParser from "cookie-parser";
 import connectDB from "./config/connectDb.js";
+import campaignRoute from "./routes/campaign.route.js";
 import heroSliderRoute from "./routes/heroslider.route.js";
 import userRoute from "./routes/user.route.js";
-import cookieParser from "cookie-parser";
-
 
 const app = express();
-dotenv.config();
+
 const port = process.env.PORT || 8080;
 
 app.use(cookieParser());
@@ -31,6 +30,7 @@ app.get("/", (req, res) => {
 
 // app.use("/api/user", productRoute);
 app.use("/api/admin/heroslider", heroSliderRoute);
+app.use("/api/offers/campaign", campaignRoute);
 
 app.use("/api/user", userRoute);
 

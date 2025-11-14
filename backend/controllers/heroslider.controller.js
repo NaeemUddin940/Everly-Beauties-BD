@@ -1,4 +1,4 @@
-import cloudinary from "../lib/cloudinary.js";
+// import cloudinary from "../lib/cloudinary.js";
 import HeroSlider from "../models/heroslider.model.js";
 
 export const addHeroSlider = async (req, res) => {
@@ -13,12 +13,12 @@ export const addHeroSlider = async (req, res) => {
       });
     }
 
-    let imageUrl = "";
+    // let imageUrl = "";
 
-    if (sliderImage) {
-      const imageResponse = await cloudinary.uploader.upload(sliderImage);
-      imageUrl = imageResponse.secure_url;
-    }
+    // if (sliderImage) {
+    //   const imageResponse = await cloudinary.uploader.upload(sliderImage);
+    //   imageUrl = imageResponse.secure_url;
+    // }
 
     // ✅ Find the last slide based on order
     const lastSlide = await HeroSlider.findOne().sort({ order: -1 });
@@ -28,7 +28,7 @@ export const addHeroSlider = async (req, res) => {
 
     // ✅ Create new slide
     const slides = await HeroSlider.create({
-      sliderImage: imageUrl,
+      sliderImage,
       sliderTitle,
       sliderLink,
       order: nextOrder,
@@ -53,15 +53,15 @@ export const deleteHeroSlider = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const findeSlide = await HeroSlider.findById(id);
+    // const findeSlide = await HeroSlider.findById(id);
 
-    if (findeSlide.sliderImage) {
-      const imageUrl = findeSlide.sliderImage;
-      const urlArr = imageUrl.split("/");
-      const image = urlArr[urlArr.length - 1];
-      const imageName = image.split(".")[0];
-      await cloudinary.uploader.destroy(imageName);
-    }
+    // if (findeSlide.sliderImage) {
+    //   const imageUrl = findeSlide.sliderImage;
+    //   const urlArr = imageUrl.split("/");
+    //   const image = urlArr[urlArr.length - 1];
+    //   const imageName = image.split(".")[0];
+    //   await cloudinary.uploader.destroy(imageName);
+    // }
 
     // ✅ Delete the target slide
     const deletedSlide = await HeroSlider.findByIdAndDelete(id);

@@ -1,20 +1,25 @@
 import nodemailer from "nodemailer";
-import ENV from "../lib/ENV.js";
+import env from "../env.js";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: ENV.NODE_ENV === "production" ? true : false,
+  host: env.SMTP_HOST,
+  port: env.SMTP_PORT,
+  secure: env.NODE_ENV === "production" ? true : false,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
   },
 });
 
-export default async function sendWelcomeEmail({ sendTo, subject, text, html }) {
+export default async function sendWelcomeEmail({
+  sendTo,
+  subject,
+  text,
+  html,
+}) {
   try {
     const info = await transporter.sendMail({
-      from: process.env.SMTP_USER,
+      from: env.SMTP_USER,
       to: sendTo,
       subject,
       text,
