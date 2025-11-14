@@ -1,6 +1,9 @@
+import Topbar from "@/components/admin/Topbar";
+
 export default function page() {
   return (
     <div>
+      <Topbar />
       <div className=" flex-1 py-4">
         {/* <!-- Stats Cards --> */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

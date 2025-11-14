@@ -1,7 +1,8 @@
+import toast from "react-hot-toast";
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 
-export const useHeroSliderStore = create((set, get) => ({
+export const useHeroSliderStore = create((set) => ({
   allSlides: [],
   isUploading: false,
 
@@ -14,6 +15,12 @@ export const useHeroSliderStore = create((set, get) => ({
       // set((state) => ({
       //   allSlides: [...state.allSlides, res.data.slider],
       // }));
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
       set({ isUploading: false });
     } catch (error) {
       console.error("❌ Failed to Add Slide:", error);
@@ -38,10 +45,12 @@ export const useHeroSliderStore = create((set, get) => ({
     try {
       const res = await axiosInstance.delete(`/admin/heroslider/delete/${id}`);
       if (res.data.success) {
-        // ✅ Remove from state instantly
         set((state) => ({
           allSlides: state.allSlides.filter((slide) => slide._id !== id),
         }));
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
       }
     } catch (error) {
       console.error("❌ Failed to Delete Slide:", error);

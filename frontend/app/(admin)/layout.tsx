@@ -1,11 +1,11 @@
 "use client";
 
 import Sidebar from "@/components/admin/Sidebar";
-import Topbar from "@/components/admin/Topbar";
 import { Sheet } from "@/components/ui/sheet";
 import { useAuthStore } from "@/ZustandStore/useAuthStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 
 export default function AdminLayout({
   children,
@@ -37,11 +37,11 @@ export default function AdminLayout({
 
   return (
     <Sheet>
+      <Toaster position="top-right" />
       <div className="hidden lg:block">
         <Sidebar />
       </div>
       <div className="lg:ml-65 px-3">
-        <Topbar />
         <main>{children}</main>
       </div>
     </Sheet>

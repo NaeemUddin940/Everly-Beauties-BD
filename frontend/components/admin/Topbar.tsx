@@ -137,7 +137,8 @@ export default function Topbar() {
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
           <p className="text-gray-400 hidden md:block">
-            Welcome back! Here's what's happening with your store today.
+            Welcome back! Here&apos;s what&apos;s happening with your store
+            today.
           </p>
         </div>
         <div className="flex items-center space-x-4">

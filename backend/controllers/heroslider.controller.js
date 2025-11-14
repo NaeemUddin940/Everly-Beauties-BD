@@ -83,7 +83,7 @@ export const deleteHeroSlider = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Slide deleted and order adjusted successfully",
+      message: "Slide deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({

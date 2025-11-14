@@ -2,27 +2,50 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BiCategory } from "react-icons/bi";
 import {
   FaBoxOpen,
   FaChartPie,
   FaCog,
   FaCopyright,
   FaHome,
+  FaImages,
+  FaPlusCircle,
   FaShoppingCart,
+  FaSpa,
   FaTags,
   FaUsers,
   FaUserShield,
 } from "react-icons/fa";
+import { ImPriceTags } from "react-icons/im";
+import { TbCategoryPlus } from "react-icons/tb";
 
 const sidebarMenu = [
   {
     section: "Main",
     items: [
       { name: "Dashboard", href: "/admin/dashboard", icon: FaChartPie },
-      { name: "Hero Slider", href: "/admin/hero-slider", icon: FaChartPie },
+      { name: "Hero Slider", href: "/admin/hero-slider", icon: FaImages },
       { name: "Products", href: "/admin/products", icon: FaBoxOpen },
-      { name: "Categories", href: "/admin/categories", icon: FaTags },
+      { name: "Categories", href: "/admin/categories", icon: BiCategory },
+      {
+        name: "Add Categories",
+        href: "/admin/add-categories",
+        icon: TbCategoryPlus,
+      },
+      { name: "Create Tags", href: "/admin/create-tags", icon: ImPriceTags },
+      { name: "Tags", href: "/admin/tags", icon: FaTags },
       { name: "Brands", href: "/admin/brands", icon: FaCopyright },
+      {
+        name: "Screen Solutions",
+        href: "/admin/screen-solutions",
+        icon: FaSpa,
+      },
+      {
+        name: "Add Screen Solution",
+        href: "/admin/add-screen-solutions",
+        icon: FaPlusCircle,
+      },
     ],
   },
   {
@@ -49,10 +72,10 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-gray-900 border-r border-gray-800 h-screen fixed left-0 top-0 z-10 flex flex-col">
       {/* Header */}
-      <div className="p-6 flex-shrink-0">
+      <div className="p-6 shrink-0">
         <h1 className="text-2xl font-bold text-white flex items-center">
-          <span className="text-rose-500 mr-2">🎨</span>
-          Glamour<span className="text-rose-500">Admin</span>
+          <i className="fas fa-palette text-pink-400 mr-2"></i>
+          Glamour<span className="text-pink-500">Admin</span>
         </h1>
         <p className="text-gray-400 text-sm mt-1">Cosmetics Dashboard</p>
       </div>
@@ -74,7 +97,7 @@ export default function Sidebar() {
                   href={item.href}
                   className={`flex items-center px-6 py-3 text-gray-300 hover:text-white transition-all duration-300 ${
                     isActive(item.href)
-                      ? "bg-gray-800 text-white font-medium rounded-r-md"
+                      ? "bg-gray-800 text-pink-500 border-l-4 border-pink-500 font-medium rounded-r-md"
                       : ""
                   }`}
                 >

@@ -1,11 +1,11 @@
 "use client";
 import Container from "@/components/common/Container";
+import CampaignBanner from "@/components/home/CampaignBanner";
 import HeroSlider from "@/components/home/HeroSlider";
 import Slide_of_features from "@/components/home/Slide_of_features";
 import { useAuthStore } from "@/ZustandStore/useAuthStore";
 import { useEffect } from "react";
 import PublicLayout from "./(public)/layout";
-import CampaignBanner from "@/components/home/CampaignBanner";
 
 export default function Page() {
   const { checkAuth } = useAuthStore();
@@ -18,7 +18,7 @@ export default function Page() {
       <Container>
         <HeroSlider />
         <Slide_of_features />
-        <CampaignBanner/>
+        <CampaignBanner />
       </Container>
     </PublicLayout>
   );
