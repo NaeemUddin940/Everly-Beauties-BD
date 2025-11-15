@@ -4,6 +4,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/connectDb.js";
 import campaignRoute from "./routes/campaign.route.js";
+import categoryRoute from "./routes/category.route.js";
 import heroSliderRoute from "./routes/heroslider.route.js";
 import userRoute from "./routes/user.route.js";
 
@@ -28,11 +29,10 @@ app.get("/", (req, res) => {
   res.send("Hello, Express!");
 });
 
-// app.use("/api/user", productRoute);
+app.use("/api/user", userRoute);
+app.use("/api/category", categoryRoute);
 app.use("/api/admin/heroslider", heroSliderRoute);
 app.use("/api/offers/campaign", campaignRoute);
-
-app.use("/api/user", userRoute);
 
 // Server is Running
 app.listen(port, () => {

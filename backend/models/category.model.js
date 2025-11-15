@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-const categorySchema = new mongoose.Schema(
+const mainCategorySchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
       trim: true,
@@ -23,7 +23,7 @@ const categorySchema = new mongoose.Schema(
 
 const subCategorySchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
       trim: true,
@@ -45,7 +45,7 @@ const subCategorySchema = new mongoose.Schema(
 
 const childCategorySchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
       trim: true,
@@ -65,7 +65,7 @@ const childCategorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Category = mongoose.model("Category", categorySchema);
+export const MainCategory = mongoose.model("MainCategory", mainCategorySchema);
 export const SubCategory = mongoose.model("SubCategory", subCategorySchema);
 export const ChildCategory = mongoose.model(
   "ChildCategory",

@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { createCampaign, editCampaign, GetAllCampaign } from "../controllers/campaign.controller.js";
+import {
+  createCampaign,
+  editCampaign,
+  GetAllCampaign,
+} from "../controllers/campaign.controller.js";
 
 const campaignRoute = Router();
 
