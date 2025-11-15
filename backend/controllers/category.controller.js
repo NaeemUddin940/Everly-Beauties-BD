@@ -1,6 +1,7 @@
-import { MainCategory } from "../models/category.model.js";
+import { MainCategory, SubCategory } from "../models/category.model.js";
 
-export const mainCreateCategory = async (req, res) => {
+//✅ Step 01 : Main Category Create And Upload Category Image Controller
+export const createMainCategory = async (req, res) => {
   try {
     //  Extract data from req.body, req.params, or req.query
     const { title, slug } = req.body;
@@ -39,6 +40,51 @@ export const mainCreateCategory = async (req, res) => {
       error: true,
       message:
         error.message || "Internal Server Error to Create Main Category!",
+    });
+  }
+};
+
+//✅ Step 02 : Sub Category Create Controller
+export const createSubCategory = async (req, res) => {
+  try {
+    //  Extract data from req.body, req.params, or req.query
+    const { title, slug, mainCategoryId } = req.body;
+
+    // Find Category By ID if not found trow error
+    const category = await MainCategory.findById(mainCategoryId);
+    if (!category)
+      return res.status(404).json({ message: "Main category not found" });
+
+    const isExistSubCategories = await SubCategory.find();
+    for (let i = 0; i < isExistSubCategories.length; i++) {
+      if (isExistSubCategories[i].title === title) {
+        return res.status(400).json({
+          message: `This ${title} Category Exist in Databse.`,
+          error: true,
+          success: false,
+        });
+      }
+    }
+
+    // Create Sub Category
+    const subCategories = await SubCategory.create({
+      title,
+      slug,
+      mainCategoryId,
+    });
+
+    res.status(201).json({
+      success: true,
+      error: false,
+      message: `Successfull to Create ${title} as a Sub Category`,
+      data: subCategories,
+    });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({
+      success: false,
+      error: true,
+      message: error.message || "Internal Server Error to Create Sub-Category!",
     });
   }
 };
