@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { createMainCategory, createSubCategory } from "../controllers/category.controller.js";
+import {
+  createChildCategory,
+  createMainCategory,
+  createSubCategory,
+} from "../controllers/category.controller.js";
 import { uploadTo } from "../middlewares/fileUpload.js";
 import { multerErrorHandler } from "../middlewares/multerErrorHandler.js";
 
@@ -12,5 +16,6 @@ categoryRoute.post(
   createMainCategory
 );
 
-categoryRoute.post("/create-sub-category", createSubCategory)
+categoryRoute.post("/create-sub-category", createSubCategory);
+categoryRoute.post("/create-child-category", createChildCategory);
 export default categoryRoute;

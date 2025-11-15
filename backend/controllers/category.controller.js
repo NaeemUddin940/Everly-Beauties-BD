@@ -1,4 +1,8 @@
-import { MainCategory, SubCategory } from "../models/category.model.js";
+import {
+  ChildCategory,
+  MainCategory,
+  SubCategory,
+} from "../models/category.model.js";
 
 //✅ Step 01 : Main Category Create And Upload Category Image Controller
 export const createMainCategory = async (req, res) => {
@@ -85,6 +89,57 @@ export const createSubCategory = async (req, res) => {
       success: false,
       error: true,
       message: error.message || "Internal Server Error to Create Sub-Category!",
+    });
+  }
+};
+
+//✅ Step 03 : Sub Category Create Controller
+export const createChildCategory = async (req, res) => {
+  try {
+    // 1. Extract data from req.body, req.params, or req.query
+    const { title, slug, subCategoryId } = req.body;
+
+    // 2. Perform DB operations or business logic
+    const subCategories = await SubCategory.findById(subCategoryId);
+    const isChildCategoriesExist = await ChildCategory.find();
+    for (let i = 0; i < isChildCategoriesExist.length; i++) {
+      if (isChildCategoriesExist[i].title === title) {
+        return res.status(400).json({
+          message: `This ${title} Category Exist in Databse.`,
+          error: true,
+          success: false,
+        });
+      }
+    }
+
+    if (!subCategories) {
+      return res.status(404).json({
+        message: "Sub Category Not Found!",
+        error: true,
+        success: false,
+      });
+    }
+
+    const childCategories = await ChildCategory.create({
+      title,
+      slug,
+      subCategoryId,
+    });
+
+    // 3. Send success response
+    return res.status(201).json({
+      success: true,
+      error: false,
+      message: `Successfull to Create ${title} Child Category`,
+      childCategory: childCategories,
+    });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({
+      success: false,
+      error: true,
+      message:
+        error.message || "Internal Server Error to Create Child Category!",
     });
   }
 };
