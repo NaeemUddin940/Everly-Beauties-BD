@@ -13,6 +13,9 @@ const mainCategorySchema = new mongoose.Schema(
       unique: true,
       default: "",
     },
+    isActive: { type: Boolean, default: true },
+    showOnNavigation: { type: Boolean, default: false },
+    isFeaturedOnHomePage: { type: Boolean, default: false },
     image: {
       type: String,
       default: null,
@@ -34,6 +37,9 @@ const subCategorySchema = new mongoose.Schema(
       unique: true,
       default: "",
     },
+    isActive: { type: Boolean, default: true },
+    showOnNavigation: { type: Boolean, default: false },
+    isFeaturedOnHomePage: { type: Boolean, default: false },
     mainCategoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MainCategory",
@@ -56,6 +62,9 @@ const childCategorySchema = new mongoose.Schema(
       unique: true,
       default: "",
     },
+    isActive: { type: Boolean, default: true },
+    showOnNavigation: { type: Boolean, default: false },
+    isFeaturedOnHomePage: { type: Boolean, default: false },
     subCategoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SubCategory",
