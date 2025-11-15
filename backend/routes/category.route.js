@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  createChildCategory,
+  // createChildCategory,
   createMainCategory,
   createSubCategory,
   deleteChildCategory,
@@ -25,7 +25,7 @@ categoryRoute.post(
 
 categoryRoute.post("/create-sub-category", createSubCategory);
 
-categoryRoute.post("/create-child-category", createChildCategory);
+// categoryRoute.post("/create-child-category", createChildCategory);
 
 categoryRoute.get("/get-all-category", getAllCategories);
 

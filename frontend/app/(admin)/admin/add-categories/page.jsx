@@ -1,6 +1,52 @@
+"use client";
+import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+
 export default function page() {
+  const {
+    createMainCategory,
+    isUploading,
+    createSubCategory,
+    getCategory,
+    mainCategory,
+    getAllCategory,
+  } = useCategoryStore();
+
+  const { register, handleSubmit, setValue, reset } = useForm();
+
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      setSelectedFile(URL.createObjectURL(file));
+      setValue("image", file);
+    }
+  };
+
+  async function onSubmit(data) {
+    if (data.mainCategoryId) {
+      await createSubCategory(data);
+    } else {
+      await createMainCategory(data);
+    }
+    console.log(mainCategory);
+    setSelectedFile(null);
+    reset();
+  }
+
+  useEffect(() => {
+    async function fetchCategories() {
+      await getCategory();
+    }
+    fetchCategories();
+  }, [getCategory]);
+
   return (
-    <div>
+    <form onSubmit={handleSubmit(onSubmit)}>
       {" "}
       <div className="flex-1 p-2">
         {/* <!-- Top Bar --> */}
@@ -15,12 +61,15 @@ export default function page() {
           </div>
           <div className="flex items-center space-x-4">
             <button
-              onclick="window.location.href='categories.html'"
+              // onclick="window.location.href='categories.html'"
               className="bg-gray-800 hover:bg-gray-700 cursor-pointer text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
               <i className="fas fa-times mr-2"></i> Cancel
             </button>
-            <button className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center">
+            <button
+              type="submit"
+              className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+            >
               <i className="fas fa-save mr-2"></i> Save Category
             </button>
           </div>
@@ -42,6 +91,7 @@ export default function page() {
                   </label>
                   <input
                     type="text"
+                    {...register("title")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Enter category name"
                   />
@@ -52,6 +102,7 @@ export default function page() {
                   </label>
                   <input
                     type="text"
+                    {...register("slug")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="category-slug"
                   />
@@ -73,12 +124,16 @@ export default function page() {
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Parent Category
                   </label>
-                  <select className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  <select
+                    {...register("mainCategoryId")}
+                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+                  >
                     <option value="">No Parent (Top Level Category)</option>
-                    <option value="makeup">Makeup</option>
-                    <option value="skincare">Skincare</option>
-                    <option value="hair-care">Hair Care</option>
-                    <option value="fragrance">Fragrance</option>
+                    {getAllCategory?.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.title}
+                      </option>
+                    ))}
                   </select>
                   <p className="text-xs text-gray-500 mt-1">
                     Select a parent category to make this a subcategory
@@ -165,24 +220,57 @@ export default function page() {
           <div className="space-y-6">
             {/* <!-- Category Image --> */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
-              <h2 className="text-xl font-bold text-white mb-4">
+              <label
+                htmlFor="categoryFile"
+                className="text-xl font-bold text-white mb-4"
+              >
                 Category Image
-              </h2>
-              <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer">
-                <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
-                <p className="text-gray-400 mb-2">
-                  Drag & drop category image here
-                </p>
-                <p className="text-sm text-gray-500">or</p>
-                <button className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300">
-                  Browse Files
-                </button>
-              </div>
-              <div className="mt-4">
-                <p className="text-xs text-gray-500">
-                  Recommended size: 400x400 pixels. JPG, PNG, or WebP format.
-                </p>
-              </div>
+                <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
+                  {selectedFile && (
+                    <Image
+                      src={selectedFile}
+                      alt="categoryImage"
+                      height={296}
+                      className="object-cover w-full"
+                      width={100}
+                    />
+                  )}
+                  {!selectedFile && (
+                    <>
+                      <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
+                      <p className="text-gray-400 mb-2">
+                        Drag & drop category image here
+                      </p>
+                      <p className="text-sm text-gray-500">or</p>
+                    </>
+                  )}
+
+                  {!selectedFile && (
+                    <button
+                      // id="categoryFile"
+                      type="button"
+                      className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300"
+                    >
+                      Browse Files
+                    </button>
+                  )}
+                  {!selectedFile && (
+                    <div className="mt-4">
+                      <p className="text-xs text-gray-500">
+                        Recommended size: 400x400 pixels. JPG, PNG, or WebP
+                        format.
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  id="categoryFile"
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
             </div>
 
             {/* <!-- Status & Visibility --> */}
@@ -196,7 +284,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                      checked
+                      // checked
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Active category
@@ -219,7 +307,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                      checked
+                      // checked
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Show in navigation menu
@@ -231,6 +319,6 @@ export default function page() {
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
