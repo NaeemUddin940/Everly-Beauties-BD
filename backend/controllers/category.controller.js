@@ -143,3 +143,56 @@ export const createChildCategory = async (req, res) => {
     });
   }
 };
+
+
+
+// ✅ Step 04 : Finally get all categories
+export const getAllCategories = async (req, res) => {
+  try {
+    // Main and sub and Child Category get from Database
+    const mainCategories = await MainCategory.find().lean();
+    const subCategories = await SubCategory.find().lean();
+    const childCategories = await ChildCategory.find().lean();
+
+    // Make Nested like MainCategory => SubCategory => ChildCategory
+    const getAllCategories = mainCategories.map((mainCat) => {
+      // Filter Sub Category using mainCategoryId
+      const matchedSubCategory = subCategories.filter(
+        (subCat) => String(subCat.mainCategoryId) === String(mainCat._id)
+      );
+
+      // 🟢 প্রতিটি subCategory এর childCategories filter করা
+      const subWithChild = matchedSubCategory.map((subCat) => {
+        const matchChildCategory = childCategories.filter(
+          (childCat) => String(childCat.subCategoryId) === String(subCat._id)
+        );
+        return { ...subCat, childCategories: matchChildCategory };
+      });
+
+      // 🟢 mainCategory object এর সাথে nested subCategory ও childCategory attach করা
+      return { ...mainCat, subCategories: subWithChild };
+    });
+
+    if (getAllCategories.length <= 0) {
+      return res.status(404).json({
+        message: "Not Found any Categories.",
+        error: true,
+        success: false,
+      });
+    }
+
+    // ✅ Response পাঠানো
+    return res.status(200).json({
+      success: true,
+      error: false,
+      message: "Successfully fetched all categories.",
+      mainCategories: getAllCategories,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: true,
+      message: error.message || "Internal Server Error to Get All Category.",
+    });
+  }
+};
