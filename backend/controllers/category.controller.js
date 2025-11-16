@@ -12,8 +12,13 @@ export const createMainCategory = async (req, res) => {
     //  Extract data from req.body, req.params, or req.query
     const { title, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
       req.body;
-    const image = req.file;
 
+    if (!req.file) {
+      return res.status(403).json({
+        success: false,
+        message: "Please Select A Category Image First.",
+      });
+    }
     const mainCategories = await MainCategory.find();
     for (let i = 0; i < mainCategories.length; i++) {
       if (mainCategories[i].title === title) {
@@ -23,24 +28,30 @@ export const createMainCategory = async (req, res) => {
           success: false,
         });
       }
+      if (mainCategories[i].slug === slug) {
+        return res.status(400).json({
+          message: `Error for Duplicating This ${slug} slug.`,
+          error: true,
+          success: false,
+        });
+      }
     }
 
     // Create Main Category and Save it on MongoDb
-    console.log("image", image);
+
     const categories = await MainCategory.create({
       title,
       slug,
-      image: req.file.path,
+      image: `/uploads/categoryImage/${req.file.filename}`,
       isActive,
       isFeaturedOnHomePage,
       showOnNavigation,
     });
-    console.log(mainCategories);
+
     // Success Status and Message
     res.status(200).json({
       success: true,
       error: false,
-      count: (await MainCategory.find()).length,
       mainCategory: categories,
       message: `Successfull to Create ${title} Main Category`,
     });
@@ -68,6 +79,13 @@ export const createSubCategory = async (req, res) => {
       isFeaturedOnHomePage,
     } = req.body;
 
+    if (!req.file) {
+      return res.status(403).json({
+        success: false,
+        message: "Please Select A Category Image First.",
+      });
+    }
+
     // Find Category By ID if not found trow error
     const category = await MainCategory.findById(mainCategoryId);
     if (!category)
@@ -88,6 +106,7 @@ export const createSubCategory = async (req, res) => {
     const subCategories = await SubCategory.create({
       title,
       slug,
+      image: `/uploads/subCategoryImage/${req.file.filename}`,
       mainCategoryId,
       isActive,
       isFeaturedOnHomePage,
@@ -97,7 +116,6 @@ export const createSubCategory = async (req, res) => {
     res.status(201).json({
       success: true,
       error: false,
-      count: (await SubCategory.find()).length,
       data: subCategories,
       message: `Successfull to Create ${title} as a Sub Category`,
     });
@@ -200,11 +218,32 @@ export const getAllCategories = async (req, res) => {
       });
     }
 
+    let activeMainCategoryCount = 0;
+    let activeSubCategoryCount = 0;
+
+    if (Array.isArray(mainCategories)) {
+      activeMainCategoryCount = mainCategories.filter(
+        (main) => main.isActive === true || main.isActive === "true"
+      ).length;
+      activeSubCategoryCount = subCategories.filter(
+        (sub) => sub.isActive === true || sub.isActive === "true"
+      ).length;
+    }
+
+    const mainCategoriesCount = mainCategories.length;
+    const subCategoriesCount = subCategories.length;
+
     return res.status(200).json({
       success: true,
       error: false,
+      mainCategoriesCount,
+      subCategoriesCount,
+      activeMainCategoryCount,
+      activeSubCategoryCount,
+      activeCategoryCount: activeMainCategoryCount + activeSubCategoryCount,
+      totalCategories: mainCategoriesCount + subCategoriesCount,
       message: "Successfully fetched all categories.",
-      mainCategories: allCategories,
+      allCategories,
     });
   } catch (error) {
     return res.status(500).json({
@@ -254,6 +293,13 @@ export const deleteMainCategory = async (req, res) => {
       }
     }
 
+    if (subCategories.image) {
+      // mainCategories.image: "/uploads/mainCategoriesImage/abc123.jpg"
+      const filePath = path.join(process.cwd(), mainCategories.image); // full path
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath); // delete file
+      }
+    }
     await MainCategory.findByIdAndDelete(req.params.id);
 
     // Get Image url From user query parameter
@@ -306,26 +352,26 @@ export const deleteSubCategory = async (req, res) => {
 };
 
 //✅ Step 7 : Delete Child Category Controller
-export const deleteChildCategory = async (req, res) => {
-  try {
-    const childCategory = await ChildCategory.findById(req.params.id);
-    await ChildCategory.findByIdAndDelete(req.params.id);
+// export const deleteChildCategory = async (req, res) => {
+//   try {
+//     const childCategory = await ChildCategory.findById(req.params.id);
+//     await ChildCategory.findByIdAndDelete(req.params.id);
 
-    res.status(200).json({
-      success: true,
-      error: false,
-      message: `Successfull to Delete ${childCategory.name} Category`,
-    });
-  } catch (error) {
-    // Handle errors
-    res.status(500).json({
-      success: false,
-      error: true,
-      message:
-        error.message || "Internal Server Error to Delete Child Category!",
-    });
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       error: false,
+//       message: `Successfull to Delete ${childCategory.name} Category`,
+//     });
+//   } catch (error) {
+//     // Handle errors
+//     res.status(500).json({
+//       success: false,
+//       error: true,
+//       message:
+//         error.message || "Internal Server Error to Delete Child Category!",
+//     });
+//   }
+// };
 
 //✅ Step 8 : Update Main Category Controller
 export const updateMainCategory = async (req, res) => {

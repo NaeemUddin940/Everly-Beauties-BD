@@ -31,6 +31,10 @@ const subCategorySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    image: {
+      type: String,
+      default: null,
+    },
     slug: {
       type: String,
       trim: true,

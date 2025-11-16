@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font */
 import { ThemeProvider } from "@/components/ui/theme-providet";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -36,6 +37,7 @@ export default function RootLayout({
         />
       </head>
       <body
+        cz-shortcut-listen="true"
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider

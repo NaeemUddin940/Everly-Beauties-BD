@@ -3,7 +3,7 @@ import {
   // createChildCategory,
   createMainCategory,
   createSubCategory,
-  deleteChildCategory,
+  // deleteChildCategory,
   deleteMainCategory,
   deleteSubCategory,
   getAllCategories,
@@ -23,7 +23,12 @@ categoryRoute.post(
   createMainCategory
 );
 
-categoryRoute.post("/create-sub-category", createSubCategory);
+categoryRoute.post(
+  "/create-sub-category",
+  uploadTo("subCategoryImage").single("image"),
+  multerErrorHandler,
+  createSubCategory
+);
 
 // categoryRoute.post("/create-child-category", createChildCategory);
 
@@ -33,7 +38,7 @@ categoryRoute.delete("/delete-main-category/:id", deleteMainCategory);
 
 categoryRoute.delete("/delete-sub-category/:id", deleteSubCategory);
 
-categoryRoute.delete("/delete-child-category/:id", deleteChildCategory);
+// categoryRoute.delete("/delete-child-category/:id", deleteChildCategory);
 
 categoryRoute.put(
   "/update-main-category/:id",

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import Image from "next/image";
@@ -7,14 +8,18 @@ import { useForm } from "react-hook-form";
 export default function page() {
   const {
     createMainCategory,
-    isUploading,
     createSubCategory,
     getCategory,
-    mainCategory,
     getAllCategory,
   } = useCategoryStore();
 
-  const { register, handleSubmit, setValue, reset } = useForm();
+  const { register, handleSubmit, setValue, reset } = useForm({
+    defaultValues: {
+      showOnNavigation: false,
+      isFeaturedOnHomePage: false,
+      isActive: true,
+    },
+  });
 
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -28,12 +33,12 @@ export default function page() {
   };
 
   async function onSubmit(data) {
+    console.log(data);
     if (data.mainCategoryId) {
       await createSubCategory(data);
     } else {
       await createMainCategory(data);
     }
-    console.log(mainCategory);
     setSelectedFile(null);
     reset();
   }
@@ -129,7 +134,7 @@ export default function page() {
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                   >
                     <option value="">No Parent (Top Level Category)</option>
-                    {getAllCategory?.map((cat) => (
+                    {getAllCategory?.allCategories.map((cat) => (
                       <option key={cat._id} value={cat._id}>
                         {cat.title}
                       </option>
@@ -283,6 +288,7 @@ export default function page() {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
+                      {...register("isActive")}
                       className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
                       // checked
                     />
@@ -295,6 +301,7 @@ export default function page() {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
+                      {...register("isFeaturedOnHomePage")}
                       className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
                     />
                     <span className="ml-2 text-sm text-gray-400">
@@ -306,6 +313,7 @@ export default function page() {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
+                      {...register("showOnNavigation")}
                       className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
                       // checked
                     />

@@ -1,7 +1,6 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-
-import cookieParser from "cookie-parser";
 import connectDB from "./config/connectDb.js";
 import campaignRoute from "./routes/campaign.route.js";
 import categoryRoute from "./routes/category.route.js";
@@ -15,6 +14,7 @@ const port = process.env.PORT || 8080;
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use("/uploads", express.static("uploads"));
+
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(
   cors({

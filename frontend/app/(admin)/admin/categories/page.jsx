@@ -1,6 +1,26 @@
-export default function page() {
+"use client";
+import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
+import { AnimatePresence, motion } from "framer-motion";
+import { Trash2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+
+export default function Page() {
+  // ❗ প্রতিটি ক্যাটাগরির collapse এর জন্য আলাদা স্টেট
+  const [openCategoryId, setOpenCategoryId] = useState(null);
+
+  // অ্যানিমেশন ভ্যারিয়েন্ট
+  const collapseVariants = {
+    open: { opacity: 1, height: "auto", transition: { duration: 0.3 } },
+    collapsed: { opacity: 0, height: 0, transition: { duration: 0.3 } },
+  };
+
+  const { getAllCategory, getCategory, deleteSubCategory, deleteMainCategory } =
+    useCategoryStore();
+
   return (
-    <div className=" flex-1 p-2">
+    <div className="flex-1 p-2">
       {/* <!-- Top Bar --> */}
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -9,13 +29,15 @@ export default function page() {
             Organize your products with categories and subcategories
           </p>
         </div>
+
         <div className="flex items-center space-x-4">
-          <button
-            onclick="window.location.href='create-category.html'"
+          <Link
+            href={"/admin/add-categories"}
             className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
           >
             <i className="fas fa-plus mr-2"></i> Add Category
-          </button>
+          </Link>
+
           <div className="relative">
             <input
               type="text"
@@ -29,11 +51,14 @@ export default function page() {
 
       {/* <!-- Category Stats --> */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Total Categories */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-400 text-sm">Total Categories</p>
-              <h3 className="text-2xl font-bold text-white mt-2">24</h3>
+              <h3 className="text-2xl font-bold text-white mt-2">
+                {getAllCategory?.totalCategories || 0}
+              </h3>
             </div>
             <div className="bg-gradient-pink p-3 rounded-xl">
               <i className="fas fa-tags text-white text-xl"></i>
@@ -41,11 +66,14 @@ export default function page() {
           </div>
         </div>
 
+        {/* Main Categories */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-400 text-sm">Main Categories</p>
-              <h3 className="text-2xl font-bold text-white mt-2">8</h3>
+              <h3 className="text-2xl font-bold text-white mt-2">
+                {getAllCategory?.mainCategoriesCount || 0}
+              </h3>
             </div>
             <div className="bg-blue-500 p-3 rounded-xl">
               <i className="fas fa-folder text-white text-xl"></i>
@@ -53,11 +81,14 @@ export default function page() {
           </div>
         </div>
 
+        {/* Sub Categories */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-400 text-sm">Subcategories</p>
-              <h3 className="text-2xl font-bold text-white mt-2">16</h3>
+              <h3 className="text-2xl font-bold text-white mt-2">
+                {getAllCategory?.subCategoriesCount || 0}
+              </h3>
             </div>
             <div className="bg-green-500 p-3 rounded-xl">
               <i className="fas fa-folder-open text-white text-xl"></i>
@@ -65,11 +96,14 @@ export default function page() {
           </div>
         </div>
 
+        {/* Active Categories */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-400 text-sm">Active Categories</p>
-              <h3 className="text-2xl font-bold text-white mt-2">22</h3>
+              <h3 className="text-2xl font-bold text-white mt-2">
+                {getAllCategory?.activeCategoryCount || 0}
+              </h3>
             </div>
             <div className="bg-purple-500 p-3 rounded-xl">
               <i className="fas fa-check-circle text-white text-xl"></i>
@@ -82,184 +116,166 @@ export default function page() {
       <div className="glassmorphism p-6 rounded-2xl shadow-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Category Hierarchy</h2>
-          <button className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition-all duration-300 flex items-center">
-            <i className="fas fa-expand mr-2"></i> Expand All
-          </button>
         </div>
 
         <div className="space-y-2">
-          {/* <!-- Makeup Category with Children --> */}
-          <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button className="text-rose-gold mr-3">
-                  <i className="fas fa-chevron-down"></i>
-                </button>
-                <div className="w-8 h-8 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-palette text-white text-sm"></i>
-                </div>
-                <div>
-                  <h4 className="font-medium text-white">Makeup</h4>
-                  <p className="text-xs text-gray-400">
-                    48 products • 3 subcategories
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">
-                  Active
-                </span>
-                <button className="text-rose-gold hover:text-pink-600 p-2">
-                  <i className="fas fa-edit"></i>
-                </button>
-                <button className="text-red-400 hover:text-red-300 p-2">
-                  <i className="fas fa-trash"></i>
-                </button>
-              </div>
+          {!getAllCategory?.allCategories?.length ? (
+            <div className="text-center text-gray-400 py-4">
+              Category Not Found
             </div>
+          ) : (
+            getAllCategory.allCategories.map((cat) => (
+              <div key={cat._id} className="bg-gray-800 rounded-xl">
+                {/* Trigger Area */}
+                <div
+                  className="p-4 cursor-pointer"
+                  onClick={() =>
+                    setOpenCategoryId(
+                      openCategoryId === cat._id ? null : cat._id
+                    )
+                  }
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      {/* Chevron Icon */}
+                      <motion.button
+                        className="text-rose-gold mr-3"
+                        animate={{
+                          rotate: openCategoryId === cat._id ? 180 : 0,
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <i className="fas fa-chevron-down"></i>
+                      </motion.button>
 
-            {/* <!-- Subcategories --> */}
-            <div className="nested-category mt-3 space-y-2 pl-4">
-              {/* <!-- Face Makeup --> */}
-              <div className="bg-gray-700/50 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 bg-pink-400 rounded flex items-center justify-center mr-3">
-                      <i className="fas fa-user text-white text-xs"></i>
-                    </div>
-                    <div>
-                      <h5 className="font-medium text-white text-sm">
-                        Face Makeup
-                      </h5>
-                      <p className="text-xs text-gray-400">22 products</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">
-                      Active
-                    </span>
-                    <button className="text-rose-gold hover:text-pink-600">
-                      <i className="fas fa-edit text-xs"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
+                      <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
+                        <Image
+                          src={`http://localhost:8080${cat.image}`}
+                          alt={cat.title}
+                          width={100}
+                          height={100}
+                          className="object-cover h-full w-full rounded-md"
+                          unoptimized
+                        />
+                      </div>
 
-              {/* <!-- Eye Makeup --> */}
-              <div className="bg-gray-700/50 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 bg-purple-400 rounded flex items-center justify-center mr-3">
-                      <i className="fas fa-eye text-white text-xs"></i>
+                      <div>
+                        <h4 className="font-medium text-white">{cat.title}</h4>
+                        <p className="text-xs text-gray-400">
+                          48 products • {cat.subCategories.length || 0}{" "}
+                          subcategories
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h5 className="font-medium text-white text-sm">
-                        Eye Makeup
-                      </h5>
-                      <p className="text-xs text-gray-400">18 products</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">
-                      Active
-                    </span>
-                    <button className="text-rose-gold hover:text-pink-600">
-                      <i className="fas fa-edit text-xs"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* <!-- Lip Makeup --> */}
-              <div className="bg-gray-700/50 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 bg-red-400 rounded flex items-center justify-center mr-3">
-                      <i className="fas fa-lips text-white text-xs"></i>
-                    </div>
-                    <div>
-                      <h5 className="font-medium text-white text-sm">
-                        Lip Makeup
-                      </h5>
-                      <p className="text-xs text-gray-400">8 products</p>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={` ${
+                          cat.isActive
+                            ? "bg-green-500/20 text-green-300"
+                            : "bg-red-500/30 text-red-300"
+                        } text-xs px-2 py-1 rounded-full`}
+                      >
+                        {cat.isActive ? "Active" : "Inactive"}
+                      </span>
+
+                      <button
+                        className="text-rose-gold hover:text-pink-600 p-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+
+                      <button
+                        className="text-red-400 hover:text-red-500 cursor-pointer p-2"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          deleteMainCategory(cat._id);
+                          await getCategory();
+                        }}
+                      >
+                        <Trash2 />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">
-                      Active
-                    </span>
-                    <button className="text-rose-gold hover:text-pink-600">
-                      <i className="fas fa-edit text-xs"></i>
-                    </button>
-                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* <!-- Skincare Category --> */}
-          <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button className="text-rose-gold mr-3">
-                  <i className="fas fa-chevron-right"></i>
-                </button>
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-spa text-white text-sm"></i>
-                </div>
-                <div>
-                  <h4 className="font-medium text-white">Skincare</h4>
-                  <p className="text-xs text-gray-400">
-                    36 products • 4 subcategories
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">
-                  Active
-                </span>
-                <button className="text-rose-gold hover:text-pink-600 p-2">
-                  <i className="fas fa-edit"></i>
-                </button>
-                <button className="text-red-400 hover:text-red-300 p-2">
-                  <i className="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+                {/* Collapsible Subcategories */}
+                <AnimatePresence initial={false}>
+                  {openCategoryId === cat._id && (
+                    <motion.div
+                      key={cat._id}
+                      initial="collapsed"
+                      animate="open"
+                      exit="collapsed"
+                      variants={collapseVariants}
+                      className="overflow-hidden"
+                    >
+                      <div className="nested-category space-y-2 pl-4 pb-4">
+                        {cat.subCategories.map((sub) => (
+                          <div
+                            key={sub._id}
+                            className="bg-gray-700/50 rounded-lg p-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
+                                  <Image
+                                    src={`http://localhost:8080${sub.image}`}
+                                    alt={cat.title}
+                                    width={100}
+                                    height={100}
+                                    className="object-cover h-full w-full rounded-md"
+                                    unoptimized
+                                  />
+                                </div>
 
-          {/* <!-- Hair Care Category --> */}
-          <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button className="text-rose-gold mr-3">
-                  <i className="fas fa-chevron-right"></i>
-                </button>
-                <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
-                  <i className="fas fa-air-freshener text-white text-sm"></i>
-                </div>
-                <div>
-                  <h4 className="font-medium text-white">Hair Care</h4>
-                  <p className="text-xs text-gray-400">
-                    28 products • 2 subcategories
-                  </p>
-                </div>
+                                <div>
+                                  <h5 className="font-medium text-white text-sm">
+                                    {sub.title}
+                                  </h5>
+                                  <p className="text-xs text-gray-400">
+                                    22 products
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center space-x-2">
+                                <span
+                                  className={` ${
+                                    cat.isActive
+                                      ? "bg-green-500/20 text-green-300"
+                                      : "bg-red-500/30 text-red-300"
+                                  } text-xs px-2 py-1 rounded-full`}
+                                >
+                                  {sub.isActive ? "Active" : "Inactive"}
+                                </span>
+
+                                <button className="text-rose-gold hover:text-pink-600">
+                                  <i className="fas fa-edit text-xs"></i>
+                                </button>
+                                <button
+                                  className="text-red-400 hover:text-red-500 cursor-pointer p-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteSubCategory(sub._id);
+                                    // await getCategory();
+                                  }}
+                                >
+                                  <Trash2 />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">
-                  Active
-                </span>
-                <button className="text-rose-gold hover:text-pink-600 p-2">
-                  <i className="fas fa-edit"></i>
-                </button>
-                <button className="text-red-400 hover:text-red-300 p-2">
-                  <i className="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+            ))
+          )}
         </div>
-
         {/* <!-- Pagination --> */}
         <div className="flex justify-between items-center mt-6">
           <p className="text-gray-400">Showing 1 to 8 of 18 brands</p>

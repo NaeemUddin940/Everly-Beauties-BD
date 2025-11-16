@@ -3,6 +3,7 @@
 import Sidebar from "@/components/admin/Sidebar";
 import { Sheet } from "@/components/ui/sheet";
 import { useAuthStore } from "@/ZustandStore/useAuthStore";
+import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
@@ -13,7 +14,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { checkAuth, authUser, isCheckingAuth } = useAuthStore();
+  const { getCategory } = useCategoryStore();
   const router = useRouter();
+
+  useEffect(() => {
+    getCategory();
+  }, [getCategory]);
 
   useEffect(() => {
     checkAuth();
