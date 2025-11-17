@@ -275,6 +275,18 @@ body {
   display: inline-block;
   margin-right: 6px;
 }
+
+.brand-card {
+  transition: all 0.3s ease;
+}
+.brand-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+.logo-preview {
+  background: linear-gradient(45deg, #1a1a2e, #16213e);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 ::-webkit-scrollbar {
   display: none;
 }

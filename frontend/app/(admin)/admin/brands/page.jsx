@@ -1,206 +1,303 @@
+"use client";
+/* eslint-disable react-hooks/rules-of-hooks */
+import { useBrandStore } from "@/ZustandStore/useBrandStore";
+import Image from "next/image";
+import { useEffect } from "react";
+
 export default function page() {
+  const { getAllBrands, allBrands } = useBrandStore();
+  useEffect(() => {
+    getAllBrands();
+  }, [getAllBrands]);
+  console.log(allBrands);
   return (
     <div>
       <div className="flex-1 p-2">
         {/* <!-- Top Bar --> */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">Create New Brand</h1>
+            <h1 className="text-2xl font-bold text-white">Brand Management</h1>
             <p className="text-gray-400">
-              Add a new cosmetic brand to your store
+              Manage cosmetic brands and their information
             </p>
           </div>
           <div className="flex items-center space-x-4">
             <button
-              onclick="window.location.href='brands.html'"
-              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+              //   onClick="window.location.href='create-brand.html'"
+              className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
-              <i className="fas fa-times mr-2"></i> Cancel
+              <i className="fas fa-plus mr-2"></i> Add Brand
             </button>
-            <button className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center">
-              <i className="fas fa-save mr-2"></i> Save Brand
-            </button>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search brands..."
+                className="bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+              />
+              <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
           </div>
         </div>
 
-        {/* <!-- Brand Form --> */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* <!-- Left Column - Basic Info --> */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* <!-- Basic Information --> */}
-            <div className="glassmorphism p-6 rounded-2xl shadow-md">
-              <h2 className="text-xl font-bold text-white mb-4">
-                Basic Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Brand Name
-                  </label>
-                  <input
-                    type="text"
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Enter brand name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Slug
-                  </label>
-                  <input
-                    type="text"
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="brand-slug"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    URL-friendly version of the name
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Enter brand description and story"
-                  ></textarea>
-                </div>
+        {/* <!-- Brand Stats --> */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="glassmorphism p-6 rounded-2xl shadow-md">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-400 text-sm">Total Brands</p>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allBrands?.totalBrands}
+                </h3>
               </div>
-            </div>
-
-            {/* <!-- SEO Content Publishing --> */}
-            <div className="glassmorphism p-6 rounded-2xl shadow-md">
-              <h2 className="text-xl font-bold text-white mb-4">
-                SEO Settings
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Write here SEO title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Write here short description"
-                  ></textarea>
-                </div>
-
-                {/* <!-- Make editor using React Draft Wysiwyg  --> */}
-                {/* <!-- start  --> */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Bottom Content
-                  </label>
-                  <textarea
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Write here SEO content"
-                  ></textarea>
-                </div>
-                {/* <!-- end  --> */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Schema Markup
-                  </label>
-                  <textarea
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Write here Schema Markup"
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Canonical URL{" "}
-                  </label>
-                  <input
-                    type="url"
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Write here Canonical URL"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Focus Keywords
-                  </label>
-                  <input
-                    type="text"
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="lip care, lip balm, lip scrub, lip treatment, bangladesh"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Separate with commas
-                  </p>
-                </div>
+              <div className="bg-gradient-pink p-3 rounded-xl">
+                <i className="fas fa-copyright text-white text-xl"></i>
               </div>
             </div>
           </div>
 
-          {/* <!-- Right Column - Media & Settings --> */}
-          <div className="space-y-6">
-            {/* <!-- Brand Logo --> */}
-            <div className="glassmorphism p-6 rounded-2xl shadow-md">
-              <h2 className="text-xl font-bold text-white mb-4">Brand Logo</h2>
-              <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer mb-4">
-                <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
-                <p className="text-gray-400 mb-2">Drag & drop logo here</p>
-                <p className="text-sm text-gray-500">or</p>
-                <button className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300">
-                  Browse Files
-                </button>
+          <div className="glassmorphism p-6 rounded-2xl shadow-md">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-400 text-sm">Active Brands</p>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allBrands?.activeBrands}
+                </h3>
               </div>
-
-              <div className="mt-4">
-                <p className="text-xs text-gray-500">
-                  Recommended size: 200x200 pixels. PNG format with transparent
-                  background.
-                </p>
+              <div className="bg-green-500 p-3 rounded-xl">
+                <i className="fas fa-check-circle text-white text-xl"></i>
               </div>
             </div>
+          </div>
 
-            {/* <!-- Brand Settings --> */}
-            <div className="glassmorphism p-6 rounded-2xl shadow-md">
-              <h2 className="text-xl font-bold text-white mb-4">
-                Brand Settings
-              </h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                      checked
-                    />
-                    <span className="ml-2 text-sm text-gray-400">
-                      Active brand
-                    </span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-400">
-                      Featured brand
-                    </span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-400">
-                      Show on homepage
-                    </span>
-                  </label>
-                </div>
+          <div className="glassmorphism p-6 rounded-2xl shadow-md">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-400 text-sm">Premium Brands</p>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allBrands?.premiumBrands}
+                </h3>
               </div>
+              <div className="bg-yellow-500 p-3 rounded-xl">
+                <i className="fas fa-crown text-white text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <div className="glassmorphism p-6 rounded-2xl shadow-md">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-400 text-sm">Featured Brands</p>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allBrands?.featuredBrands}
+                </h3>
+              </div>
+              <div className="bg-purple-500 p-3 rounded-xl">
+                <i className="fas fa-star text-white text-xl"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* <!-- Brands Table View --> */}
+        <div className="glassmorphism p-6 rounded-2xl shadow-md">
+          <h2 className="text-xl font-bold text-white mb-6">Brands List</h2>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="py-3 px-4 text-left">Brand</th>
+                  <th className="py-3 px-4 text-left">Products</th>
+                  <th className="py-3 px-4 text-left">Status</th>
+                  <th className="py-3 px-4 text-left">Type</th>
+                  <th className="py-3 px-4 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* <!-- Luxe Beauty --> */}
+                {allBrands?.allBrands?.map((brand) => (
+                  <tr
+                    key={brand._id}
+                    className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
+                  >
+                    <td className="py-4 px-4">
+                      <div className="flex items-center">
+                        <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
+                          <Image
+                            src={`http://localhost:8080${brand.image}`}
+                            alt={brand.name}
+                            width={100}
+                            height={100}
+                            className="object-cover h-full w-full rounded-md"
+                            unoptimized
+                          />
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{brand.name}</p>
+                          <p className="text-xs text-gray-400">{brand.slug}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-rose-gold font-medium">124</span>
+                    </td>
+
+                    <td className="py-4 px-4">
+                      <span
+                        className={` ${
+                          brand.isActive
+                            ? "bg-green-500/20 text-green-300"
+                            : "bg-red-500/30 text-red-300"
+                        } text-xs px-2 py-1 rounded-full`}
+                      >
+                        {brand.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 flex gap-2">
+                      {brand.isPremium && (
+                        <span className="inline-block px-2 py-1 text-xs bg-yellow-500/20 text-yellow-300 rounded-full">
+                          Premium
+                        </span>
+                      )}
+
+                      {brand.isFeatured && (
+                        <span className="inline-block px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded-full">
+                          Featured
+                        </span>
+                      )}
+                      {!brand.isPremium && !brand.isFeatured && (
+                        <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
+                          Standard
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-4 px-4">
+                      <div className="flex space-x-2">
+                        <button className="text-rose-gold hover:text-pink-600 p-2">
+                          <i className="fas fa-edit"></i>
+                        </button>
+                        <button className="text-blue-400 hover:text-blue-300 p-2">
+                          <i className="fas fa-eye"></i>
+                        </button>
+                        <button className="text-red-400 hover:text-red-300 p-2">
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {/* <!-- Glamour Cosmetics --> */}
+                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
+                  <td className="py-4 px-4">
+                    <div className="flex items-center">
+                      <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500 mr-3">
+                        <span className="text-white font-bold text-xs">GC</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">
+                          Glamour Cosmetics
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          glamourcosmetics.com
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="text-rose-gold font-medium">89</span>
+                  </td>
+
+                  <td className="py-4 px-4">
+                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                      Active
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="inline-block px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded-full">
+                      Featured
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex space-x-2">
+                      <button className="text-rose-gold hover:text-pink-600 p-2">
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button className="text-blue-400 hover:text-blue-300 p-2">
+                        <i className="fas fa-eye"></i>
+                      </button>
+                      <button className="text-red-400 hover:text-red-300 p-2">
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr> */}
+
+                {/* <!-- Pure Skin --> */}
+                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
+                  <td className="py-4 px-4">
+                    <div className="flex items-center">
+                      <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500 mr-3">
+                        <span className="text-white font-bold text-xs">PS</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">Pure Skin</p>
+                        <p className="text-xs text-gray-400">pureskin.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="text-rose-gold font-medium">67</span>
+                  </td>
+
+                  <td className="py-4 px-4">
+                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
+                      Active
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
+                      Standard
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex space-x-2">
+                      <button className="text-rose-gold hover:text-pink-600 p-2">
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button className="text-blue-400 hover:text-blue-300 p-2">
+                        <i className="fas fa-eye"></i>
+                      </button>
+                      <button className="text-red-400 hover:text-red-300 p-2">
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr> */}
+              </tbody>
+            </table>
+          </div>
+
+          {/* <!-- Pagination --> */}
+          <div className="flex justify-between items-center mt-6">
+            <p className="text-gray-400">Showing 1 to 8 of 18 brands</p>
+            <div className="flex space-x-2">
+              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+                <i className="fas fa-chevron-left"></i>
+              </button>
+              <button className="bg-rose-gold text-white p-2 rounded-lg w-10">
+                1
+              </button>
+              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
+                2
+              </button>
+              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
+                3
+              </button>
+              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+                <i className="fas fa-chevron-right"></i>
+              </button>
             </div>
           </div>
         </div>

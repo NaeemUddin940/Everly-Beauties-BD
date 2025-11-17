@@ -36,6 +36,7 @@ const sidebarMenu = [
       { name: "Create Tags", href: "/admin/create-tags", icon: ImPriceTags },
       { name: "Tags", href: "/admin/tags", icon: FaTags },
       { name: "Brands", href: "/admin/brands", icon: FaCopyright },
+      { name: "Add Brands", href: "/admin/add-brands", icon: FaCopyright },
       {
         name: "Screen Solutions",
         href: "/admin/screen-solutions",

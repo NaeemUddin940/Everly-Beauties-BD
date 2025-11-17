@@ -4,19 +4,14 @@ import Brand from "../models/brand.model.js";
 
 export const createBrand = async (req, res) => {
   try {
-    const {
-      name,
-      slug,
-      description,
-      isActive,
-      showOnNavigation,
-      isFeaturedOnHomePage,
-    } = req.body;
+    const { name, slug, description, isActive, isPremium, isFeatured } =
+      req.body;
+    const image = req.file;
 
     // ❌ Required fields
     if (!name || !slug || !description) {
-      if (req.file) {
-        fs.unlinkSync(path.join("uploads/brandImage/", req.file.filename));
+      if (image) {
+        fs.unlinkSync(path.join("uploads/brandImage/", image.filename));
       }
       return res.status(400).json({
         success: false,
@@ -27,8 +22,8 @@ export const createBrand = async (req, res) => {
     // ❌ Duplicate check
     const existingBrand = await Brand.findOne({ $or: [{ name }, { slug }] });
     if (existingBrand) {
-      if (req.file) {
-        fs.unlinkSync(path.join("uploads/brandImage/", req.file.filename));
+      if (image) {
+        fs.unlinkSync(path.join("uploads/brandImage/", image.filename));
       }
 
       return res.status(400).json({
@@ -41,7 +36,7 @@ export const createBrand = async (req, res) => {
     }
 
     // ❌ File check
-    if (!req.file) {
+    if (!image) {
       return res.status(400).json({
         success: false,
         message: "Please select a brand image.",
@@ -53,10 +48,10 @@ export const createBrand = async (req, res) => {
       name,
       slug,
       description,
-      image: `/uploads/brandImage/${req.file.filename}`,
+      image: `/uploads/brandImage/${image.filename}`,
       isActive,
-      showOnNavigation,
-      isFeaturedOnHomePage,
+      isPremium,
+      isFeatured,
     });
 
     res.status(201).json({
@@ -75,7 +70,18 @@ export const createBrand = async (req, res) => {
 export const getAllBrands = async (req, res) => {
   try {
     const allBrands = await Brand.find().sort({ createdAt: -1 });
-    res.status(200).json({ success: true, allBrands });
+    const activeBrands = allBrands.filter((brand) => brand.isActive).length;
+    const premiumBrands = allBrands.filter((brand) => brand.isPremium).length;
+    const featuredBrands = allBrands.filter((brand) => brand.isFeatured).length;
+
+    res.status(200).json({
+      success: true,
+      totalBrands: allBrands.length,
+      activeBrands,
+      premiumBrands,
+      featuredBrands,
+      allBrands,
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -83,14 +89,8 @@ export const getAllBrands = async (req, res) => {
 
 export const updateBrand = async (req, res) => {
   try {
-    const {
-      name,
-      slug,
-      description,
-      isActive,
-      showOnNavigation,
-      isFeaturedOnHomePage,
-    } = req.body;
+    const { name, slug, description, isActive, isPremium, isFeatured } =
+      req.body;
 
     const brand = await Brand.findById(req.params.id);
     if (!brand) {
@@ -132,10 +132,8 @@ export const updateBrand = async (req, res) => {
     if (slug) brand.slug = slug;
     if (description) brand.description = description;
     if (isActive !== undefined) brand.isActive = isActive;
-    if (showOnNavigation !== undefined)
-      brand.showOnNavigation = showOnNavigation;
-    if (isFeaturedOnHomePage !== undefined)
-      brand.isFeaturedOnHomePage = isFeaturedOnHomePage;
+    if (isPremium !== undefined) brand.isPremium = isPremium;
+    if (isFeatured !== undefined) brand.isFeatured = isFeatured;
 
     // Save updated brand
     await brand.save();
@@ -193,17 +191,17 @@ export const deleteBrand = async (req, res) => {
   }
 };
 
-export const getBrandBySlug = async (req, res) => {
-  try {
-    const brand = await Brand.findOne({ slug: req.params.slug });
+// export const getBrandBySlug = async (req, res) => {
+//   try {
+//     const brand = await Brand.findOne({ slug: req.params.slug });
 
-    if (!brand)
-      return res
-        .status(404)
-        .json({ success: false, message: "Brand not found" });
+//     if (!brand)
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Brand not found" });
 
-    res.status(200).json({ success: true, brand });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
+//     res.status(200).json({ success: true, brand });
+//   } catch (error) {
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// };

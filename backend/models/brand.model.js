@@ -28,12 +28,12 @@ const brandSchema = new mongoose.Schema(
       default: true,
     },
 
-    showOnNavigation: {
+    isPremium: {
       type: Boolean,
       default: false,
     },
 
-    isFeaturedOnHomePage: {
+    isFeatured: {
       type: Boolean,
       default: false,
     },
