@@ -179,12 +179,12 @@ export default function Page() {
                         {cat.isActive ? "Active" : "Inactive"}
                       </span>
 
-                      <button
+                      <Link
+                        href={`/admin/add-categories/${cat._id}`}
                         className="text-rose-gold hover:text-pink-600 p-2"
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <i className="fas fa-edit"></i>
-                      </button>
+                      </Link>
 
                       <button
                         className="text-red-400 hover:text-red-500 cursor-pointer p-2"
