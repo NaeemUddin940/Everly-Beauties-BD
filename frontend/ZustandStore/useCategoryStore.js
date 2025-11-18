@@ -22,9 +22,6 @@ export const useCategoryStore = create((set, get) => ({
           },
         }
       );
-
-      console.log(res);
-
       // 🟢 Success
       if (res.data.success) {
         toast.success(res.data.message);
@@ -83,13 +80,20 @@ export const useCategoryStore = create((set, get) => ({
       const res = await axiosInstance.delete(
         `/category/delete-main-category/${id}`
       );
-
+      console.log(res);
       if (res.data.success) {
         toast.success(res.data.message);
-        await get().getCategory();
+        set((state) => ({
+          getAllCategory: {
+            ...state.getAllCategory,
+            allCategories: state.getAllCategory.allCategories.filter(
+              (cat) => cat._id !== id
+            ),
+          },
+        }));
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
       console.error("Failed to delete Main Category:", error);
     }
   },
