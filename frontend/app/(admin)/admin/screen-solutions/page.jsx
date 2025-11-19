@@ -44,7 +44,7 @@ export default function page() {
             </div>
           </div>
 
-          <div className="glassmorphism p-6 rounded-2xl shadow-md">
+          {/* <div className="glassmorphism p-6 rounded-2xl shadow-md">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-400 text-sm">Skin Type Solutions</p>
@@ -66,7 +66,7 @@ export default function page() {
                 <i className="fas fa-heart text-white text-xl"></i>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="glassmorphism p-6 rounded-2xl shadow-md">
             <div className="flex justify-between items-start">

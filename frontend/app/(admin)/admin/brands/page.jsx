@@ -195,7 +195,6 @@ export default function page() {
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteBrand(brand._id);
-                            //   getAllBrands();
                             }}
                             className="text-red-400 hover:text-red-500 cursor-pointer p-2"
                           >

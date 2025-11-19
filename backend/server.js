@@ -6,6 +6,7 @@ import brandRoute from "./routes/brand.route.js";
 import campaignRoute from "./routes/campaign.route.js";
 import categoryRoute from "./routes/category.route.js";
 import heroSliderRoute from "./routes/heroslider.route.js";
+import tagRoute from "./routes/tag.route.js";
 import userRoute from "./routes/user.route.js";
 
 const app = express();
@@ -35,6 +36,7 @@ app.use("/api/category", categoryRoute);
 app.use("/api/admin/heroslider", heroSliderRoute);
 app.use("/api/offers/campaign", campaignRoute);
 app.use("/api/brand", brandRoute);
+app.use("/api/tag", tagRoute);
 
 // Server is Running
 app.listen(port, () => {

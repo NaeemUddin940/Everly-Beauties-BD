@@ -6,7 +6,6 @@ export const useBrandStore = create((set, get) => ({
 
   createBrand: async (data) => {
     try {
-      console.log(data);
       const res = await axiosInstance.post("/brand/create", data, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -31,7 +30,7 @@ export const useBrandStore = create((set, get) => ({
         set({ allBrands: res.data });
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
       console.error("Create Brand Error:", error);
     }
   },
@@ -39,7 +38,7 @@ export const useBrandStore = create((set, get) => ({
   deleteBrand: async (id) => {
     try {
       const res = await axiosInstance.delete(`/brand/delete/${id}`);
-      console.log(res);
+
       if (res.data.success) {
         toast.success(res.data.message);
         await get().getAllBrands();

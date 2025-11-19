@@ -1,30 +1,52 @@
+"use client";
+/* eslint-disable react-hooks/rules-of-hooks */
+import { useTagStore } from "@/ZustandStore/useTagStore";
+import Link from "next/link";
+import { useEffect } from "react";
+
 export default function page() {
+  const { getAllTags, allTags, deleteTag } = useTagStore();
+
+  useEffect(() => {
+    getAllTags();
+  }, [getAllTags]);
+
   return (
     <div>
       <div className="flex-1 p-2">
         {/* <!-- Top Bar --> */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Tag Management</h1>
-            <p className="text-gray-400">
-              Manage product tags for better organization and filtering
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onclick="window.location.href='create-tag.html'"
-              className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
-            >
-              <i className="fas fa-plus mr-2"></i> Add Tag
-            </button>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search tags..."
-                className="bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-              />
-              <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        <div className="flex flex-col">
+          <div className="flex justify-between items-center md:mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Tag Management</h1>
+              <p className="text-gray-400">
+                Manage product tags for better organization and filtering
+              </p>
             </div>
+            <div className="flex  items-center space-x-4">
+              <Link
+                href={"/admin/add-tags"}
+                className="bg-rose-gold whitespace-nowrap hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+              >
+                <i className="fas fa-plus mr-2"></i> Add Tag
+              </Link>
+              <div className="relative hidden md:block">
+                <input
+                  type="text"
+                  placeholder="Search tags..."
+                  className="bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+                />
+                <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+          <div className="relative md:hidden my-2">
+            <input
+              type="text"
+              placeholder="Search tags..."
+              className="bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+            />
+            <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
           </div>
         </div>
 
@@ -34,7 +56,9 @@ export default function page() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-400 text-sm">Total Tags</p>
-                <h3 className="text-2xl font-bold text-white mt-2">156</h3>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allTags?.totalTags}
+                </h3>
               </div>
               <div className="bg-gradient-pink p-3 rounded-xl">
                 <i className="fas fa-hashtag text-white text-xl"></i>
@@ -45,7 +69,9 @@ export default function page() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-400 text-sm">Active Tags</p>
-                <h3 className="text-2xl font-bold text-white mt-2">142</h3>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allTags?.activeTags}
+                </h3>
               </div>
               <div className="bg-green-500 p-3 rounded-xl">
                 <i className="fas fa-check-circle text-white text-xl"></i>
@@ -79,7 +105,7 @@ export default function page() {
                   <th className="py-3 px-4 text-left">
                     <input
                       type="checkbox"
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
+                      className="custom-checkbox"
                     />
                   </th>
                   <th className="py-3 px-4 text-left">Tag</th>
@@ -90,51 +116,68 @@ export default function page() {
               </thead>
               <tbody>
                 {/* <!-- Vegan Tag --> */}
-                <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
-                  <td className="py-4 px-4">
-                    <input
-                      type="checkbox"
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                    />
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                        <i className="fas fa-leaf text-white text-sm"></i>
+                {allTags?.allTags?.map((tag) => (
+                  <tr
+                    key={tag._id}
+                    className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
+                  >
+                    <td className="py-4 px-4">
+                      <input type="checkbox" className="custom-checkbox" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                          <i className="fas fa-leaf text-white text-sm"></i>
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{tag.name}</p>
+                          <p className="text-xs text-gray-400">{tag.slug}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-white">Vegan</p>
-                        <p className="text-xs text-gray-400">vegan</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-rose-gold font-medium">48</span>
+                    </td>
+
+                    <td className="py-4 px-4">
+                      <span
+                        className={` ${
+                          tag.isActive
+                            ? "bg-green-500/20 text-green-300"
+                            : "bg-red-500/30 text-red-300"
+                        } text-xs px-2 py-1 rounded-full`}
+                      >
+                        {tag.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+
+                    <td className="py-4 px-4">
+                      <div className="flex space-x-2">
+                        <Link
+                          href={`/admin/edit-tag/${tag._id}`}
+                          className="text-rose-gold hover:text-pink-600 p-2"
+                        >
+                          <i className="fas fa-edit"></i>
+                        </Link>
+                        <button className="text-blue-400 hover:text-blue-300 p-2">
+                          <i className="fas fa-eye"></i>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteTag(tag._id);
+                          }}
+                          className="text-red-400 hover:text-red-300 p-2"
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-rose-gold font-medium">48</span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
-                      Active
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="text-rose-gold hover:text-pink-600 p-2">
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="text-blue-400 hover:text-blue-300 p-2">
-                        <i className="fas fa-eye"></i>
-                      </button>
-                      <button className="text-red-400 hover:text-red-300 p-2">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                ))}
 
                 {/* <!-- Cruelty-Free Tag --> */}
-                <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
+                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
                   <td className="py-4 px-4">
                     <input
                       type="checkbox"
@@ -175,10 +218,10 @@ export default function page() {
                       </button>
                     </div>
                   </td>
-                </tr>
+                </tr> */}
 
                 {/* <!-- Organic Tag --> */}
-                <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
+                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
                   <td className="py-4 px-4">
                     <input
                       type="checkbox"
@@ -219,7 +262,7 @@ export default function page() {
                       </button>
                     </div>
                   </td>
-                </tr>
+                </tr> */}
               </tbody>
             </table>
           </div>
