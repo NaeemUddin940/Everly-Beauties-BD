@@ -3,6 +3,7 @@
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function page() {
@@ -185,9 +186,12 @@ export default function page() {
 
                       <td className="py-4 px-4">
                         <div className="flex space-x-2">
-                          <button className="text-rose-gold hover:text-pink-600 p-2">
+                          <Link
+                            href={`/admin/edit-brand/${brand._id}`}
+                            className="text-rose-gold hover:text-pink-600 p-2"
+                          >
                             <i className="fas fa-edit"></i>
-                          </button>
+                          </Link>
                           <button className="text-blue-400 hover:text-blue-300 p-2">
                             <i className="fas fa-eye"></i>
                           </button>

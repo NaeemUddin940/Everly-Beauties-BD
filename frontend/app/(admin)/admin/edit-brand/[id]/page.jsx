@@ -255,7 +255,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       {...register("isActive")}
-                      className="custom-checkbox"
+                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Active brand
@@ -265,7 +265,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       {...register("isFeatured")}
-                      className="custom-checkbox"
+                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Featured brand
@@ -275,7 +275,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       {...register("isPremium")}
-                      className="custom-checkbox"
+                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Premium Brands

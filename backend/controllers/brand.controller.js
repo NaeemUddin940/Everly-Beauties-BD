@@ -60,6 +60,9 @@ export const createBrand = async (req, res) => {
       newBrand,
     });
   } catch (error) {
+    if (error) {
+      fs.unlinkSync(path.join("uploads/brandImage/", image.filename));
+    }
     res.status(500).json({
       success: false,
       message: error.message || "Internal server error",
@@ -191,17 +194,17 @@ export const deleteBrand = async (req, res) => {
   }
 };
 
-// export const getBrandBySlug = async (req, res) => {
-//   try {
-//     const brand = await Brand.findOne({ slug: req.params.slug });
+export const getSingleBrand = async (req, res) => {
+  try {
+    const singleBrand = await Brand.findOne({ _id: req.params.id });
 
-//     if (!brand)
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Brand not found" });
+    if (!singleBrand)
+      return res
+        .status(404)
+        .json({ success: false, message: "Brand not found" });
 
-//     res.status(200).json({ success: true, brand });
-//   } catch (error) {
-//     res.status(500).json({ success: false, error: error.message });
-//   }
-// };
+    res.status(200).json({ success: true, singleBrand });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

@@ -1,48 +1,84 @@
 "use client";
 
-import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-export default function Page() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const { register, handleSubmit, reset, setValue } = useForm();
-  const { createScreenSolution } = useScreenSolutionStore();
+export default function Page({ onSubmit, updatingData = {} }) {
+  // Use updatingData?.image for initial state if present.
+  // This state is correctly re-initialized when the form key changes and forces a remount.
+  const [selectedFile, setSelectedFile] = useState(updatingData?.image || null);
+
+  // FIX: useForm defaults correctly initialized via the key prop below.
+  const { register, handleSubmit, reset, setValue } = useForm({
+    defaultValues: {
+      name: updatingData?.name || "",
+      slug: updatingData?.slug || "",
+      description: updatingData?.description || "",
+      isActive: updatingData?.isActive ?? true,
+      seoTitle: updatingData?.seoTitle || "",
+      seoDescription: updatingData?.seoDescription || "",
+      bottomContent: updatingData?.bottomContent || "",
+      schemaMarkup: updatingData?.schemaMarkup || "",
+      canonicalUrl: updatingData?.canonicalUrl || "",
+      keywords: updatingData?.keywords || "",
+      // Do NOT include image, as it's handled via setValue on file select.
+    },
+  });
+
+  const router = useRouter();
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
 
     if (file) {
+      // 1. Create a local object URL for instant preview
       setSelectedFile(URL.createObjectURL(file));
+      // 2. Set the actual File object into the form data
       setValue("image", file);
     }
   };
-  const onSubmit = async (data) => {
-    console.log("Final Form Data:", data);
-    await createScreenSolution(data);
-    reset();
-    setSelectedFile("");
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    setSelectedFile(url);
+    setValue("image", file);
   };
+
+  // Define the form key: unique ID for edit, or a static string for create
+  const formKey = updatingData?._id || "create-new-solution";
 
   return (
     <div>
       <div className="flex-1 p-2">
-        {/* Top Bar */}
+        {/* Top Bar (omitted for brevity) */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">
-              Create New Screen Solution
+              {updatingData?.name ? "Update " : "Create New "}
+              Screen Solution
             </h1>
             <p className="text-gray-400">
-              Add a new skincare or beauty solution for specific skin types and
-              concerns
+              {updatingData?.name ? "Update " : "Create New "} skincare or
+              beauty solution for specific skin types and concerns
             </p>
           </div>
 
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => reset()}
+              onClick={() => {
+                if (updatingData?._id) {
+                  router.push("/admin/screen-solutions");
+                } else {
+                  reset();
+                  setSelectedFile(null);
+                }
+              }}
               className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
               Cancel
@@ -51,24 +87,24 @@ export default function Page() {
             <button
               form="solutionForm"
               type="submit"
-              className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+              className="bg-rose-gold cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
-              Save Solution
+              {updatingData?.name ? "Update" : "Create"}
             </button>
           </div>
         </div>
 
         {/* FORM START */}
-        <form id="solutionForm" onSubmit={handleSubmit(onSubmit)}>
+        {/* FIX: Add key prop to force re-initialization when switching items */}
+        <form id="solutionForm" key={formKey} onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* LEFT COLUMN */}
+            {/* LEFT COLUMN (omitted for brevity) */}
             <div className="lg:col-span-2 space-y-6">
               {/* Basic Information */}
               <div className="glassmorphism p-6 rounded-2xl shadow-md">
                 <h2 className="text-xl font-bold text-white mb-4">
                   Basic Information
                 </h2>
-
                 <div className="space-y-4">
                   {/* Solution Name */}
                   <div>
@@ -76,13 +112,12 @@ export default function Page() {
                       Solution Name
                     </label>
                     <input
-                      {...register("name", { required: true })}
+                      {...register("name")}
                       type="text"
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="Enter solution name"
                     />
                   </div>
-
                   {/* Slug */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -95,7 +130,6 @@ export default function Page() {
                       placeholder="solution-slug"
                     />
                   </div>
-
                   {/* Description */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -109,13 +143,11 @@ export default function Page() {
                   </div>
                 </div>
               </div>
-
-              {/* SEO Settings */}
+              {/* SEO Settings (omitted fields) */}
               <div className="glassmorphism p-6 rounded-2xl shadow-md">
                 <h2 className="text-xl font-bold text-white mb-4">
                   SEO Settings
                 </h2>
-
                 <div className="space-y-4">
                   {/* SEO Title */}
                   <div>
@@ -123,69 +155,64 @@ export default function Page() {
                       Title
                     </label>
                     <input
-                      // {...register("seoTitle")}
+                      {...register("seoTitle")}
                       type="text"
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="Write SEO title"
                     />
                   </div>
-
                   {/* SEO Description */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
                       Description
                     </label>
                     <textarea
-                      // {...register("seoDescription")}
+                      {...register("seoDescription")}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32"
                       placeholder="Write SEO description"
                     />
                   </div>
-
                   {/* Bottom Content */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
                       Bottom Content
                     </label>
                     <textarea
-                      // {...register("bottomContent")}
+                      {...register("bottomContent")}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40"
                       placeholder="Bottom content"
                     />
                   </div>
-
                   {/* Schema Markup */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
                       Schema Markup
                     </label>
                     <textarea
-                      // {...register("schemaMarkup")}
+                      {...register("schemaMarkup")}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40"
                       placeholder="Schema Markup"
                     />
                   </div>
-
                   {/* Canonical URL */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
                       Canonical URL
                     </label>
                     <input
-                      // {...register("canonicalUrl")}
+                      {...register("canonicalUrl")}
                       type="url"
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="Canonical URL"
                     />
                   </div>
-
                   {/* Focus Keywords */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
                       Focus Keywords
                     </label>
                     <input
-                      // {...register("keywords")}
+                      {...register("keywords")}
                       type="text"
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="lip care, lip balm, lip scrub"
@@ -198,32 +225,30 @@ export default function Page() {
             {/* RIGHT COLUMN */}
             <div className="space-y-6">
               {/* Banner Upload */}
-              {/* <!-- Solution Banner --> */}
               <div className="glassmorphism p-6 rounded-2xl shadow-md">
                 <h2 className="text-xl font-bold text-white mb-4">
                   Solution Banner
                 </h2>
 
                 <div
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const file = e.dataTransfer.files[0];
-                    if (!file) return;
-                    const url = URL.createObjectURL(file);
-                    setSelectedFile(url);
-                    setValue("image", file);
-                  }}
+                  onDrop={handleDrop}
                   onDragOver={(e) => e.preventDefault()}
                   className="image-upload-area rounded-xl p-6 text-center cursor-pointer"
                 >
                   <label htmlFor="solutionBanner">
                     {selectedFile ? (
                       <Image
-                        src={selectedFile}
+                        src={
+                          // CORRECT LOGIC: If it starts with '/', it needs the base URL. Otherwise, it's a blob URL.
+                          selectedFile.startsWith("/")
+                            ? `http://localhost:8080${selectedFile}`
+                            : selectedFile
+                        }
                         alt="SolutionBanner"
                         width={600}
                         height={300}
                         className="rounded-xl w-full h-auto object-cover"
+                        unoptimized
                       />
                     ) : (
                       <>

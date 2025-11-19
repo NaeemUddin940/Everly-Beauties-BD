@@ -1,4 +1,18 @@
+"use client";
+/* eslint-disable react-hooks/rules-of-hooks */
+import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect } from "react";
+
 export default function page() {
+  const { getAllScreenSolution, deleteScreenSolution, allScreenSolution } =
+    useScreenSolutionStore();
+
+  useEffect(() => {
+    getAllScreenSolution();
+  }, [getAllScreenSolution]);
+  console.log(allScreenSolution?.allScreenSolution);
   return (
     <div>
       <div className="flex-1 p-2">
@@ -13,12 +27,12 @@ export default function page() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <button
-              onclick="window.location.href='create-screen-solution.html'"
-              className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+            <Link
+              href={"/admin/add-screen-solutions"}
+              className="bg-rose-gold whitespace-nowrap hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
               <i className="fas fa-plus mr-2"></i> Add Solution
-            </button>
+            </Link>
             <div className="relative">
               <input
                 type="text"
@@ -36,7 +50,9 @@ export default function page() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-400 text-sm">Total Solutions</p>
-                <h3 className="text-2xl font-bold text-white mt-2">32</h3>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allScreenSolution?.totalScreenSolutions || 0}
+                </h3>
               </div>
               <div className="bg-gradient-pink p-3 rounded-xl">
                 <i className="fas fa-spa text-white text-xl"></i>
@@ -72,7 +88,9 @@ export default function page() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-400 text-sm">Active Solutions</p>
-                <h3 className="text-2xl font-bold text-white mt-2">28</h3>
+                <h3 className="text-2xl font-bold text-white mt-2">
+                  {allScreenSolution?.activeScreenSolution || 0}
+                </h3>
               </div>
               <div className="bg-purple-500 p-3 rounded-xl">
                 <i className="fas fa-check-circle text-white text-xl"></i>
@@ -96,55 +114,89 @@ export default function page() {
                   <th className="py-3 px-4 text-left">Screen Solutions</th>
                   <th className="py-3 px-4 text-left">Products</th>
                   <th className="py-3 px-4 text-left">Status</th>
-                  <th className="py-3 px-4 text-left">Type</th>
+                  {/* <th className="py-3 px-4 text-left">Type</th> */}
                   <th className="py-3 px-4 text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {/* <!-- Luxe Beauty --> */}
-                <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
-                  <td className="py-4 px-4">
-                    <div className="flex items-center">
-                      <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-pink mr-3">
-                        <span className="text-white font-bold text-xs">AP</span>
+                {allScreenSolution?.allScreenSolution?.map((solution) => (
+                  <tr
+                    key={solution?._id}
+                    className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
+                  >
+                    <td className="py-4 px-4">
+                      <div className="flex items-center">
+                        <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-pink mr-3">
+                          <Image
+                            src={
+                              solution?.image
+                                ? `http://localhost:8080${solution.image}`
+                                : "/images.png" // default image from public folder
+                            }
+                            alt={solution?.name || "Default Image"}
+                            width={100}
+                            height={100}
+                            className="object-cover h-full w-full rounded-md"
+                            unoptimized
+                          />
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">
+                            {solution?.name}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {solution?.slug}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-white">Acne & Pimples</p>
-                        <p className="text-xs text-gray-400">acne-pimples</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-rose-gold font-medium">124</span>
-                  </td>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-rose-gold font-medium">124</span>
+                    </td>
 
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
-                      Active
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
-                      Standard
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="text-rose-gold hover:text-pink-600 p-2">
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="text-blue-400 hover:text-blue-300 p-2">
-                        <i className="fas fa-eye"></i>
-                      </button>
-                      <button className="text-red-400 hover:text-red-300 p-2">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    <td className="py-4 px-4">
+                      <span
+                        className={` ${
+                          solution.isActive
+                            ? "bg-green-500/20 text-green-300"
+                            : "bg-red-500/30 text-red-300"
+                        } text-xs px-2 py-1 rounded-full`}
+                      >
+                        {solution.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    {/* <td className="py-4 px-4">
+                      <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
+                        Standard
+                      </span>
+                    </td> */}
+                    <td className="py-4 px-4">
+                      <div className="flex space-x-2">
+                        <Link
+                          href={`/admin/edit-screen-solution/${solution._id}`}
+                          className="text-rose-gold hover:text-pink-600 p-2"
+                        >
+                          <i className="fas fa-edit"></i>
+                        </Link>
+                        <button className="text-blue-400 hover:text-blue-300 p-2">
+                          <i className="fas fa-eye"></i>
+                        </button>
+                        <button
+                          onClick={async () =>
+                            await deleteScreenSolution(solution._id)
+                          }
+                          className="text-red-400 hover:text-red-300 p-2"
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
 
                 {/* <!-- Glamour Cosmetics --> */}
-                <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
+                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
                   <td className="py-4 px-4">
                     <div className="flex items-center">
                       <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500 mr-3">
@@ -183,10 +235,10 @@ export default function page() {
                       </button>
                     </div>
                   </td>
-                </tr>
+                </tr> */}
 
                 {/* <!-- Pure Skin --> */}
-                <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
+                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
                   <td className="py-4 px-4">
                     <div className="flex items-center">
                       <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500 mr-3">
@@ -229,7 +281,7 @@ export default function page() {
                       </button>
                     </div>
                   </td>
-                </tr>
+                </tr> */}
               </tbody>
             </table>
           </div>

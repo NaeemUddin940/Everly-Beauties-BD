@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
-const tagSchema = new mongoose.Schema(
+const screenSolutionSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Brand name is required"],
+      required: true,
       trim: true,
       unique: true,
     },
-
+    image: { type: String },
     slug: {
       type: String,
       required: true,
@@ -17,19 +17,19 @@ const tagSchema = new mongoose.Schema(
       trim: true,
     },
 
+    description: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
-    },
-
-    type: {
-      type: String,
-      enum: ["standard", "featured"],
-      default: "standard",
     },
   },
   { timestamps: true }
 );
 
-const Tag = mongoose.model("Tag", tagSchema);
-export default Tag;
+const ScreenSolution = mongoose.model("ScreenSolutions", screenSolutionSchema);
+export default ScreenSolution;

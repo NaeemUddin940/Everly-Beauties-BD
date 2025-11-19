@@ -6,6 +6,7 @@ import brandRoute from "./routes/brand.route.js";
 import campaignRoute from "./routes/campaign.route.js";
 import categoryRoute from "./routes/category.route.js";
 import heroSliderRoute from "./routes/heroslider.route.js";
+import screenSolutionRoute from "./routes/screenSolution.route.js";
 import tagRoute from "./routes/tag.route.js";
 import userRoute from "./routes/user.route.js";
 
@@ -37,6 +38,7 @@ app.use("/api/admin/heroslider", heroSliderRoute);
 app.use("/api/offers/campaign", campaignRoute);
 app.use("/api/brand", brandRoute);
 app.use("/api/tag", tagRoute);
+app.use("/api/screensolution", screenSolutionRoute);
 
 // Server is Running
 app.listen(port, () => {

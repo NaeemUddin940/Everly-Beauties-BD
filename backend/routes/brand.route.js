@@ -3,6 +3,7 @@ import {
   createBrand,
   deleteBrand,
   getAllBrands,
+  getSingleBrand,
   updateBrand,
 } from "../controllers/brand.controller.js";
 import { uploadTo } from "../middlewares/fileUpload.js";
@@ -17,6 +18,8 @@ brandRoute.post(
 );
 
 brandRoute.get("/get", getAllBrands);
+
+brandRoute.get("/get-single-brand/:id", getSingleBrand);
 
 brandRoute.delete("/delete/:id", deleteBrand);
 
