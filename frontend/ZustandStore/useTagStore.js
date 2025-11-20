@@ -20,16 +20,17 @@ export const useTagStore = create((set, get) => ({
     }
   },
 
-  getAllTags: async () => {
+  getAllTags: async (page = 1, limit = 5) => {
     try {
-      const res = await axiosInstance.get("/tag/get");
+      const res = await axiosInstance.get(
+        `/tag/get?page=${page}&limit=${limit}`
+      );
 
       if (res.data.success) {
         set({ allTags: res.data });
       }
     } catch (error) {
       toast.error(error.response.data.message);
-      console.error("Create Tag Error:", error);
     }
   },
 

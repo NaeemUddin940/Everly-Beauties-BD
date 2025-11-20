@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const tagSchema = new mongoose.Schema(
   {
@@ -30,6 +31,7 @@ const tagSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+tagSchema.plugin(mongoosePaginate);
 
 const Tag = mongoose.model("Tag", tagSchema);
 export default Tag;

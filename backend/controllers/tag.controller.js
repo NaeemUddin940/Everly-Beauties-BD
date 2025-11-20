@@ -108,25 +108,46 @@ export const deleteTag = async (req, res) => {
 
 export const getAllTags = async (req, res) => {
   try {
-    const allTags = await Tag.find();
-    if (allTags.length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "Tag is Not Found.",
-      });
-    }
-    res.status(201).json({
+    const { page = 1, limit = 10, search = "" } = req.query;
+
+    // 🔍 Optional Search Filter
+    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+
+    // 📌 Pagination options
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sort: { createdAt: -1 },
+      lean: true,
+    };
+
+    // 📌 Paginate
+    const data = await Tag.paginate(query, options);
+
+    // 🔢 Active tags count (only on this page or all)
+    const allTags = await Tag.find(); // total count (not paginated)
+
+    return res.status(200).json({
       success: true,
+      message: "Successfully fetched tags",
+      pagination: {
+        totalDocs: data.totalDocs,
+        totalPages: data.totalPages,
+        currentPage: data.page,
+        limit: data.limit,
+        hasNextPage: data.hasNextPage,
+        hasPrevPage: data.hasPrevPage,
+        nextPage: data.nextPage,
+        prevPage: data.prevPage,
+      },
       totalTags: allTags.length,
       activeTags: allTags.filter((tag) => tag.isActive).length,
-      allTags,
-      message: "Successfull to Get All Tags",
+      tags: data.docs, // paginated tags
     });
   } catch (error) {
-    // Handle errors
     res.status(500).json({
       success: false,
-      message: error.message || "Internal Server Error to Get All Tags!",
+      message: error.message || "Internal Server Error While Getting Tags!",
     });
   }
 };
