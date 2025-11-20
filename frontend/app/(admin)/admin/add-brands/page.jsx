@@ -1,13 +1,16 @@
 "use client";
+import createSlug from "@/app/utils/SlugGenerator";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 /* eslint-disable react-hooks/rules-of-hooks */
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function page() {
   const [selectedFile, setSelectedFile] = useState(null);
   const { createBrand } = useBrandStore();
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
   const { register, handleSubmit, setValue, reset } = useForm({
     defaultValues: {
       isPremium: false,
@@ -24,11 +27,18 @@ export default function page() {
     }
   };
 
+  useEffect(() => {
+    const newSlug = createSlug(name);
+    setSlug(newSlug);
+    setValue("slug", newSlug); // update react-hook-form value
+  }, [name, setValue]);
+
   async function onSubmit(data) {
     console.log(data);
     await createBrand(data);
 
     reset();
+    setSlug("")
     setSelectedFile("");
   }
 
@@ -77,6 +87,7 @@ export default function page() {
                   <input
                     type="text"
                     {...register("name")}
+                    onChange={(e) => setName(e.target.value)}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Enter brand name"
                   />
@@ -88,6 +99,8 @@ export default function page() {
                   <input
                     type="text"
                     {...register("slug")}
+                    value={slug.toLocaleLowerCase()}
+                    onChange={(e) => setSlug(e.target.value)}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="brand-slug"
                   />

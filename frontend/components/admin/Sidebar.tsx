@@ -1,7 +1,9 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { BiCategory } from "react-icons/bi";
 import {
   FaBoxOpen,
@@ -10,15 +12,12 @@ import {
   FaCopyright,
   FaHome,
   FaImages,
-  FaPlusCircle,
   FaShoppingCart,
   FaSpa,
   FaTags,
   FaUsers,
   FaUserShield,
 } from "react-icons/fa";
-import { ImPriceTags } from "react-icons/im";
-import { TbCategoryPlus } from "react-icons/tb";
 
 const sidebarMenu = [
   {
@@ -27,25 +26,37 @@ const sidebarMenu = [
       { name: "Dashboard", href: "/admin/dashboard", icon: FaChartPie },
       { name: "Hero Slider", href: "/admin/hero-slider", icon: FaImages },
       { name: "Products", href: "/admin/products", icon: FaBoxOpen },
-      { name: "Categories", href: "/admin/categories", icon: BiCategory },
       {
-        name: "Add Categories",
-        href: "/admin/add-categories",
-        icon: TbCategoryPlus,
+        name: "Categories",
+        icon: BiCategory,
+        subItems: [
+          { name: "All Categories", href: "/admin/categories" },
+          { name: "Add Category", href: "/admin/add-categories" },
+        ],
       },
-      { name: "Add Tags", href: "/admin/add-tags", icon: ImPriceTags },
-      { name: "Tags", href: "/admin/tags", icon: FaTags },
-      { name: "Brands", href: "/admin/brands", icon: FaCopyright },
-      { name: "Add Brands", href: "/admin/add-brands", icon: FaCopyright },
+      {
+        name: "Tags",
+        icon: FaTags,
+        subItems: [
+          { name: "All Tags", href: "/admin/tags" },
+          { name: "Add Tag", href: "/admin/add-tags" },
+        ],
+      },
+      {
+        name: "Brands",
+        icon: FaCopyright,
+        subItems: [
+          { name: "All Brands", href: "/admin/brands" },
+          { name: "Add Brand", href: "/admin/add-brands" },
+        ],
+      },
       {
         name: "Screen Solutions",
-        href: "/admin/screen-solutions",
         icon: FaSpa,
-      },
-      {
-        name: "Add Screen Solution",
-        href: "/admin/add-screen-solutions",
-        icon: FaPlusCircle,
+        subItems: [
+          { name: "All Solutions", href: "/admin/screen-solutions" },
+          { name: "Add Solution", href: "/admin/add-screen-solutions" },
+        ],
       },
     ],
   },
@@ -70,6 +81,15 @@ export default function Sidebar() {
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href;
 
+  const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
+
+  const toggleMenu = (name: string) => {
+    setOpenMenus((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
+
   return (
     <div className="w-64 bg-gray-900 border-r border-gray-800 h-screen fixed left-0 top-0 z-10 flex flex-col">
       {/* Header */}
@@ -90,8 +110,65 @@ export default function Sidebar() {
                 {section.section}
               </p>
             </div>
+
             {section.items.map((item) => {
               const Icon = item.icon;
+
+              if (item.subItems) {
+                const isOpen = openMenus[item.name] || false;
+                return (
+                  <div key={item.name} className="mb-1">
+                    {/* Menu Header */}
+                    <button
+                      onClick={() => toggleMenu(item.name)}
+                      className={`flex items-center cursor-pointer justify-between px-6 py-3 w-full text-gray-300 hover:text-white transition-all duration-300 font-medium ${
+                        Object.values(item.subItems).some((sub) =>
+                          isActive(sub.href)
+                        )
+                          ? "bg-gray-800 text-pink-500 rounded-r-md"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <Icon className="w-5 h-5 mr-3" />
+                        {item.name}
+                      </div>
+                      <i
+                        className={`fas fa-chevron-${
+                          isOpen ? "down" : "right"
+                        } text-gray-400`}
+                      ></i>
+                    </button>
+
+                    {/* Sub Items with animation */}
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="flex flex-col ml-10 cursor-pointer overflow-hidden"
+                        >
+                          {item.subItems.map((sub) => (
+                            <Link
+                              key={sub.href}
+                              href={sub.href}
+                              className={`px-4 py-2 text-gray-400 text-sm hover:text-white hover:bg-gray-800 rounded-md transition-all duration-300 ${
+                                isActive(sub.href)
+                                  ? "bg-gray-800 text-pink-500 font-medium"
+                                  : ""
+                              }`}
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+
               return (
                 <Link
                   key={item.href}
@@ -112,9 +189,9 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer / Profile */}
-      <div className="p-4 border-t border-gray-800 flex-shrink-0">
+      <div className="p-4 border-t border-gray-800 shrink-0">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold">
+          <div className="w-10 h-10 rounded-full bg-linear-to-r from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold">
             A
           </div>
           <div className="ml-3">

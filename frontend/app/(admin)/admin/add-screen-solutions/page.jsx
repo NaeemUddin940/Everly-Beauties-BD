@@ -1,12 +1,15 @@
 "use client";
 
+import createSlug from "@/app/utils/SlugGenerator";
 import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function Page() {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
   const { register, handleSubmit, reset, setValue } = useForm();
   const { createScreenSolution } = useScreenSolutionStore();
 
@@ -18,11 +21,20 @@ export default function Page() {
       setValue("image", file);
     }
   };
+
+  useEffect(() => {
+    const newSlug = createSlug(name);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSlug(newSlug);
+    setValue("slug", newSlug); // update react-hook-form value
+  }, [name, setValue]);
+
   const onSubmit = async (data) => {
     console.log("Final Form Data:", data);
     await createScreenSolution(data);
     reset();
     setSelectedFile("");
+    setSlug("");
   };
 
   return (
@@ -78,6 +90,7 @@ export default function Page() {
                     <input
                       {...register("name", { required: true })}
                       type="text"
+                      onChange={(e) => setName(e.target.value)}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="Enter solution name"
                     />
@@ -91,6 +104,8 @@ export default function Page() {
                     <input
                       {...register("slug")}
                       type="text"
+                      value={slug.toLocaleLowerCase()}
+                      onChange={(e) => setSlug(e.target.value)}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="solution-slug"
                     />
