@@ -4,14 +4,15 @@ import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function page() {
+  const [page, setPage] = useState(1);
   const { getAllBrands, allBrands, deleteBrand } = useBrandStore();
   useEffect(() => {
-    getAllBrands();
-  }, [getAllBrands]);
-  console.log(allBrands);
+    getAllBrands(page);
+  }, [getAllBrands, page]);
+  
   return (
     <div>
       <div className="flex-1 p-2">
@@ -103,7 +104,7 @@ export default function page() {
         {/* <!-- Brands Table View --> */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <h2 className="text-xl font-bold text-white mb-6">Brands List</h2>
-          {allBrands?.allBrands?.length === 0 ? (
+          {allBrands?.brands?.length === 0 ? (
             <div className="text-center text-gray-400 py-4">
               Category Not Found
             </div>
@@ -123,7 +124,7 @@ export default function page() {
                 <tbody>
                   {/* <!-- Luxe Beauty --> */}
 
-                  {allBrands?.allBrands?.map((brand) => (
+                  {allBrands?.brands?.map((brand) => (
                     <tr
                       key={brand._id}
                       className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
@@ -215,21 +216,48 @@ export default function page() {
 
           {/* <!-- Pagination --> */}
           <div className="flex justify-between items-center mt-6">
-            <p className="text-gray-400">Showing 1 to 8 of 18 brands</p>
-            <div className="flex space-x-2">
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+            <p className="text-gray-400">
+              Showing {allBrands?.pagination?.currentPage} to{" "}
+              {allBrands?.pagination?.totalPages} of{" "}
+              {allBrands?.pagination?.totalDocs} tags
+            </p>
+            <div className="flex items-center space-x-2">
+              {/* Prev Button */}
+              <button
+                disabled={!allBrands?.pagination?.hasPrevPage}
+                onClick={() => setPage(allBrands.pagination?.prevPage)}
+                className=" bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800 disabled:cursor-not-allowed  disabled:opacity-30 rounded-lg transition-all duration-300 w-8 h-8"
+              >
                 <i className="fas fa-chevron-left"></i>
               </button>
-              <button className="bg-rose-gold text-white p-2 rounded-lg w-10">
-                1
-              </button>
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
-                2
-              </button>
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
-                3
-              </button>
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+
+              {/* Page Numbers */}
+              {[...Array(allBrands?.pagination?.totalPages)].map((_, index) => {
+                const pageNumber = index + 1;
+                const isActive =
+                  pageNumber === allBrands?.pagination?.currentPage;
+
+                return (
+                  <button
+                    key={pageNumber}
+                    onClick={() => setPage(pageNumber)}
+                    className={`p-2 rounded-lg w-10 transition-all duration-300 cursor-pointer ${
+                      isActive
+                        ? "bg-rose-gold text-white"
+                        : "bg-gray-800 hover:bg-gray-700"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+
+              {/* Next Button */}
+              <button
+                disabled={!allBrands?.pagination?.hasNextPage}
+                onClick={() => setPage(allBrands?.pagination?.nextPage)}
+                className=" bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800  disabled:cursor-not-allowed disabled:opacity-30 w-8 h-8 rounded-lg transition-all duration-300"
+              >
                 <i className="fas fa-chevron-right"></i>
               </button>
             </div>

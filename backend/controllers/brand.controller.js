@@ -72,6 +72,22 @@ export const createBrand = async (req, res) => {
 
 export const getAllBrands = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+
+    // 🔍 Optional Search Filter
+    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+
+    // 📌 Pagination options
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sort: { createdAt: -1 },
+      lean: true,
+    };
+
+    // 📌 Paginate
+    const data = await Brand.paginate(query, options);
+
     const allBrands = await Brand.find().sort({ createdAt: -1 });
     const activeBrands = allBrands.filter((brand) => brand.isActive).length;
     const premiumBrands = allBrands.filter((brand) => brand.isPremium).length;
@@ -84,6 +100,17 @@ export const getAllBrands = async (req, res) => {
       premiumBrands,
       featuredBrands,
       allBrands,
+      pagination: {
+        totalDocs: data.totalDocs,
+        totalPages: data.totalPages,
+        currentPage: data.page,
+        limit: data.limit,
+        hasNextPage: data.hasNextPage,
+        hasPrevPage: data.hasPrevPage,
+        nextPage: data.nextPage,
+        prevPage: data.prevPage,
+      },
+      brands: data.docs,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

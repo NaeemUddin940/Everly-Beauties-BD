@@ -23,9 +23,11 @@ export const useBrandStore = create((set, get) => ({
     }
   },
 
-  getAllBrands: async () => {
+  getAllBrands: async (page = 1, limit = 1) => {
     try {
-      const res = await axiosInstance.get("/brand/get");
+      const res = await axiosInstance.get(
+        `/brand/get?page=${page}&limit=${limit}`
+      );
 
       if (res.data.success) {
         set({ allBrands: res.data });
