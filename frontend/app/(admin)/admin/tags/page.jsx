@@ -103,14 +103,12 @@ export default function page() {
               <thead>
                 <tr className="border-b border-gray-700">
                   <th className="py-3 px-4 text-left">
-                    <input
-                      type="checkbox"
-                      className="custom-checkbox"
-                    />
+                    <input type="checkbox" className="custom-checkbox" />
                   </th>
                   <th className="py-3 px-4 text-left">Tag</th>
                   <th className="py-3 px-4 text-left">Products</th>
                   <th className="py-3 px-4 text-left">Status</th>
+                  <th className="py-3 px-4 text-left">Type</th>
                   <th className="py-3 px-4 text-left">Actions</th>
                 </tr>
               </thead>
@@ -150,7 +148,17 @@ export default function page() {
                         {tag.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
-
+                    <td className="py-4 px-4">
+                      {tag.type === "featured" ? (
+                        <span className="inline-block px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded-full">
+                          Featured
+                        </span>
+                      ) : (
+                        <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
+                          Standard
+                        </span>
+                      )}
+                    </td>
                     <td className="py-4 px-4">
                       <div className="flex space-x-2">
                         <Link
