@@ -2,35 +2,65 @@
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 /* eslint-disable react-hooks/rules-of-hooks */
 import Image from "next/image";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function page() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const { createBrand } = useBrandStore();
+  const { id } = useParams();
+
+  const [localFile, setLocalFile] = useState(null); // User selected file
+  const [serverFile, setServerFile] = useState(null); // Server image
+  const { updateBrand, singleBrand, getSingleBrand } = useBrandStore();
   const { register, handleSubmit, setValue, reset } = useForm({
     defaultValues: {
-      isPremium: false,
-      isFeatured: false,
-      isActive: true,
+      name: singleBrand?.name || "",
+      slug: singleBrand?.slug || "",
+      description: singleBrand?.description || "",
+      isPremium: singleBrand?.isPremium || false,
+      isFeatured: singleBrand?.isFeatured || false,
+      isActive: singleBrand?.isActive || true,
+      image: null,
     },
   });
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
 
-    if (file) {
-      setSelectedFile(URL.createObjectURL(file));
-      setValue("image", file);
-    }
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLocalFile(URL.createObjectURL(file));
+    setValue("image", file);
   };
 
-  async function onSubmit(data) {
-    console.log(data);
-    await createBrand(data);
+  useEffect(() => {
+    getSingleBrand(id);
+  }, [getSingleBrand, id]);
 
+  useEffect(() => {
+    if (!singleBrand) return;
+    reset({
+      name: singleBrand?.name || "",
+      slug: singleBrand?.slug || "",
+      description: singleBrand?.description || "",
+      isPremium: singleBrand?.isPremium || false,
+      isFeatured: singleBrand?.isFeatured || false,
+      isActive: singleBrand?.isActive || true,
+      image: null,
+    });
+
+    setServerFile(singleBrand?.image || null);
+    setLocalFile(null);
+  }, [singleBrand, id, reset]);
+
+  async function onSubmit(data) {
+    
+    await updateBrand(data, id);
+
+    setLocalFile(null);
+    setServerFile(singleBrand?.image || null);
     reset();
-    setSelectedFile("");
   }
+
+  console.log(singleBrand?.name);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -46,7 +76,7 @@ export default function page() {
           <div className="flex items-center space-x-4">
             <button
               type="reset"
-              onClick={() => setSelectedFile("")}
+              onClick={() => reset()}
               className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
               <i className="fas fa-times mr-2"></i> Cancel
@@ -192,7 +222,7 @@ export default function page() {
               >
                 Brand Image
                 <div
-                  className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300"
+                  className="image-upload-area rounded-xl p-4 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300"
                   onDrop={(e) => {
                     e.preventDefault();
                     const file = e.dataTransfer.files[0];
@@ -203,13 +233,20 @@ export default function page() {
                   }}
                   onDragOver={(e) => e.preventDefault()}
                 >
-                  {selectedFile ? (
+                  {localFile || serverFile ? (
                     <Image
-                      src={selectedFile}
-                      alt="brandImage"
-                      height={296}
-                      width={296}
-                      className="object-cover w-full rounded-xl"
+                      src={
+                        localFile
+                          ? localFile
+                          : serverFile
+                          ? `http://localhost:8080${serverFile}`
+                          : "/placeholder.png"
+                      }
+                      alt="category image"
+                      width={400}
+                      height={400}
+                      className="object-cover h-[300px] w-full rounded-md"
+                      unoptimized
                     />
                   ) : (
                     <>
@@ -255,7 +292,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       {...register("isActive")}
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
+                      className="custom-checkbox"
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Active brand
@@ -265,7 +302,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       {...register("isFeatured")}
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
+                      className="custom-checkbox"
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Featured brand
@@ -275,7 +312,7 @@ export default function page() {
                     <input
                       type="checkbox"
                       {...register("isPremium")}
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
+                      className="custom-checkbox"
                     />
                     <span className="ml-2 text-sm text-gray-400">
                       Premium Brands
