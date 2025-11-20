@@ -1,22 +1,37 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
+import createSlug from "@/app/utils/SlugGenerator";
 import { useTagStore } from "@/ZustandStore/useTagStore";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function Page() {
   const { createTag } = useTagStore();
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
 
   // React Hook Form
   const {
     register,
     handleSubmit,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm();
+
+  useEffect(() => {
+    const newSlug = createSlug(name);
+    setSlug(newSlug);
+    setValue("slug", newSlug); // update react-hook-form value
+  }, [name, setValue]);
 
   // Submit Handler
   const onSubmit = async (data) => {
     console.log("Final Form Data:", data);
     await createTag(data);
+    reset();
+    setSlug('')
   };
 
   return (
@@ -70,6 +85,7 @@ export default function Page() {
                     <input
                       {...register("name", { required: true })}
                       type="text"
+                      onChange={(e) => setName(e.target.value)}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="Enter tag name"
                     />
@@ -88,6 +104,8 @@ export default function Page() {
                     <input
                       {...register("slug")}
                       type="text"
+                      value={slug.toLocaleLowerCase()}
+                      onChange={(e) => setSlug(e.target.value)}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full"
                       placeholder="tag-slug"
                     />
