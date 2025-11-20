@@ -34,7 +34,7 @@ export const useScreenSolutionStore = create((set, get) => ({
           },
         }
       );
-console.log(res);
+      console.log(res);
       if (res.data.success) {
         toast.success(res.data.message);
         set({ allScreenSolution: res.data.updateScreenSolution });
@@ -45,10 +45,12 @@ console.log(res);
     }
   },
 
-  getAllScreenSolution: async () => {
+  getAllScreenSolution: async (page, limit = 5) => {
     try {
-      const res = await axiosInstance.get("/screenSolution/get");
-
+      const res = await axiosInstance.get(
+        `/screenSolution/get?page=${page}&limit=${limit}`
+      );
+      console.log(res);
       if (res.data.success) {
         set({ allScreenSolution: res.data });
       }

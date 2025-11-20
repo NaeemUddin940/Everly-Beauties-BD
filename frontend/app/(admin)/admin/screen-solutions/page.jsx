@@ -3,17 +3,20 @@
 import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function page() {
+  const [page, setPage] = useState(1);
+  // Default Brand List Show
+  const [limit, setLimit] = useState(5);
   const { getAllScreenSolution, deleteScreenSolution, allScreenSolution } =
     useScreenSolutionStore();
 
   useEffect(() => {
-    getAllScreenSolution();
-  }, [getAllScreenSolution]);
+    getAllScreenSolution(page, limit);
+  }, [getAllScreenSolution, page, limit]);
 
   return (
     <div>
@@ -122,7 +125,7 @@ export default function page() {
               </thead>
               <tbody>
                 {/* <!-- Luxe Beauty --> */}
-                {allScreenSolution?.allScreenSolution?.map((solution) => (
+                {allScreenSolution?.screenSolutions?.map((solution) => (
                   <tr
                     key={solution?._id}
                     className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
@@ -290,21 +293,60 @@ export default function page() {
 
           {/* <!-- Pagination --> */}
           <div className="flex justify-between items-center mt-6">
-            <p className="text-gray-400">Showing 1 to 8 of 18 brands</p>
-            <div className="flex space-x-2">
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+            <div className="flex gap-5 items-center">
+              <p className="text-gray-400 whitespace-nowrap">
+                Showing {allScreenSolution?.pagination?.currentPage} to{" "}
+                {allScreenSolution?.pagination?.totalPages} of{" "}
+                {allScreenSolution?.pagination?.totalDocs} tags
+              </p>
+              <select
+                onChange={(e) => setLimit(e.target.value)}
+                className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 w-full"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              {/* Prev Button */}
+              <button
+                disabled={!allScreenSolution?.pagination?.hasPrevPage}
+                onClick={() => setPage(allScreenSolution.pagination?.prevPage)}
+                className=" bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800 disabled:cursor-not-allowed  disabled:opacity-30 rounded-lg transition-all duration-300 w-8 h-8"
+              >
                 <i className="fas fa-chevron-left"></i>
               </button>
-              <button className="bg-rose-gold text-white p-2 rounded-lg w-10">
-                1
-              </button>
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
-                2
-              </button>
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
-                3
-              </button>
-              <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+
+              {/* Page Numbers */}
+              {[...Array(allScreenSolution?.pagination?.totalPages)].map(
+                (_, index) => {
+                  const pageNumber = index + 1;
+                  const isActive =
+                    pageNumber === allScreenSolution?.pagination?.currentPage;
+
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setPage(pageNumber)}
+                      className={`p-2 rounded-lg w-10 transition-all duration-300 cursor-pointer ${
+                        isActive
+                          ? "bg-rose-gold text-white"
+                          : "bg-gray-800 hover:bg-gray-700"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                }
+              )}
+
+              {/* Next Button */}
+              <button
+                disabled={!allScreenSolution?.pagination?.hasNextPage}
+                onClick={() => setPage(allScreenSolution?.pagination?.nextPage)}
+                className=" bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800  disabled:cursor-not-allowed disabled:opacity-30 w-8 h-8 rounded-lg transition-all duration-300"
+              >
                 <i className="fas fa-chevron-right"></i>
               </button>
             </div>

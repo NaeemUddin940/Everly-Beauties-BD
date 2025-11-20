@@ -70,8 +70,24 @@ export const createScreenSolution = async (req, res) => {
   }
 };
 
-export const getAllScreenSolutions = async (_, res) => {
+export const getAllScreenSolutions = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+
+    // 🔍 Optional Search Filter
+    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+
+    // 📌 Pagination options
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sort: { createdAt: -1 },
+      lean: true,
+    };
+
+    // 📌 Paginate
+    const data = await ScreenSolution.paginate(query, options);
+
     const allScreenSolution = await ScreenSolution.find().sort({
       createdAt: -1,
     });
@@ -84,6 +100,17 @@ export const getAllScreenSolutions = async (_, res) => {
       totalScreenSolutions: allScreenSolution.length,
       activeScreenSolution,
       allScreenSolution,
+      pagination: {
+        totalDocs: data.totalDocs,
+        totalPages: data.totalPages,
+        currentPage: data.page,
+        limit: data.limit,
+        hasNextPage: data.hasNextPage,
+        hasPrevPage: data.hasPrevPage,
+        nextPage: data.nextPage,
+        prevPage: data.prevPage,
+      },
+      screenSolutions: data.docs,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

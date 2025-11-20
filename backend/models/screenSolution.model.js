@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const screenSolutionSchema = new mongoose.Schema(
   {
@@ -30,6 +31,8 @@ const screenSolutionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+screenSolutionSchema.plugin(mongoosePaginate);
 
 const ScreenSolution = mongoose.model("ScreenSolutions", screenSolutionSchema);
 export default ScreenSolution;
