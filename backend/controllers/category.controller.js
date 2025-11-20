@@ -9,59 +9,73 @@ import {
 //✅ Step 01 : Main Category Create And Upload Category Image Controller
 export const createMainCategory = async (req, res) => {
   try {
-    //  Extract data from req.body, req.params, or req.query
-    const { title, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
+    const { name, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
       req.body;
 
-    if (!req.file) {
-      return res.status(403).json({
+    const uploadedFile = req.file ? req.file.filename : null;
+
+    // ❌ Required fields
+    if (!name || !slug) {
+      if (uploadedFile) {
+        fs.unlinkSync(path.join("uploads/categoryImage/", uploadedFile));
+      }
+      return res.status(400).json({
         success: false,
-        message: "Please Select A Category Image First.",
+        message: "Main Category name and slug are required.",
       });
     }
-    const mainCategories = await MainCategory.find();
-    for (let i = 0; i < mainCategories.length; i++) {
-      if (mainCategories[i].title === title) {
-        return res.status(400).json({
-          message: `This ${title} Category Already Exist in Databse.`,
-          error: true,
-          success: false,
-        });
-      }
-      if (mainCategories[i].slug === slug) {
-        return res.status(400).json({
-          message: `Error for Duplicating This ${slug} slug.`,
-          error: true,
-          success: false,
-        });
-      }
+
+    // ❌ Image required
+    if (!uploadedFile) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload a Category image.",
+      });
     }
 
-    // Create Main Category and Save it on MongoDb
+    // ❌ Duplicate Check (optimized query)
+    const existing = await MainCategory.findOne({
+      $or: [{ name }, { slug }],
+    });
 
-    const categories = await MainCategory.create({
-      title,
+    if (existing) {
+      // Delete uploaded image if exists
+      fs.unlinkSync(path.join("uploads/categoryImage/", uploadedFile));
+
+      return res.status(400).json({
+        success: false,
+        error: true,
+        message:
+          existing.name === name
+            ? `The category name "${name}" already exists.`
+            : `The slug "${slug}" is already in use.`,
+      });
+    }
+
+    // Create Main Category
+    const newCategory = await MainCategory.create({
+      name,
       slug,
-      image: `/uploads/categoryImage/${req.file.filename}`,
+      image: `/uploads/categoryImage/${uploadedFile}`,
       isActive,
       isFeaturedOnHomePage,
       showOnNavigation,
     });
 
-    // Success Status and Message
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       error: false,
-      mainCategory: categories,
-      message: `Successfull to Create ${title} Main Category`,
+      mainCategory: newCategory,
+      message: `Successfully created "${name}" main category.`,
     });
   } catch (error) {
-    // Handle errors
-    res.status(500).json({
+    // server crash prevent
+    console.error(error);
+
+    return res.status(500).json({
       success: false,
       error: true,
-      message:
-        error.message || "Internal Server Error to Create Main Category!",
+      message: error.message || "Internal Server Error!",
     });
   }
 };
@@ -69,9 +83,8 @@ export const createMainCategory = async (req, res) => {
 //✅ Step 02 : Sub Category Create Controller
 export const createSubCategory = async (req, res) => {
   try {
-    //  Extract data from req.body, req.params, or req.query
     const {
-      title,
+      name,
       slug,
       mainCategoryId,
       isActive,
@@ -79,34 +92,61 @@ export const createSubCategory = async (req, res) => {
       isFeaturedOnHomePage,
     } = req.body;
 
-    if (!req.file) {
-      return res.status(403).json({
+    const uploadedFile = req.file ? req.file.filename : null;
+
+    // ❌ Required validation
+    if (!name || !slug || !mainCategoryId) {
+      if (uploadedFile) {
+        fs.unlinkSync(path.join("uploads/subCategoryImage/", uploadedFile));
+      }
+
+      return res.status(400).json({
         success: false,
-        message: "Please Select A Category Image First.",
+        message: "name, slug & mainCategoryId are required.",
       });
     }
 
-    // Find Category By ID if not found trow error
-    const category = await MainCategory.findById(mainCategoryId);
-    if (!category)
-      return res.status(404).json({ message: "Main category not found" });
+    // ❌ Image required
+    if (!uploadedFile) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload a Sub Category image.",
+      });
+    }
 
-    const isExistSubCategories = await SubCategory.find();
-    for (let i = 0; i < isExistSubCategories.length; i++) {
-      if (isExistSubCategories[i].title === title) {
-        return res.status(400).json({
-          message: `This ${title} Category Exist in Databse.`,
-          error: true,
-          success: false,
-        });
-      }
+    // ❌ Check if main category exists
+    const category = await MainCategory.findById(mainCategoryId);
+    if (!category) {
+      fs.unlinkSync(path.join("uploads/subCategoryImage/", uploadedFile));
+
+      return res.status(404).json({
+        success: false,
+        message: "Main category not found.",
+      });
+    }
+
+    // ❌ Duplicate Check (optimized)
+    const existing = await SubCategory.findOne({
+      $or: [{ name }, { slug }],
+    });
+
+    if (existing) {
+      fs.unlinkSync(path.join("uploads/subCategoryImage/", uploadedFile));
+
+      return res.status(400).json({
+        success: false,
+        message:
+          existing.name === name
+            ? `The Sub Category "${name}" already exists.`
+            : `The slug "${slug}" already exists.`,
+      });
     }
 
     // Create Sub Category
     const subCategories = await SubCategory.create({
-      title,
+      name,
       slug,
-      image: `/uploads/subCategoryImage/${req.file.filename}`,
+      image: `/uploads/subCategoryImage/${uploadedFile}`,
       mainCategoryId,
       isActive,
       isFeaturedOnHomePage,
@@ -117,14 +157,15 @@ export const createSubCategory = async (req, res) => {
       success: true,
       error: false,
       data: subCategories,
-      message: `Successfull to Create ${title} as a Sub Category`,
+      message: `Successfully created "${name}" as a Sub Category.`,
     });
   } catch (error) {
-    // Handle errors
+    console.error(error);
+
     res.status(500).json({
       success: false,
       error: true,
-      message: error.message || "Internal Server Error to Create Sub-Category!",
+      message: error.message || "Internal Server Error to Create Sub Category!",
     });
   }
 };
@@ -134,7 +175,7 @@ export const createSubCategory = async (req, res) => {
 //   try {
 //     // 1. Extract data from req.body, req.params, or req.query
 //     const {
-//       title,
+//       name,
 //       slug,
 //       subCategoryId,
 //       isActive,
@@ -286,7 +327,7 @@ export const deleteMainCategory = async (req, res) => {
 
     // 2️⃣ Delete image from server
     if (mainCategories.image) {
-      // mainCategories.image: "/uploads/mainCategoriesImage/abc123.jpg"
+      // mainCategories.image: "/uploads/categoryImage/abc123.jpg"
       const filePath = path.join(process.cwd(), mainCategories.image); // full path
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath); // delete file
@@ -294,7 +335,7 @@ export const deleteMainCategory = async (req, res) => {
     }
 
     if (subCategories.image) {
-      // mainCategories.image: "/uploads/mainCategoriesImage/abc123.jpg"
+      // mainCategories.image: "/uploads/categoryImage/abc123.jpg"
       const filePath = path.join(process.cwd(), mainCategories.image); // full path
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath); // delete file
@@ -374,60 +415,113 @@ export const deleteSubCategory = async (req, res) => {
 // };
 
 //✅ Step 8 : Update Main Category Controller
+
 export const updateMainCategory = async (req, res) => {
   try {
-    const { title, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
+    const { name, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
       req.body;
 
-    // 1️⃣ Find existing category
-    const mainCategory = await MainCategory.findById(req.params.id);
-    if (!mainCategory) {
-      return res.status(403).json({
+    if (!name && !slug && isActive === undefined && !req.file) {
+      return res.status(400).json({
         success: false,
-        message: "Cannot Find Main Category!",
+        message: "No update field provided.",
       });
     }
 
-    // 2️⃣ Handle image update
-    if (req.file) {
-      // multer uploaded file
-      // delete old image
-      if (mainCategory.image) {
-        const oldImagePath = path.join(process.cwd(), mainCategory.image);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
-
-      // assign new image path
-      mainCategory.image = `/uploads/mainCategoriesImage/${req.file.filename}`;
+    // 1️⃣ Check if category exists
+    const mainCategory = await MainCategory.findById(req.params.id);
+    if (!mainCategory) {
+      return res.status(404).json({
+        success: false,
+        message: "Main Category not found!",
+      });
     }
 
-    // 3️⃣ Update other fields if provided
-    if (title) mainCategory.title = title;
-    if (slug) mainCategory.slug = slug;
-    if (isActive !== undefined) mainCategory.isActive = isActive;
-    if (showOnNavigation !== undefined)
-      mainCategory.showOnNavigation = showOnNavigation;
-    if (isFeaturedOnHomePage !== undefined)
-      mainCategory.isFeaturedOnHomePage = isFeaturedOnHomePage;
+    const uploadedFile = req.file ? req.file.filename : null;
 
-    // 4️⃣ Save updated category
-    await mainCategory.save();
+    // ❌ Duplicate check (excluding current ID)
+    if (name || slug) {
+      const duplicate = await MainCategory.findOne({
+        _id: { $ne: req.params.id },
+        $or: [{ name }, { slug }],
+      });
 
-    // 5️⃣ Send response
+      if (duplicate) {
+        // Delete uploaded new image (if any)
+        if (uploadedFile) {
+          fs.unlinkSync(path.join("uploads/categoryImage/", uploadedFile));
+        }
+
+        return res.status(400).json({
+          success: false,
+          message:
+            duplicate.name === name
+              ? `The name "${name}" already exists.`
+              : `The slug "${slug}" already exists.`,
+        });
+      }
+    }
+
+    let newImage = mainCategory.image;
+
+    if (uploadedFile) {
+      // Delete old image if exists
+      if (mainCategory.image) {
+        const oldPath = path.join(
+          "uploads/categoryImage/",
+          path.basename(mainCategory.image)
+        );
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+
+      newImage = `/uploads/categoryImage/${uploadedFile}`;
+    }
+    // 3️⃣ Prepare dynamic update object
+    const updateData = {
+      name: name || mainCategory.name,
+      slug: slug || mainCategory.slug,
+      isActive: isActive !== undefined ? isActive : mainCategory.isActive,
+      showOnNavigation:
+        showOnNavigation !== undefined
+          ? showOnNavigation
+          : mainCategory.showOnNavigation,
+      isFeaturedOnHomePage:
+        isFeaturedOnHomePage !== undefined
+          ? isFeaturedOnHomePage
+          : mainCategory.isFeaturedOnHomePage,
+      image: newImage,
+    };
+
+    // 4️⃣ Handle image update
+
+    // 5️⃣ Update category
+    const updated = await MainCategory.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    // 6️⃣ Response
     res.status(200).json({
       success: true,
       error: false,
-      message: `Successfully updated category '${mainCategory.title}'`,
-      mainCategory,
+      message: `Successfully updated Main Category '${updated.name}'`,
+      data: updated,
     });
   } catch (error) {
+    console.error(error);
+
+    // Delete uploaded file on error
+    if (req.file) {
+      const newFile = path.join("uploads/categoryImage/", req.file.filename);
+      if (fs.existsSync(newFile)) fs.unlinkSync(newFile);
+    }
+
     res.status(500).json({
       success: false,
       error: true,
       message:
-        error.message || "Internal Server Error to Update Main Category!",
+        error.message || "Internal Server Error while updating Main Category!",
     });
   }
 };
@@ -467,35 +561,83 @@ export const updateSubCategory = async (req, res) => {
 };
 
 //✅ Step 10 : Update Child Category Controller
-export const updateChildCategory = async (req, res) => {
+// export const updateChildCategory = async (req, res) => {
+//   try {
+//     const { title, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
+//       req.body;
+//     const oldChildCategory = await ChildCategory.findById(req.params.id);
+//     if (!oldChildCategory) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "Cannot Find Child Category!",
+//       });
+//     }
+//     const updateChildCategory = await ChildCategory.findOneAndUpdate(
+//       { _id: req.params.id },
+//       { title, slug, isActive, isFeaturedOnHomePage, showOnNavigation },
+//       { new: true }
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       error: false,
+//       updateChildCategory,
+//       message: `Successfull to Update ${oldChildCategory.title} to ${title} Category`,
+//     });
+//   } catch (error) {
+//     // Handle errors
+//     res.status(500).json({
+//       success: false,
+//       error: true,
+//       message: error.message || "Internal Server Error to Update Sub Category!",
+//     });
+//   }
+// };
+
+export const getMainSingleCategory = async (req, res) => {
   try {
-    const { title, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
-      req.body;
-    const oldChildCategory = await ChildCategory.findById(req.params.id);
-    if (!oldChildCategory) {
+    if (!req.params.id) {
       return res.status(403).json({
         success: false,
-        message: "Cannot Find Child Category!",
+        message: "Something Went Wrong!",
       });
     }
-    const updateChildCategory = await ChildCategory.findOneAndUpdate(
-      { _id: req.params.id },
-      { title, slug, isActive, isFeaturedOnHomePage, showOnNavigation },
-      { new: true }
-    );
 
-    res.status(200).json({
+    const mainSingleCategory = await MainCategory.findById(req.params.id);
+    res.status(201).json({
       success: true,
-      error: false,
-      updateChildCategory,
-      message: `Successfull to Update ${oldChildCategory.title} to ${title} Category`,
+      mainSingleCategory,
+      message: "Successfull to Get Single Solution",
     });
   } catch (error) {
     // Handle errors
     res.status(500).json({
       success: false,
-      error: true,
-      message: error.message || "Internal Server Error to Update Sub Category!",
+      message: error.message || "Internal Server Error to Get Single Solution!",
+    });
+  }
+};
+
+export const getSubSingleCategory = async (req, res) => {
+  try {
+    if (!req.params.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Something Went Wrong!",
+      });
+    }
+
+    const subSingleCategory = await SubCategory.findById(req.params.id);
+    res.status(201).json({
+      success: true,
+      subSingleCategory,
+      message: "Successfull to Get Single Solution",
+    });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error to Get Single Solution!",
     });
   }
 };

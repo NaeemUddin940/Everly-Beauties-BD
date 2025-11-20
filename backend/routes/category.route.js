@@ -7,7 +7,9 @@ import {
   deleteMainCategory,
   deleteSubCategory,
   getAllCategories,
-  updateChildCategory,
+  getMainSingleCategory,
+  getSubSingleCategory,
+  // updateChildCategory,
   updateMainCategory,
   updateSubCategory,
 } from "../controllers/category.controller.js";
@@ -43,10 +45,15 @@ categoryRoute.delete("/delete-sub-category/:id", deleteSubCategory);
 categoryRoute.put(
   "/update-main-category/:id",
   uploadTo("categoryImage").single("image"),
+  multerErrorHandler,
   updateMainCategory
 );
 
 categoryRoute.put("/update-sub-category/:id", updateSubCategory);
 
-categoryRoute.put("/update-child-category/:id", updateChildCategory);
+// categoryRoute.put("/update-child-category/:id", updateChildCategory);
+
+categoryRoute.get("/single-main-category/:id", getMainSingleCategory);
+
+categoryRoute.get("/single-sub-category/:id", getSubSingleCategory);
 export default categoryRoute;

@@ -124,9 +124,10 @@ export default function Page() {
               Category Not Found
             </div>
           ) : (
-            getAllCategory.allCategories.map((cat) => (
+            getAllCategory?.allCategories?.map((cat) => (
               <div key={cat._id} className="bg-gray-800 rounded-xl">
                 {/* Trigger Area */}
+
                 <div
                   className="p-4 cursor-pointer"
                   onClick={() =>
@@ -151,7 +152,7 @@ export default function Page() {
                       <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
                         <Image
                           src={`http://localhost:8080${cat.image}`}
-                          alt={cat.title}
+                          alt={cat.name}
                           width={100}
                           height={100}
                           className="object-cover h-full w-full rounded-md"
@@ -160,7 +161,7 @@ export default function Page() {
                       </div>
 
                       <div>
-                        <h4 className="font-medium text-white">{cat.title}</h4>
+                        <h4 className="font-medium text-white">{cat.name}</h4>
                         <p className="text-xs text-gray-400">
                           48 products • {cat.subCategories.length || 0}{" "}
                           subcategories
@@ -180,7 +181,7 @@ export default function Page() {
                       </span>
 
                       <Link
-                        href={`/admin/add-categories/${cat._id}`}
+                        href={`/admin/edit-categories/${cat._id}`}
                         className="text-rose-gold hover:text-pink-600 p-2"
                       >
                         <i className="fas fa-edit"></i>
@@ -212,17 +213,27 @@ export default function Page() {
                       className="overflow-hidden"
                     >
                       <div className="nested-category space-y-2 pl-4 pb-4">
-                        {cat.subCategories.map((sub) => (
+                        {cat?.subCategories?.map((sub) => (
                           <div
                             key={sub._id}
                             className="bg-gray-700/50 rounded-lg p-3"
                           >
+                            {
+                              (console.log(
+                                "main",
+                                `http://localhost:8080${cat.image}`
+                              ),
+                              console.log(
+                                "sub",
+                                `http://localhost:8080${sub.image}`
+                              ))
+                            }
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
                                   <Image
                                     src={`http://localhost:8080${sub.image}`}
-                                    alt={cat.title}
+                                    alt={sub.name}
                                     width={100}
                                     height={100}
                                     className="object-cover h-full w-full rounded-md"
@@ -232,7 +243,7 @@ export default function Page() {
 
                                 <div>
                                   <h5 className="font-medium text-white text-sm">
-                                    {sub.title}
+                                    {sub.name}
                                   </h5>
                                   <p className="text-xs text-gray-400">
                                     22 products
@@ -243,7 +254,7 @@ export default function Page() {
                               <div className="flex items-center space-x-2">
                                 <span
                                   className={` ${
-                                    cat.isActive
+                                    sub.isActive
                                       ? "bg-green-500/20 text-green-300"
                                       : "bg-red-500/30 text-red-300"
                                   } text-xs px-2 py-1 rounded-full`}

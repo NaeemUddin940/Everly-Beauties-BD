@@ -5,7 +5,7 @@ import { create } from "zustand";
 // Access other state/actions via get (getState)
 export const useCategoryStore = create((set, get) => ({
   editMainCategory: null,
-  editSubCategory: null,
+  singleMainCategory: null,
   getAllCategory: null,
   isUploading: false,
 
@@ -114,14 +114,21 @@ export const useCategoryStore = create((set, get) => ({
     }
   },
 
-  updateMainCategory: async (id) => {
+  updateMainCategory: async (data, id) => {
     try {
       const res = await axiosInstance.put(
-        `/category/update-main-category/${id}`
+        `/category/update-main-category/${id}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
       if (res.data.success) {
         toast.success(res.data.message);
+        set({ getAllCategory: res.data });
         await get().getCategory();
       }
     } catch (error) {
@@ -142,6 +149,18 @@ export const useCategoryStore = create((set, get) => ({
       }
     } catch (error) {
       toast.error(error.response.data.message);
+      console.error("Failed to Update Sub Category:", error);
+    }
+  },
+
+  getMainSingleCategory: async (id) => {
+    try {
+      const res = await axiosInstance.get(
+        `/category/single-main-category/${id}`
+      );
+
+      set({ singleMainCategory: res.data.mainSingleCategory });
+    } catch (error) {
       console.error("Failed to Update Sub Category:", error);
     }
   },

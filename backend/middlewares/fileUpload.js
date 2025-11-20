@@ -2,7 +2,6 @@ import crypto from "crypto";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
-import { MainCategory } from "../models/category.model.js";
 
 export const uploadTo = (folderName) => {
   if (!folderName) {
@@ -29,16 +28,16 @@ export const uploadTo = (folderName) => {
     },
   });
 
-  // 🛑 IMPORTANT: Prevent upload if title already exists
-  const fileFilter = async (req, file, cb) => {
-    const exists = await MainCategory.findOne({ title: req.body.title });
+  // // 🛑 IMPORTANT: Prevent upload if title already exists
+  // const fileFilter = async (req, file, cb) => {
+  //   const exists = await MainCategory.findOne({ name: req.body.name });
 
-    if (exists) {
-      return cb(new Error(`Category '${req.body.title}' already exists`));
-    }
+  //   if (exists) {
+  //     return cb(new Error(`Category '${req.body.name}' already exists`));
+  //   }
 
-    cb(null, true);
-  };
+  //   cb(null, true);
+  // };
 
-  return multer({ storage, fileFilter });
+  return multer({ storage });
 };

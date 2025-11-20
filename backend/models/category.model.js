@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const mainCategorySchema = new mongoose.Schema(
   {
-    title: {
+    name: {
       type: String,
       required: true,
       trim: true,
@@ -26,7 +26,7 @@ const mainCategorySchema = new mongoose.Schema(
 
 const subCategorySchema = new mongoose.Schema(
   {
-    title: {
+    name: {
       type: String,
       required: true,
       trim: true,

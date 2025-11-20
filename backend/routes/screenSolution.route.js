@@ -15,6 +15,7 @@ screenSolutionRoute.post(
   "/create",
   uploadTo("screenSolutionImage").single("image"),
   multerErrorHandler,
+
   createScreenSolution
 );
 

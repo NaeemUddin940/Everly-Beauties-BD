@@ -91,7 +91,7 @@ export default function Page() {
     reset();
   };
 
-  console.log(serverFile)
+  console.log(serverFile);
 
   return (
     <div className="flex-1 p-2">

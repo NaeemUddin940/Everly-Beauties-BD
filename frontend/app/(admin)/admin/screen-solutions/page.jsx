@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function page() {
   const { getAllScreenSolution, deleteScreenSolution, allScreenSolution } =
     useScreenSolutionStore();
@@ -12,7 +14,7 @@ export default function page() {
   useEffect(() => {
     getAllScreenSolution();
   }, [getAllScreenSolution]);
-  console.log(allScreenSolution?.allScreenSolution);
+
   return (
     <div>
       <div className="flex-1 p-2">
@@ -131,7 +133,7 @@ export default function page() {
                           <Image
                             src={
                               solution?.image
-                                ? `http://localhost:8080${solution.image}`
+                                ? API + solution.image
                                 : "/images.png" // default image from public folder
                             }
                             alt={solution?.name || "Default Image"}
