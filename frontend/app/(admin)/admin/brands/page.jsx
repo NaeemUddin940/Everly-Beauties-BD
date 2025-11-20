@@ -198,9 +198,8 @@ export default function page() {
                             <i className="fas fa-eye"></i>
                           </button>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteBrand(brand._id);
+                            onClick={async () => {
+                              await deleteBrand(brand._id);
                             }}
                             className="text-red-400 hover:text-red-500 cursor-pointer p-2"
                           >

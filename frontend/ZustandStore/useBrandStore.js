@@ -23,7 +23,7 @@ export const useBrandStore = create((set, get) => ({
     }
   },
 
-  getAllBrands: async (page = 1, limit = 1) => {
+  getAllBrands: async (page, limit) => {
     try {
       const res = await axiosInstance.get(
         `/brand/get?page=${page}&limit=${limit}`
@@ -44,11 +44,12 @@ export const useBrandStore = create((set, get) => ({
 
       if (res.data.success) {
         toast.success(res.data.message);
+
         await get().getAllBrands();
         set((state) => ({
           allBrands: {
             ...state.allBrands,
-            allBrands: state.allBrands.allBrands.filter(
+            allBrands: state.allBrands.brands.filter(
               (brand) => brand._id !== id
             ),
           },

@@ -45,7 +45,7 @@ export const useTagStore = create((set, get) => ({
         set((state) => ({
           allTags: {
             ...state.allTags,
-            allTags: state.allTags.allTags.filter((tag) => tag._id !== id),
+            allTags: state.allTags.tags.filter((tag) => tag._id !== id),
           },
         }));
       }
