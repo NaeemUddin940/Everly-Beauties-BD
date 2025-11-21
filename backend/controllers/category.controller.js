@@ -1,10 +1,6 @@
 import fs from "fs";
 import path from "path";
-import {
-  ChildCategory,
-  MainCategory,
-  SubCategory,
-} from "../models/category.model.js";
+import { MainCategory, SubCategory } from "../models/category.model.js";
 
 //✅ Step 01 : Main Category Create And Upload Category Image Controller
 export const createMainCategory = async (req, res) => {
@@ -233,14 +229,29 @@ export const createSubCategory = async (req, res) => {
 // };
 
 // ✅ Step 04 : Finally get all categories
+
 export const getAllCategories = async (req, res) => {
   try {
-    // Fetch Main and Sub Categories
-    const mainCategories = await MainCategory.find().lean();
+    // Query Params → page, limit
+    let { page = 1, limit = 10 } = req.query;
+    page = Number(page);
+    limit = Number(limit);
+
+    // 1️⃣ Apply Pagination on MainCategory
+    const mainPaginated = await MainCategory.paginate(
+      {},
+      {
+        page,
+        limit,
+        lean: true,
+      }
+    );
+
+    // 2️⃣ Fetch all SubCategories (single query)
     const subCategories = await SubCategory.find().lean();
 
-    // Create nested structure (Main → Sub)
-    const allCategories = mainCategories.map((mainCat) => {
+    // 3️⃣ Attach SubCategories to each MainCategory
+    const allCategories = mainPaginated.docs.map((mainCat) => {
       const matchedSubCategory = subCategories.filter(
         (subCat) => String(subCat.mainCategoryId) === String(mainCat._id)
       );
@@ -251,38 +262,41 @@ export const getAllCategories = async (req, res) => {
       };
     });
 
-    if (allCategories.length === 0) {
-      return res.status(404).json({
-        message: "Not Found any Categories.",
-        error: true,
-        success: false,
-      });
-    }
+    // Counts
+    const allMain = await MainCategory.countDocuments();
+    const allSub = await SubCategory.countDocuments();
 
-    let activeMainCategoryCount = 0;
-    let activeSubCategoryCount = 0;
-
-    if (Array.isArray(mainCategories)) {
-      activeMainCategoryCount = mainCategories.filter(
-        (main) => main.isActive === true || main.isActive === "true"
-      ).length;
-      activeSubCategoryCount = subCategories.filter(
-        (sub) => sub.isActive === true || sub.isActive === "true"
-      ).length;
-    }
-
-    const mainCategoriesCount = mainCategories.length;
-    const subCategoriesCount = subCategories.length;
+    const activeMainCategoryCount = await MainCategory.countDocuments({
+      isActive: true,
+    });
+    const activeSubCategoryCount = await SubCategory.countDocuments({
+      isActive: true,
+    });
 
     return res.status(200).json({
       success: true,
       error: false,
-      mainCategoriesCount,
-      subCategoriesCount,
+
+      // Pagination Info
+      pagination: {
+        totalMainCategories: mainPaginated.totalDocs,
+        totalPages: mainPaginated.totalPages,
+        currentPage: mainPaginated.page,
+        limit: mainPaginated.limit,
+        hasNextPage: mainPaginated.hasNextPage,
+        hasPrevPage: mainPaginated.hasPrevPage,
+        nextPage: mainPaginated.nextPage,
+        prevPage: mainPaginated.prevPage,
+      },
+
+      categories: mainPaginated.docs,
+      // Counts
+      mainCategoriesCount: allMain,
+      subCategoriesCount: allSub,
       activeMainCategoryCount,
       activeSubCategoryCount,
       activeCategoryCount: activeMainCategoryCount + activeSubCategoryCount,
-      totalCategories: mainCategoriesCount + subCategoriesCount,
+      totalCategories: allMain + allSub,
       message: "Successfully fetched all categories.",
       allCategories,
     });
@@ -295,7 +309,7 @@ export const getAllCategories = async (req, res) => {
   }
 };
 
-//✅ Step 05 : Delete Main Category And Upload Category Image Controller
+//✅ Step 04 : Delete Main Category And Upload Category Image Controller
 export const deleteMainCategory = async (req, res) => {
   try {
     const allMainCategory = await MainCategory.find();
@@ -313,17 +327,7 @@ export const deleteMainCategory = async (req, res) => {
       mainCategoryId: req.params.id,
     });
 
-    for (let i = 0; i < subCategories.length; i++) {
-      const childCategories = await ChildCategory.find({
-        subCategoryId: subCategories[i]._id,
-      });
-
-      for (let j = 0; j < childCategories.length; j++) {
-        await ChildCategory.findByIdAndDelete(childCategories[j]._id);
-      }
-
-      await SubCategory.findByIdAndDelete(subCategories[i]._id);
-    }
+    await SubCategory.findByIdAndDelete(subCategories._id);
 
     // 2️⃣ Delete image from server
     if (mainCategories.image) {
@@ -362,18 +366,10 @@ export const deleteMainCategory = async (req, res) => {
   }
 };
 
-//✅ Step 06 : Delete Sub Category Controller
+//✅ Step 05 : Delete Sub Category Controller
 export const deleteSubCategory = async (req, res) => {
   try {
     const subCategory = await SubCategory.findById(req.params.id);
-
-    const childCategories = await ChildCategory.find({
-      subCategoryId: req.params.id,
-    });
-
-    for (let j = 0; j < childCategories.length; j++) {
-      await ChildCategory.findByIdAndDelete(childCategories[j]._id);
-    }
 
     await SubCategory.findByIdAndDelete(req.params.id);
 
@@ -392,30 +388,7 @@ export const deleteSubCategory = async (req, res) => {
   }
 };
 
-//✅ Step 7 : Delete Child Category Controller
-// export const deleteChildCategory = async (req, res) => {
-//   try {
-//     const childCategory = await ChildCategory.findById(req.params.id);
-//     await ChildCategory.findByIdAndDelete(req.params.id);
-
-//     res.status(200).json({
-//       success: true,
-//       error: false,
-//       message: `Successfull to Delete ${childCategory.name} Category`,
-//     });
-//   } catch (error) {
-//     // Handle errors
-//     res.status(500).json({
-//       success: false,
-//       error: true,
-//       message:
-//         error.message || "Internal Server Error to Delete Child Category!",
-//     });
-//   }
-// };
-
-//✅ Step 8 : Update Main Category Controller
-
+//✅ Step 06 : Update Main Category Controller
 export const updateMainCategory = async (req, res) => {
   try {
     const { name, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
@@ -526,74 +499,128 @@ export const updateMainCategory = async (req, res) => {
   }
 };
 
-//✅ Step 9 : Update Sub Category Controller
+//✅ Step 07 : Update Sub Category Controller
+
 export const updateSubCategory = async (req, res) => {
   try {
-    const { title, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
-      req.body;
-    const oldSubCategory = await SubCategory.findById(req.params.id);
-    if (!oldSubCategory) {
-      return res.status(403).json({
+    const {
+      name,
+      slug,
+      isActive,
+      showOnNavigation,
+      isFeaturedOnHomePage,
+      mainCategoryId,
+    } = req.body;
+
+    // 0️⃣ No field provided
+    if (!name && !slug && isActive === undefined && !req.file) {
+      return res.status(400).json({
         success: false,
-        message: "Cannot Find Sub Category!",
+        message: "No update field provided.",
       });
     }
-    const updateSubCategory = await SubCategory.findOneAndUpdate(
-      { _id: req.params.id },
-      { title, slug, isActive, isFeaturedOnHomePage, showOnNavigation },
+
+    // 1️⃣ Check Sub Category exists
+    const subCategory = await SubCategory.findById(req.params.id);
+    if (!subCategory) {
+      return res.status(404).json({
+        success: false,
+        message: "Sub Category not found!",
+      });
+    }
+
+    // 2️⃣ Duplicate check (exclude current)
+    if (name || slug) {
+      const duplicate = await SubCategory.findOne({
+        _id: { $ne: req.params.id },
+        $or: [{ name }, { slug }],
+      });
+
+      if (duplicate) {
+        // remove uploaded new image
+        if (req.file) {
+          fs.unlinkSync(
+            path.join("uploads/subCategoryImage/", req.file.filename)
+          );
+        }
+
+        return res.status(400).json({
+          success: false,
+          message:
+            duplicate.name === name
+              ? `The name "${name}" already exists.`
+              : `The slug "${slug}" already exists.`,
+        });
+      }
+    }
+
+    // 3️⃣ Handle Image Upload
+    const uploadedFile = req.file ? req.file.filename : null;
+
+    let newImage = subCategory.image;
+
+    if (uploadedFile) {
+      // Delete old image if exists
+      if (subCategory.image) {
+        const oldImgPath = path.join(
+          "uploads/subCategoryImage/",
+          path.basename(subCategory.image)
+        );
+        if (fs.existsSync(oldImgPath)) fs.unlinkSync(oldImgPath);
+      }
+
+      newImage = `/uploads/subCategoryImage/${uploadedFile}`;
+    }
+
+    // 4️⃣ Prepare Update Object
+    const updateData = {
+      name: name || subCategory.name,
+      slug: slug || subCategory.slug,
+      isActive: isActive !== undefined ? isActive : subCategory.isActive,
+      showOnNavigation:
+        showOnNavigation !== undefined
+          ? showOnNavigation
+          : subCategory.showOnNavigation,
+      isFeaturedOnHomePage:
+        isFeaturedOnHomePage !== undefined
+          ? isFeaturedOnHomePage
+          : subCategory.isFeaturedOnHomePage,
+      mainCategoryId: mainCategoryId || subCategory.mainCategoryId, // ✔ important
+      image: newImage,
+    };
+
+    // 5️⃣ Update Sub Category
+    const updated = await SubCategory.findByIdAndUpdate(
+      req.params.id,
+      updateData,
       { new: true }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       error: false,
-      updateSubCategory,
-      message: `Successfull to Update ${oldSubCategory.title} to ${title} Category`,
+      data: updated,
+      message: `Successfully updated Sub Category '${updated.name}'`,
     });
   } catch (error) {
-    // Handle errors
-    res.status(500).json({
+    console.error(error);
+
+    // Delete uploaded image if operation fails
+    if (req.file) {
+      const newFile = path.join("uploads/subCategoryImage/", req.file.filename);
+      if (fs.existsSync(newFile)) fs.unlinkSync(newFile);
+    }
+
+    return res.status(500).json({
       success: false,
       error: true,
-      message: error.message || "Internal Server Error to Update Sub Category!",
+      message:
+        error.message || "Internal Server Error while updating Sub Category!",
     });
   }
 };
 
-//✅ Step 10 : Update Child Category Controller
-// export const updateChildCategory = async (req, res) => {
-//   try {
-//     const { title, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
-//       req.body;
-//     const oldChildCategory = await ChildCategory.findById(req.params.id);
-//     if (!oldChildCategory) {
-//       return res.status(403).json({
-//         success: false,
-//         message: "Cannot Find Child Category!",
-//       });
-//     }
-//     const updateChildCategory = await ChildCategory.findOneAndUpdate(
-//       { _id: req.params.id },
-//       { title, slug, isActive, isFeaturedOnHomePage, showOnNavigation },
-//       { new: true }
-//     );
-
-//     res.status(200).json({
-//       success: true,
-//       error: false,
-//       updateChildCategory,
-//       message: `Successfull to Update ${oldChildCategory.title} to ${title} Category`,
-//     });
-//   } catch (error) {
-//     // Handle errors
-//     res.status(500).json({
-//       success: false,
-//       error: true,
-//       message: error.message || "Internal Server Error to Update Sub Category!",
-//     });
-//   }
-// };
-
+//✅ Step 08 : Get Main Single Category Controller
 export const getMainSingleCategory = async (req, res) => {
   try {
     if (!req.params.id) {
@@ -618,6 +645,7 @@ export const getMainSingleCategory = async (req, res) => {
   }
 };
 
+//✅ Step 09 : Get Sub Single Category Controller
 export const getSubSingleCategory = async (req, res) => {
   try {
     if (!req.params.id) {

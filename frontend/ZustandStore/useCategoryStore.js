@@ -4,7 +4,7 @@ import { create } from "zustand";
 
 // Access other state/actions via get (getState)
 export const useCategoryStore = create((set, get) => ({
-  editMainCategory: null,
+  singleSubCategory: null,
   singleMainCategory: null,
   getAllCategory: null,
   isUploading: false,
@@ -65,11 +65,15 @@ export const useCategoryStore = create((set, get) => ({
   },
 
   // --- Category Fetching ---
-  getCategory: async () => {
+  getCategory: async (page = 1, limit = 10) => {
     try {
-      const res = await axiosInstance.get("/category/get-all-category");
+      const res = await axiosInstance.get(
+        `/category/get-all-category?page=${page}&limit=${limit}`
+      );
 
-      set({ getAllCategory: res.data });
+      set({
+        getAllCategory: res.data,
+      });
     } catch (error) {
       console.error("Failed to Get All Categories :", error);
     }
@@ -137,10 +141,16 @@ export const useCategoryStore = create((set, get) => ({
     }
   },
 
-  updateSubCategory: async (id) => {
+  updateSubCategory: async (data, id) => {
     try {
       const res = await axiosInstance.put(
-        `/category/update-sub-category/${id}`
+        `/category/update-sub-category/${id}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
       if (res.data.success) {
@@ -161,7 +171,20 @@ export const useCategoryStore = create((set, get) => ({
 
       set({ singleMainCategory: res.data.mainSingleCategory });
     } catch (error) {
-      console.error("Failed to Update Sub Category:", error);
+      console.error("Failed to Update Main Category:", error);
+    }
+  },
+
+  getSubSingleCategory: async (id) => {
+    try {
+      // console.log("id", id);
+      const res = await axiosInstance.get(
+        `/category/single-sub-category/${id}`
+      );
+
+      set({ singleSubCategory: res.data.subSingleCategory });
+    } catch (error) {
+      console.error("Failed to Get Single Sub Category:", error);
     }
   },
 }));

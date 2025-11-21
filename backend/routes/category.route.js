@@ -49,7 +49,12 @@ categoryRoute.put(
   updateMainCategory
 );
 
-categoryRoute.put("/update-sub-category/:id", updateSubCategory);
+categoryRoute.put(
+  "/update-sub-category/:id",
+  uploadTo("subCategoryImage").single("image"),
+  multerErrorHandler,
+  updateSubCategory
+);
 
 // categoryRoute.put("/update-child-category/:id", updateChildCategory);
 

@@ -4,11 +4,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Page() {
   // ❗ প্রতিটি ক্যাটাগরির collapse এর জন্য আলাদা স্টেট
   const [openCategoryId, setOpenCategoryId] = useState(null);
+
+  const [page, setPage] = useState(1);
+  // Default Brand List Show
+  const [limit, setLimit] = useState(5);
 
   // অ্যানিমেশন ভ্যারিয়েন্ট
   const collapseVariants = {
@@ -19,6 +23,11 @@ export default function Page() {
   const { getAllCategory, getCategory, deleteSubCategory, deleteMainCategory } =
     useCategoryStore();
 
+  useEffect(() => {
+    getCategory(page, limit);
+  }, [getCategory, page, limit]);
+
+  console.log(getAllCategory);
   return (
     <div className="flex-1 p-2">
       {/* <!-- Top Bar --> */}
@@ -119,7 +128,7 @@ export default function Page() {
         </div>
 
         <div className="space-y-2">
-          {!getAllCategory?.allCategories?.length ? (
+          {!getAllCategory?.categories?.length ? (
             <div className="text-center text-gray-400 py-4">
               Category Not Found
             </div>
@@ -163,7 +172,8 @@ export default function Page() {
                       <div>
                         <h4 className="font-medium text-white">{cat.name}</h4>
                         <p className="text-xs text-gray-400">
-                          48 products • {cat.subCategories.length || 0}{" "}
+                          48 products •{" "}
+                          {getAllCategory?.subCategoriesCount || 0}{" "}
                           subcategories
                         </p>
                       </div>
@@ -218,7 +228,7 @@ export default function Page() {
                             key={sub._id}
                             className="bg-gray-700/50 rounded-lg p-3"
                           >
-                            {
+                            {/* {
                               (console.log(
                                 "main",
                                 `http://localhost:8080${cat.image}`
@@ -227,7 +237,7 @@ export default function Page() {
                                 "sub",
                                 `http://localhost:8080${sub.image}`
                               ))
-                            }
+                            } */}
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
@@ -262,15 +272,17 @@ export default function Page() {
                                   {sub.isActive ? "Active" : "Inactive"}
                                 </span>
 
-                                <button className="text-rose-gold hover:text-pink-600">
-                                  <i className="fas fa-edit text-xs"></i>
-                                </button>
+                                <Link
+                                  href={`/admin/edit-categories/${cat._id}/${sub._id}`}
+                                  className="text-rose-gold hover:text-pink-600"
+                                >
+                                  <i className="fas fa-edit text-md"></i>
+                                </Link>
                                 <button
                                   className="text-red-400 hover:text-red-500 cursor-pointer p-2"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     deleteSubCategory(sub._id);
-                                    // await getCategory();
                                   }}
                                 >
                                   <Trash2 />
@@ -289,21 +301,60 @@ export default function Page() {
         </div>
         {/* <!-- Pagination --> */}
         <div className="flex justify-between items-center mt-6">
-          <p className="text-gray-400">Showing 1 to 8 of 18 brands</p>
-          <div className="flex space-x-2">
-            <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+          <div className="flex gap-5 items-center">
+            <p className="text-gray-400 whitespace-nowrap">
+              Showing {getAllCategory?.pagination?.currentPage} to{" "}
+              {getAllCategory?.pagination?.totalPages} of{" "}
+              {getAllCategory?.pagination?.totalDocs} tags
+            </p>
+            <select
+              onChange={(e) => setLimit(e.target.value)}
+              className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 w-full"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <div className="flex items-center space-x-2">
+            {/* Prev Button */}
+            <button
+              disabled={!getAllCategory?.pagination?.hasPrevPage}
+              onClick={() => setPage(getAllCategory.pagination?.prevPage)}
+              className=" bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800 disabled:cursor-not-allowed  disabled:opacity-30 rounded-lg transition-all duration-300 w-8 h-8"
+            >
               <i className="fas fa-chevron-left"></i>
             </button>
-            <button className="bg-rose-gold text-white p-2 rounded-lg w-10">
-              1
-            </button>
-            <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
-              2
-            </button>
-            <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg w-10">
-              3
-            </button>
-            <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-all duration-300">
+
+            {/* Page Numbers */}
+            {[...Array(getAllCategory?.pagination?.totalPages)].map(
+              (_, index) => {
+                const pageNumber = index + 1;
+                const isActive =
+                  pageNumber === getAllCategory?.pagination?.currentPage;
+
+                return (
+                  <button
+                    key={pageNumber}
+                    onClick={() => setPage(pageNumber)}
+                    className={`p-2 rounded-lg w-10 transition-all duration-300 cursor-pointer ${
+                      isActive
+                        ? "bg-rose-gold text-white"
+                        : "bg-gray-800 hover:bg-gray-700"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              }
+            )}
+
+            {/* Next Button */}
+            <button
+              disabled={!getAllCategory?.pagination?.hasNextPage}
+              onClick={() => setPage(getAllCategory?.pagination?.nextPage)}
+              className=" bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800  disabled:cursor-not-allowed disabled:opacity-30 w-8 h-8 rounded-lg transition-all duration-300"
+            >
               <i className="fas fa-chevron-right"></i>
             </button>
           </div>
