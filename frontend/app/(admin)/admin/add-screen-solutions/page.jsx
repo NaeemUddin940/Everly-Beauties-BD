@@ -54,10 +54,16 @@ export default function Page() {
 
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => reset()}
-              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+              type="button"
+              onClick={() => {
+                reset();
+                setName("");
+                setSlug("");
+                setSelectedFile(null);
+              }}
+              className="bg-gray-800 hover:bg-gray-700 cursor-pointer text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
-              Cancel
+              <i className="fas fa-times mr-2"></i> Cancel
             </button>
 
             <button

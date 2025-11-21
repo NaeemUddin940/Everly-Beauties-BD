@@ -1,18 +1,19 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
+import createSlug from "@/app/utils/SlugGenerator";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function page() {
-  const {
-    createMainCategory,
-    createSubCategory,
-    getCategory,
-    getAllCategory,
-  } = useCategoryStore();
+  const { createMainCategory, createSubCategory, getCategory, getAllCategory } =
+    useCategoryStore();
 
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+
+  const [selectedFile, setSelectedFile] = useState(null);
   const { register, handleSubmit, setValue, reset } = useForm({
     defaultValues: {
       showOnNavigation: false,
@@ -21,7 +22,11 @@ export default function page() {
     },
   });
 
-  const [selectedFile, setSelectedFile] = useState(null);
+  useEffect(() => {
+    const newSlug = createSlug(name);
+    setSlug(newSlug);
+    setValue("slug", newSlug); // update react-hook-form value
+  }, [name, setValue]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -66,11 +71,18 @@ export default function page() {
           </div>
           <div className="flex items-center space-x-4">
             <button
-              // onclick="window.location.href='categories.html'"
+              type="button"
+              onClick={() => {
+                reset();
+                setName("");
+                setSlug("");
+                setSelectedFile(null);
+              }}
               className="bg-gray-800 hover:bg-gray-700 cursor-pointer text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
               <i className="fas fa-times mr-2"></i> Cancel
             </button>
+
             <button
               type="submit"
               className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
@@ -97,6 +109,7 @@ export default function page() {
                   <input
                     type="text"
                     {...register("name")}
+                    onChange={(e) => setName(e.target.value)}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Enter category name"
                   />
@@ -108,6 +121,8 @@ export default function page() {
                   <input
                     type="text"
                     {...register("slug")}
+                    value={slug.toLocaleLowerCase()}
+                    onChange={(e) => setSlug(e.target.value)}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="category-slug"
                   />

@@ -38,7 +38,7 @@ export default function page() {
     await createBrand(data);
 
     reset();
-    setSlug("")
+    setSlug("");
     setSelectedFile("");
   }
 
@@ -55,12 +55,18 @@ export default function page() {
           </div>
           <div className="flex items-center space-x-4">
             <button
-              type="reset"
-              onClick={() => setSelectedFile("")}
-              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+              type="button"
+              onClick={() => {
+                reset();
+                setName("");
+                setSlug("");
+                setSelectedFile(null);
+              }}
+              className="bg-gray-800 hover:bg-gray-700 cursor-pointer text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
               <i className="fas fa-times mr-2"></i> Cancel
             </button>
+
             <button
               type="submit"
               className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"

@@ -31,7 +31,7 @@ export default function Page() {
     console.log("Final Form Data:", data);
     await createTag(data);
     reset();
-    setSlug('')
+    setSlug("");
   };
 
   return (
@@ -48,10 +48,15 @@ export default function Page() {
 
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => (window.location.href = "tags.html")}
-              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+              type="button"
+              onClick={() => {
+                reset();
+                setName("");
+                setSlug("");
+              }}
+              className="bg-gray-800 hover:bg-gray-700 cursor-pointer text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
             >
-              Cancel
+              <i className="fas fa-times mr-2"></i> Cancel
             </button>
 
             {/* Save Button → submit form */}
