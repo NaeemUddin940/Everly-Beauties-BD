@@ -237,20 +237,21 @@ export const getAllCategories = async (req, res) => {
     page = Number(page);
     limit = Number(limit);
 
-    // 1️⃣ Apply Pagination on MainCategory
+    // 1️⃣ Main Category Pagination + Sort
     const mainPaginated = await MainCategory.paginate(
       {},
       {
         page,
         limit,
+        sort: { createdAt: -1 },
         lean: true,
       }
     );
 
-    // 2️⃣ Fetch all SubCategories (single query)
+    // 2️⃣ Fetch all SubCategories (not paginated)
     const subCategories = await SubCategory.find().lean();
 
-    // 3️⃣ Attach SubCategories to each MainCategory
+    // 3️⃣ Attach SubCategories + Count
     const allCategories = mainPaginated.docs.map((mainCat) => {
       const matchedSubCategory = subCategories.filter(
         (subCat) => String(subCat.mainCategoryId) === String(mainCat._id)
@@ -259,10 +260,11 @@ export const getAllCategories = async (req, res) => {
       return {
         ...mainCat,
         subCategories: matchedSubCategory,
+        subCategoryCount: matchedSubCategory.length,
       };
     });
 
-    // Counts
+    // 4️⃣ TOTAL COUNTS
     const allMain = await MainCategory.countDocuments();
     const allSub = await SubCategory.countDocuments();
 
@@ -289,16 +291,19 @@ export const getAllCategories = async (req, res) => {
         prevPage: mainPaginated.prevPage,
       },
 
-      categories: mainPaginated.docs,
-      // Counts
+      // 👉 Final Category List (Correct)
+      categories: allCategories,
+
+      // 👉 Correct Counts
       mainCategoriesCount: allMain,
       subCategoriesCount: allSub,
+      totalCategories: allMain + allSub,
+
       activeMainCategoryCount,
       activeSubCategoryCount,
       activeCategoryCount: activeMainCategoryCount + activeSubCategoryCount,
-      totalCategories: allMain + allSub,
+
       message: "Successfully fetched all categories.",
-      allCategories,
     });
   } catch (error) {
     return res.status(500).json({
@@ -312,10 +317,9 @@ export const getAllCategories = async (req, res) => {
 //✅ Step 04 : Delete Main Category And Upload Category Image Controller
 export const deleteMainCategory = async (req, res) => {
   try {
-    const allMainCategory = await MainCategory.find();
-    const mainCategories = await MainCategory.findById(req.params.id);
+    const mainCategory = await MainCategory.findById(req.params.id);
 
-    if (!mainCategories) {
+    if (!mainCategory) {
       return res.status(404).json({
         message: "Main Category Not Found with this id.",
         error: true,
@@ -323,45 +327,50 @@ export const deleteMainCategory = async (req, res) => {
       });
     }
 
+    // 1️⃣ Find all sub categories under this main category
     const subCategories = await SubCategory.find({
       mainCategoryId: req.params.id,
     });
 
-    await SubCategory.findByIdAndDelete(subCategories._id);
+    // 2️⃣ Delete all Sub Category Images + Records
+    for (const sub of subCategories) {
+      // Delete sub category image if exists
+      if (sub.image) {
+        const filePath = path.join(process.cwd(), sub.image);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
 
-    // 2️⃣ Delete image from server
-    if (mainCategories.image) {
-      // mainCategories.image: "/uploads/categoryImage/abc123.jpg"
-      const filePath = path.join(process.cwd(), mainCategories.image); // full path
+      // Delete sub category record
+      await SubCategory.findByIdAndDelete(sub._id);
+    }
+
+    // 3️⃣ Delete Main Category Image
+    if (mainCategory.image) {
+      const filePath = path.join(process.cwd(), mainCategory.image);
       if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath); // delete file
+        fs.unlinkSync(filePath);
       }
     }
 
-    if (subCategories.image) {
-      // mainCategories.image: "/uploads/categoryImage/abc123.jpg"
-      const filePath = path.join(process.cwd(), mainCategories.image); // full path
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath); // delete file
-      }
-    }
+    // 4️⃣ Delete Main Category
     await MainCategory.findByIdAndDelete(req.params.id);
 
-    // Get Image url From user query parameter
+    const totalMainCategories = await MainCategory.countDocuments();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       error: false,
-      mainCategoryCount: allMainCategory.length - 1 || 0,
-      message: `Successfull to Delete ${mainCategories.title} Category`,
+      mainCategoryCount: totalMainCategories,
+      message: `Successfully deleted ${mainCategory.name} category and all its subcategories.`,
     });
   } catch (error) {
-    // Handle errors
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: true,
       message:
-        error.message || `Internal Server Error to Delete Main Category!`,
+        error.message || "Internal Server Error to Delete Main Category.",
     });
   }
 };

@@ -22,11 +22,14 @@ export const useCategoryStore = create((set, get) => ({
           },
         }
       );
-      // 🟢 Success
+
       if (res.data.success) {
         toast.success(res.data.message);
-        set({ getAllCategory: res.data.allCategories });
-        await get().getCategory();
+
+        // ❗❗ শুধু refresh করো — কিছু overwrite কোরো না
+        const { page, limit } = get();
+        await get().getCategory(page, limit);
+
         set({ isUploading: false });
         return;
       }
@@ -84,18 +87,19 @@ export const useCategoryStore = create((set, get) => ({
       const res = await axiosInstance.delete(
         `/category/delete-main-category/${id}`
       );
-      console.log(res);
+
       if (res.data.success) {
         toast.success(res.data.message);
         set((state) => ({
           getAllCategory: {
             ...state.getAllCategory,
-            allCategories: state.getAllCategory.allCategories.filter(
+            allCategories: state.getAllCategory.categories.filter(
               (cat) => cat._id !== id
             ),
           },
         }));
       }
+      await get().getCategory();
     } catch (error) {
       toast.error(error?.response?.data?.message);
       console.error("Failed to delete Main Category:", error);

@@ -12,7 +12,7 @@ import userRoute from "./routes/user.route.js";
 
 const app = express();
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));

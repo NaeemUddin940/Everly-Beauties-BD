@@ -133,7 +133,7 @@ export default function Page() {
               Category Not Found
             </div>
           ) : (
-            getAllCategory?.allCategories?.map((cat) => (
+            getAllCategory?.categories?.map((cat) => (
               <div key={cat._id} className="bg-gray-800 rounded-xl">
                 {/* Trigger Area */}
 
@@ -172,8 +172,7 @@ export default function Page() {
                       <div>
                         <h4 className="font-medium text-white">{cat.name}</h4>
                         <p className="text-xs text-gray-400">
-                          48 products •{" "}
-                          {getAllCategory?.subCategoriesCount || 0}{" "}
+                          48 products • {cat.subCategoryCount || 0}{" "}
                           subcategories
                         </p>
                       </div>
@@ -201,8 +200,8 @@ export default function Page() {
                         className="text-red-400 hover:text-red-500 cursor-pointer p-2"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          deleteMainCategory(cat._id);
-                          await getCategory();
+                          await deleteMainCategory(cat._id);
+                          await getCategory(page, limit);
                         }}
                       >
                         <Trash2 />
@@ -305,7 +304,7 @@ export default function Page() {
             <p className="text-gray-400 whitespace-nowrap">
               Showing {getAllCategory?.pagination?.currentPage} to{" "}
               {getAllCategory?.pagination?.totalPages} of{" "}
-              {getAllCategory?.pagination?.totalDocs} tags
+              {getAllCategory?.pagination?.totalMainCategories} tags
             </p>
             <select
               onChange={(e) => setLimit(e.target.value)}

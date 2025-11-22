@@ -45,6 +45,7 @@ export default function page() {
       await createMainCategory(data);
     }
     setSelectedFile(null);
+    setSlug("");
     reset();
   }
 
@@ -149,7 +150,7 @@ export default function page() {
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                   >
                     <option value="">No Parent (Top Level Category)</option>
-                    {getAllCategory?.allCategories?.map((cat) => (
+                    {getAllCategory?.categories?.map((cat) => (
                       <option key={cat._id} value={cat._id}>
                         {cat.name}
                       </option>
