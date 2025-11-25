@@ -160,7 +160,7 @@ export default function Page() {
 
                       <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
                         <Image
-                          src={`http://localhost:8080${cat.image}`}
+                          src={process.env.NEXT_PUBLIC_API_BASE_URL + cat.image}
                           alt={cat.name}
                           width={100}
                           height={100}
@@ -241,7 +241,10 @@ export default function Page() {
                               <div className="flex items-center">
                                 <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
                                   <Image
-                                    src={`http://localhost:8080${sub.image}`}
+                                    src={
+                                      process.env.NEXT_PUBLIC_API_BASE_URL +
+                                      sub.image
+                                    }
                                     alt={sub.name}
                                     width={100}
                                     height={100}

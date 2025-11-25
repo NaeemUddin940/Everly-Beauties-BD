@@ -105,36 +105,33 @@ export default function page() {
         {/* <!-- Brands Table View --> */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <h2 className="text-xl font-bold text-white mb-6">Brands List</h2>
-          {allBrands?.brands?.length === 0 ? (
-            <div className="text-center text-gray-400 py-4">
-              Category Not Found
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="py-3 px-4 text-left">Brand</th>
-                    <th className="py-3 px-4 text-left">Products</th>
-                    <th className="py-3 px-4 text-left">Status</th>
-                    <th className="py-3 px-4 text-left">Type</th>
-                    <th className="py-3 px-4 text-left">Actions</th>
-                  </tr>
-                </thead>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="py-3 px-4 text-left">Brand</th>
+                  <th className="py-3 px-4 text-left">Products</th>
+                  <th className="py-3 px-4 text-left">Status</th>
+                  <th className="py-3 px-4 text-left">Type</th>
+                  <th className="py-3 px-4 text-left">Actions</th>
+                </tr>
+              </thead>
 
-                <tbody>
-                  {/* <!-- Luxe Beauty --> */}
-
-                  {allBrands?.brands?.map((brand) => (
+              <tbody>
+                {allBrands?.brands?.length > 0 ? (
+                  allBrands.brands.map((brand) => (
                     <tr
                       key={brand._id}
                       className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center">
-                          <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
+                          <div className="w-10 h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">
                             <Image
-                              src={`http://localhost:8080${brand.image}`}
+                              src={
+                                process.env.NEXT_PUBLIC_API_BASE_URL +
+                                brand.image
+                              }
                               alt={brand.name}
                               width={100}
                               height={100}
@@ -155,14 +152,13 @@ export default function page() {
                       <td className="py-4 px-4">
                         <span className="text-rose-gold font-medium">124</span>
                       </td>
-
                       <td className="py-4 px-4">
                         <span
-                          className={` ${
+                          className={`text-xs px-2 py-1 rounded-full ${
                             brand.isActive
                               ? "bg-green-500/20 text-green-300"
                               : "bg-red-500/30 text-red-300"
-                          } text-xs px-2 py-1 rounded-full`}
+                          }`}
                         >
                           {brand.isActive ? "Active" : "Inactive"}
                         </span>
@@ -173,7 +169,6 @@ export default function page() {
                             Premium
                           </span>
                         )}
-
                         {brand.isFeatured && (
                           <span className="inline-block px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded-full">
                             Featured
@@ -185,7 +180,6 @@ export default function page() {
                           </span>
                         )}
                       </td>
-
                       <td className="py-4 px-4">
                         <div className="flex space-x-2">
                           <Link
@@ -198,9 +192,7 @@ export default function page() {
                             <i className="fas fa-eye"></i>
                           </button>
                           <button
-                            onClick={async () => {
-                              await deleteBrand(brand._id);
-                            }}
+                            onClick={async () => await deleteBrand(brand._id)}
                             className="text-red-400 hover:text-red-500 cursor-pointer p-2"
                           >
                             <Trash2 />
@@ -208,11 +200,17 @@ export default function page() {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center text-gray-400 py-10">
+                      No Brands Found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {/* <!-- Pagination --> */}
           <div className="flex justify-between items-center mt-6">

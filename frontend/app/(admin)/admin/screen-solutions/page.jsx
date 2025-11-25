@@ -5,8 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 export default function page() {
   const [page, setPage] = useState(1);
   // Default Brand List Show
@@ -124,169 +122,81 @@ export default function page() {
                 </tr>
               </thead>
               <tbody>
-                {/* <!-- Luxe Beauty --> */}
-                {allScreenSolution?.screenSolutions?.map((solution) => (
-                  <tr
-                    key={solution?._id}
-                    className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
-                  >
-                    <td className="py-4 px-4">
-                      <div className="flex items-center">
-                        <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-pink mr-3">
-                          <Image
-                            src={
-                              solution?.image
-                                ? API + solution.image
-                                : "/images.png" // default image from public folder
+                {allScreenSolution?.screenSolutions?.length > 0 ? (
+                  allScreenSolution.screenSolutions.map((solution) => (
+                    <tr
+                      key={solution?._id}
+                      className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
+                    >
+                      <td className="py-4 px-4">
+                        <div className="flex items-center">
+                          <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-pink mr-3">
+                            <Image
+                              src={
+                                process.env.NEXT_PUBLIC_API_BASE_URL +
+                                solution.image
+                              }
+                              alt={solution?.name || "Default Image"}
+                              width={100}
+                              height={100}
+                              className="object-cover h-full w-full rounded-md"
+                              unoptimized
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">
+                              {solution?.name}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {solution?.slug}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-rose-gold font-medium">124</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            solution.isActive
+                              ? "bg-green-500/20 text-green-300"
+                              : "bg-red-500/30 text-red-300"
+                          }`}
+                        >
+                          {solution.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex space-x-2">
+                          <Link
+                            href={`/admin/edit-screen-solution/${solution._id}`}
+                            className="text-rose-gold hover:text-pink-600 p-2"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </Link>
+                          <button className="text-blue-400 hover:text-blue-300 p-2">
+                            <i className="fas fa-eye"></i>
+                          </button>
+                          <button
+                            onClick={async () =>
+                              await deleteScreenSolution(solution._id)
                             }
-                            alt={solution?.name || "Default Image"}
-                            width={100}
-                            height={100}
-                            className="object-cover h-full w-full rounded-md"
-                            unoptimized
-                          />
+                            className="text-red-400 hover:text-red-300 p-2"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
                         </div>
-                        <div>
-                          <p className="font-medium text-white">
-                            {solution?.name}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {solution?.slug}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-rose-gold font-medium">124</span>
-                    </td>
-
-                    <td className="py-4 px-4">
-                      <span
-                        className={` ${
-                          solution.isActive
-                            ? "bg-green-500/20 text-green-300"
-                            : "bg-red-500/30 text-red-300"
-                        } text-xs px-2 py-1 rounded-full`}
-                      >
-                        {solution.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    {/* <td className="py-4 px-4">
-                      <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
-                        Standard
-                      </span>
-                    </td> */}
-                    <td className="py-4 px-4">
-                      <div className="flex space-x-2">
-                        <Link
-                          href={`/admin/edit-screen-solution/${solution._id}`}
-                          className="text-rose-gold hover:text-pink-600 p-2"
-                        >
-                          <i className="fas fa-edit"></i>
-                        </Link>
-                        <button className="text-blue-400 hover:text-blue-300 p-2">
-                          <i className="fas fa-eye"></i>
-                        </button>
-                        <button
-                          onClick={async () =>
-                            await deleteScreenSolution(solution._id)
-                          }
-                          className="text-red-400 hover:text-red-300 p-2"
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="text-center text-gray-400 py-10">
+                      No Screen Solutions Found
                     </td>
                   </tr>
-                ))}
-
-                {/* <!-- Glamour Cosmetics --> */}
-                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
-                  <td className="py-4 px-4">
-                    <div className="flex items-center">
-                      <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500 mr-3">
-                        <span className="text-white font-bold text-xs">DS</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-white">Dark Spots</p>
-                        <p className="text-xs text-gray-400">dark-spots</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-rose-gold font-medium">89</span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
-                      Active
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded-full">
-                      Featured
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="text-rose-gold hover:text-pink-600 p-2">
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="text-blue-400 hover:text-blue-300 p-2">
-                        <i className="fas fa-eye"></i>
-                      </button>
-                      <button className="text-red-400 hover:text-red-300 p-2">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr> */}
-
-                {/* <!-- Pure Skin --> */}
-                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
-                  <td className="py-4 px-4">
-                    <div className="flex items-center">
-                      <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500 mr-3">
-                        <span className="text-white font-bold text-xs">DU</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-white">
-                          Dullness & Uneven Skin Tone
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          dullness-uneven-skin-tone
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-rose-gold font-medium">67</span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
-                      Active
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
-                      Standard
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="text-rose-gold hover:text-pink-600 p-2">
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="text-blue-400 hover:text-blue-300 p-2">
-                        <i className="fas fa-eye"></i>
-                      </button>
-                      <button className="text-red-400 hover:text-red-300 p-2">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr> */}
+                )}
               </tbody>
             </table>
           </div>

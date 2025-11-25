@@ -34,7 +34,6 @@ export default function page() {
   }, [name, setValue]);
 
   async function onSubmit(data) {
-    console.log(data);
     await createBrand(data);
 
     reset();

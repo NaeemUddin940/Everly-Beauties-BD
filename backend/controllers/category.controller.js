@@ -62,7 +62,7 @@ export const createMainCategory = async (req, res) => {
       success: true,
       error: false,
       mainCategory: newCategory,
-      message: `Successfully created "${name}" main category.`,
+      message: `Successfully created main category.`,
     });
   } catch (error) {
     // server crash prevent
@@ -133,8 +133,8 @@ export const createSubCategory = async (req, res) => {
         success: false,
         message:
           existing.name === name
-            ? `The Sub Category "${name}" already exists.`
-            : `The slug "${slug}" already exists.`,
+            ? `The Sub Category already exists.`
+            : `The slug already exists.`,
       });
     }
 
@@ -153,7 +153,7 @@ export const createSubCategory = async (req, res) => {
       success: true,
       error: false,
       data: subCategories,
-      message: `Successfully created "${name}" as a Sub Category.`,
+      message: `Successfully created Sub Category.`,
     });
   } catch (error) {
     console.error(error);
@@ -363,7 +363,7 @@ export const deleteMainCategory = async (req, res) => {
       success: true,
       error: false,
       mainCategoryCount: totalMainCategories,
-      message: `Successfully deleted ${mainCategory.name} category and all its subcategories.`,
+      message: `Successfully deleted Main and All Sub category.`,
     });
   } catch (error) {
     return res.status(500).json({
@@ -385,7 +385,7 @@ export const deleteSubCategory = async (req, res) => {
     res.status(200).json({
       success: true,
       error: false,
-      message: `Successfull to Delete ${subCategory.title} Category`,
+      message: `Successfull to Delete Sub Category`,
     });
   } catch (error) {
     // Handle errors
@@ -487,7 +487,7 @@ export const updateMainCategory = async (req, res) => {
     res.status(200).json({
       success: true,
       error: false,
-      message: `Successfully updated Main Category '${updated.name}'`,
+      message: `Successfully updated Main Category`,
       data: updated,
     });
   } catch (error) {
@@ -609,7 +609,7 @@ export const updateSubCategory = async (req, res) => {
       success: true,
       error: false,
       data: updated,
-      message: `Successfully updated Sub Category '${updated.name}'`,
+      message: `Successfully updated Sub Category`,
     });
   } catch (error) {
     console.error(error);

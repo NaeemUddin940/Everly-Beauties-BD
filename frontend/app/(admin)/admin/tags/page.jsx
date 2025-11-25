@@ -116,164 +116,79 @@ export default function page() {
                 </tr>
               </thead>
               <tbody>
-                {/* <!-- Vegan Tag --> */}
-                {allTags?.tags?.map((tag) => (
-                  <tr
-                    key={tag._id}
-                    className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
-                  >
-                    <td className="py-4 px-4">
-                      <input type="checkbox" className="custom-checkbox" />
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                          <i className="fas fa-leaf text-white text-sm"></i>
+                {allTags?.tags?.length > 0 ? (
+                  allTags.tags.map((tag) => (
+                    <tr
+                      key={tag._id}
+                      className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
+                    >
+                      <td className="px-4">
+                        <input type="checkbox" className="custom-checkbox" />
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center">
+                          <div className="logo-preview w-10 h-10 rounded-lg flex items-center justify-center bg-green-500 mr-3">
+                            <i className="fas fa-leaf text-white text-sm"></i>
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">{tag.name}</p>
+                            <p className="text-xs text-gray-400">{tag.slug}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-white">{tag.name}</p>
-                          <p className="text-xs text-gray-400">{tag.slug}</p>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-rose-gold font-medium">48</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            tag.isActive
+                              ? "bg-green-500/20 text-green-300"
+                              : "bg-red-500/30 text-red-300"
+                          }`}
+                        >
+                          {tag.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`inline-block px-2 py-1 text-xs rounded-full ${
+                            tag.type === "featured"
+                              ? "bg-purple-500/20 text-purple-300"
+                              : "bg-gray-500/20 text-gray-300"
+                          }`}
+                        >
+                          {tag.type === "featured" ? "Featured" : "Standard"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex space-x-2">
+                          <Link
+                            href={`/admin/edit-tag/${tag._id}`}
+                            className="text-rose-gold hover:text-pink-600 p-2"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </Link>
+                          <button className="text-blue-400 hover:text-blue-300 p-2">
+                            <i className="fas fa-eye"></i>
+                          </button>
+                          <button
+                            onClick={async () => await deleteTag(tag._id)}
+                            className="text-red-400 hover:text-red-300 p-2"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-rose-gold font-medium">48</span>
-                    </td>
-
-                    <td className="py-4 px-4">
-                      <span
-                        className={` ${
-                          tag.isActive
-                            ? "bg-green-500/20 text-green-300"
-                            : "bg-red-500/30 text-red-300"
-                        } text-xs px-2 py-1 rounded-full`}
-                      >
-                        {tag.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      {tag.type === "featured" ? (
-                        <span className="inline-block px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded-full">
-                          Featured
-                        </span>
-                      ) : (
-                        <span className="inline-block px-2 py-1 text-xs bg-gray-500/20 text-gray-300 rounded-full">
-                          Standard
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex space-x-2">
-                        <Link
-                          href={`/admin/edit-tag/${tag._id}`}
-                          className="text-rose-gold hover:text-pink-600 p-2"
-                        >
-                          <i className="fas fa-edit"></i>
-                        </Link>
-                        <button className="text-blue-400 hover:text-blue-300 p-2">
-                          <i className="fas fa-eye"></i>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteTag(tag._id);
-                          }}
-                          className="text-red-400 hover:text-red-300 p-2"
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center text-gray-400 py-10">
+                      No Tags Found
                     </td>
                   </tr>
-                ))}
-
-                {/* <!-- Cruelty-Free Tag --> */}
-                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
-                  <td className="py-4 px-4">
-                    <input
-                      type="checkbox"
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                    />
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
-                        <i className="fas fa-paw text-white text-sm"></i>
-                      </div>
-                      <div>
-                        <p className="font-medium text-white">Cruelty-Free</p>
-                        <p className="text-xs text-gray-400">cruelty-free</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-rose-gold font-medium">67</span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
-                      Active
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="text-rose-gold hover:text-pink-600 p-2">
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="text-blue-400 hover:text-blue-300 p-2">
-                        <i className="fas fa-eye"></i>
-                      </button>
-                      <button className="text-red-400 hover:text-red-300 p-2">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr> */}
-
-                {/* <!-- Organic Tag --> */}
-                {/* <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300">
-                  <td className="py-4 px-4">
-                    <input
-                      type="checkbox"
-                      className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
-                    />
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center mr-3">
-                        <i className="fas fa-seedling text-white text-sm"></i>
-                      </div>
-                      <div>
-                        <p className="font-medium text-white">Organic</p>
-                        <p className="text-xs text-gray-400">organic</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="text-rose-gold font-medium">34</span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <span className="inline-block px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
-                      Active
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <button className="text-rose-gold hover:text-pink-600 p-2">
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="text-blue-400 hover:text-blue-300 p-2">
-                        <i className="fas fa-eye"></i>
-                      </button>
-                      <button className="text-red-400 hover:text-red-300 p-2">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr> */}
+                )}
               </tbody>
             </table>
           </div>
