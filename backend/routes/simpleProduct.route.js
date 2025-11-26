@@ -6,6 +6,7 @@ import {
   updateSimpleProduct,
 } from "../controllers/simpleProduct.controller.js";
 import { uploadTo } from "../middlewares/fileUpload.js";
+import { multerErrorHandler } from "../middlewares/multerErrorHandler.js";
 import { validationHandler } from "../middlewares/validationHandler.js";
 import { simpleProductValidation } from "../validations/simpleProductValidation.js";
 
@@ -17,6 +18,7 @@ productRoute.post(
     { name: "productImage", maxCount: 1 },
     { name: "galleryImages", maxCount: 10 },
   ]),
+  multerErrorHandler,
   simpleProductValidation,
   validationHandler,
   createSimpleProduct
@@ -30,6 +32,7 @@ productRoute.put(
     { name: "productImage", maxCount: 1 },
     { name: "galleryImages", maxCount: 10 },
   ]),
+  multerErrorHandler,
   simpleProductValidation,
   validationHandler,
   updateSimpleProduct

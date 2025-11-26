@@ -88,17 +88,14 @@ const simpleProductSchema = new mongoose.Schema(
 
     // 🟢 Organization
     category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      type: String,
       required: true,
     },
     brand: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Brand",
+      type: String,
     },
     skinSolution: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "SkinSolution",
+      type: String,
     },
     tags: [{ type: String }],
 

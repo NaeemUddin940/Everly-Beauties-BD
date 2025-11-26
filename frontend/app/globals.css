@@ -295,3 +295,11 @@ body {
     @apply border-red-500 cursor-pointer size-4 shrink-0 rounded-2xl border shadow-xs transition-shadow outline-none;
   }
 }
+
+
+.select__control{
+  background-color: #000000;
+}
+.select__value-container css-hlgwow{
+  color: #ffffff;
+}
