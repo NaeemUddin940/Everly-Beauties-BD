@@ -31,7 +31,6 @@ export default function Page() {
 
   // Submit Handler
   const onSubmit = async (data) => {
-    console.log("Final Form Data:", data);
     await updateTag(data, id);
   };
 

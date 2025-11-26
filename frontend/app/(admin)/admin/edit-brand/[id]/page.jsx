@@ -239,7 +239,7 @@ export default function page() {
                         localFile
                           ? localFile
                           : serverFile
-                          ? `http://localhost:8080${serverFile}`
+                          ? process.env.NEXT_PUBLIC_API_BASE_URL + serverFile
                           : "/placeholder.png"
                       }
                       alt="category image"
