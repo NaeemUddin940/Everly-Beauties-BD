@@ -22,7 +22,7 @@ export default function ShowAllProducts() {
   } = useSimpleProductStore();
 
   useEffect(() => {
-    getAllSimpleProduct();
+    getAllSimpleProduct(1000);
   }, [getAllSimpleProduct]);
 
   return (
@@ -234,11 +234,15 @@ export default function ShowAllProducts() {
             <table className="w-full table-fixed">
               <thead>
                 <tr className="border-b border-gray-700">
+                  {/* 1. Checkbox: (Fixed Width for small content) */}
                   <th className="py-3 px-2 text-left w-[50px]">
                     <input type="checkbox" className="custom-checkbox" />
                   </th>
+                  {/* 2. Image: (Fixed Width for 40px image + padding) */}
                   <th className="py-3 px-2 text-left w-[75px]">Image</th>
+                  {/* 3. Product: (Wide fixed width for name/sku/tooltip) */}
                   <th className="py-3 px-2 text-left w-[220px]">Product</th>
+                  {/* 4-10. Other Columns with fixed widths */}
                   <th className="py-3 px-2 text-left w-24">Type</th>
                   <th className="py-3 px-2 text-left w-32">Category</th>
                   <th className="py-3 px-2 text-left w-28">Brand</th>
@@ -249,137 +253,155 @@ export default function ShowAllProducts() {
                 </tr>
               </thead>
               <tbody className="w-full">
-                {/* Skeleton while loading */}
-                {isLoading &&
-                  allSimpleProduct?.simpleProducts?.map((_, index) => (
-                    <tr key={index} className="border-b border-gray-800">
-                      <td colSpan="10" className="p-0">
-                        <ProductListSkeleton />
-                      </td>
+                {/* 💥 FIX: colSpan="10" <td> wrapper বাদ দেওয়া হয়েছে 💥 */}
+                {isLoading ? (
+                  [
+                    ...Array(
+                      allSimpleProduct?.simpleProducts?.length > 0
+                        ? allSimpleProduct.simpleProducts.length
+                        : 5
+                    ),
+                  ].map((_, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-gray-800 animate-pulse"
+                    >
+                      <ProductListSkeleton />
                     </tr>
-                  ))}
-
-                {/* Simple Products */}
-                {!isLoading && allSimpleProduct?.simpleProducts?.length > 0
-                  ? allSimpleProduct?.simpleProducts?.map((product) => (
-                      <tr
-                        key={product._id}
-                        className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
-                      >
-                        <td className="py-4 px-2">
-                          <input type="checkbox" className="custom-checkbox" />
-                        </td>
-                        <td className="text-left pr-2">
-                          {/* <div className="w-10 h-10 bg-gradient-pink rounded-lg flex items-center justify-center text-white mr-3"> */}
-                          <Image
-                            src={api + product.productImage}
-                            alt={product.name}
-                            width={100}
-                            height={100}
-                            className="object-cover h-full w-full rounded-md"
-                            unoptimized
-                          />
-                          {/* </div> */}
-                        </td>
-                        <td className="py-4 text-left">
-                          <Tooltip>
-                            <div className="flex items-center">
-                              <div>
-                                <TooltipTrigger>
-                                  <p className="font-medium line-clamp-1 text-white">
-                                    {product.name}
-                                  </p>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p> {product.name}</p>
-                                </TooltipContent>
-                                <p className="text-sm ml-2 text-gray-400">
-                                  {product.sku}
-                                </p>
+                  ))
+                ) : (
+                  <>
+                    {/* Simple Products (Data Rows) */}
+                    {allSimpleProduct?.simpleProducts?.length > 0
+                      ? allSimpleProduct?.simpleProducts?.map((product) => (
+                          <tr
+                            key={product._id}
+                            className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
+                          >
+                            {/* TD Padding Standardization: px-2 everywhere */}
+                            <td className="py-4 px-2">
+                              <input
+                                type="checkbox"
+                                className="custom-checkbox"
+                              />
+                            </td>
+                            <td className="py-4 px-2 text-left">
+                              {/* Note: Removed <div> wrapper as per user's last code */}
+                              <Image
+                                src={api + product.productImage}
+                                alt={product.name}
+                                width={100}
+                                height={100}
+                                className="object-cover h-full w-full rounded-md"
+                                unoptimized
+                              />
+                            </td>
+                            <td className="py-4 px-2 text-left">
+                              {" "}
+                              {/* px-2 যোগ করা হলো */}
+                              <Tooltip>
+                                <div className="flex items-center">
+                                  <div>
+                                    <TooltipTrigger>
+                                      <p className="font-medium line-clamp-1 text-white">
+                                        {product.name}
+                                      </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p> {product.name}</p>
+                                    </TooltipContent>
+                                    <p className="text-sm ml-2 text-gray-400">
+                                      {product.sku}
+                                    </p>
+                                  </div>
+                                </div>
+                              </Tooltip>
+                            </td>
+                            {/* ... বাকি <td> গুলোর padding px-2 আছে, যা সঠিক ... */}
+                            <td className="py-4 px-2">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-300">
+                                <i className="fas fa-cube mr-1"></i> Simple
+                              </span>
+                            </td>
+                            <td className="py-4 px-2">
+                              {product.category || "No Category Found!"}
+                            </td>
+                            <td className="py-4 px-2">
+                              {product.brand || "No Brand Found!"}
+                            </td>
+                            <td className="py-4 px-2">
+                              <p className="font-medium text-white">
+                                {product.regularPrice} <span>tk</span>
+                              </p>
+                              <p className="text-sm text-gray-400 line-through">
+                                {product.salePrice}
+                                <span> tk</span>
+                              </p>
+                            </td>
+                            <td className="py-4 px-2">
+                              <p className="font-medium text-white">
+                                {product.stockQuantity}
+                              </p>
+                              <p
+                                className={`text-sm ${
+                                  product.stockQuantity > 10
+                                    ? "text-green-400"
+                                    : product.stockQuantity > 0
+                                    ? "text-yellow-400"
+                                    : "text-red-400"
+                                }`}
+                              >
+                                {product.stockQuantity > 10
+                                  ? "In Stock"
+                                  : product.stockQuantity > 0
+                                  ? "Low Stock"
+                                  : "Out Of Stock"}
+                              </p>
+                            </td>
+                            <td className="py-4 px-2">
+                              <span
+                                className={`${
+                                  product.isActive
+                                    ? "bg-green-500/20 text-green-300"
+                                    : "bg-red-500/30 text-red-300"
+                                } text-xs px-2 py-1 rounded-full`}
+                              >
+                                {product.isActive ? "Active" : "Inactive"}
+                              </span>
+                            </td>
+                            <td className="py-4 px-2">
+                              <div className="flex space-x-2">
+                                <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
+                                  <i className="fas fa-edit text-rose-gold hover:text-pink-500"></i>
+                                </button>
+                                <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
+                                  <i className="fas fa-copy text-blue-400 hover:text-blue-500"></i>
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    deleteSimpleProduct(product._id)
+                                  }
+                                  className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 pb-2 rounded-lg transition-all duration-300"
+                                >
+                                  <Trash2 className="fas fa-trash text-red-400 hover:text-red-500" />
+                                </button>
                               </div>
-                            </div>
-                          </Tooltip>
-                        </td>
-                        <td className="py-4 px-2">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-300">
-                            <i className="fas fa-cube mr-1"></i> Simple
-                          </span>
-                        </td>
-                        <td className="py-4 px-2">
-                          {product.category || "No Category Found!"}
-                        </td>
-                        <td className="py-4 px-2">
-                          {product.brand || "No Brand Found!"}
-                        </td>
-                        <td className="py-4 px-2">
-                          <p className="font-medium text-white">
-                            {product.regularPrice} <span>tk</span>
-                          </p>
-                          <p className="text-sm text-gray-400 line-through">
-                            {product.salePrice}
-                            <span> tk</span>
-                          </p>
-                        </td>
-                        <td className="py-4 px-2">
-                          <p className="font-medium text-white">
-                            {product.stockQuantity}
-                          </p>
-                          <p
-                            className={`text-sm ${
-                              product.stockQuantity > 10
-                                ? "text-green-400"
-                                : product.stockQuantity > 0
-                                ? "text-yellow-400"
-                                : "text-red-400"
-                            }`}
-                          >
-                            {product.stockQuantity > 10
-                              ? "In Stock"
-                              : product.stockQuantity > 0
-                              ? "Low Stock"
-                              : "Out Of Stock"}
-                          </p>
-                        </td>
-                        <td className="py-4 px-2">
-                          <span
-                            className={`${
-                              product.isActive
-                                ? "bg-green-500/20 text-green-300"
-                                : "bg-red-500/30 text-red-300"
-                            } text-xs px-2 py-1 rounded-full`}
-                          >
-                            {product.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="py-4 px-2">
-                          <div className="flex space-x-2">
-                            <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
-                              <i className="fas fa-edit text-rose-gold hover:text-pink-500"></i>
-                            </button>
-                            <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
-                              <i className="fas fa-copy text-blue-400 hover:text-blue-500"></i>
-                            </button>
-                            <button
-                              onClick={() => deleteSimpleProduct(product._id)}
-                              className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 pb-2 rounded-lg transition-all duration-300"
+                            </td>
+                          </tr>
+                        ))
+                      : !isLoading &&
+                        allSimpleProduct.length === 0 && (
+                          <tr>
+                            <td
+                              colSpan="10"
+                              className="text-center text-gray-400 py-10"
                             >
-                              <Trash2 className="fas fa-trash text-red-400 hover:text-red-500" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  : !isLoading &&
-                    allSimpleProduct.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan="9"
-                          className="text-center text-gray-400 py-10"
-                        >
-                          No Products Found!
-                        </td>
-                      </tr>
-                    )}
+                              No Products Found!
+                            </td>
+                          </tr>
+                        )}
+                  </>
+                )}
               </tbody>
             </table>
           </div>
