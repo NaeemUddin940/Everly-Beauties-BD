@@ -227,16 +227,6 @@ export default function Page() {
                             key={sub._id}
                             className="bg-gray-700/50 rounded-lg p-3"
                           >
-                            {/* {
-                              (console.log(
-                                "main",
-                                `http://localhost:8080${cat.image}`
-                              ),
-                              console.log(
-                                "sub",
-                                `http://localhost:8080${sub.image}`
-                              ))
-                            } */}
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
                                 <div className="w-10 e h-10 bg-gradient-pink rounded-lg flex items-center justify-center mr-3">

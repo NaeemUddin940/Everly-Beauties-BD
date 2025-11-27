@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const simpleProductSchema = new mongoose.Schema(
   {
@@ -78,8 +79,8 @@ const simpleProductSchema = new mongoose.Schema(
 
     // 🟢 SEO Content For Category Page
     seo: {
-      title: { type: String, default: "" },
-      description: { type: String, default: "" },
+      seoTitle: { type: String, default: "" },
+      seoDescription: { type: String, default: "" },
       bottomContent: { type: String, default: "" },
       schemaMarkup: { type: String, default: "" },
       canonicalUrl: { type: String, default: "" },
@@ -112,6 +113,8 @@ const simpleProductSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+simpleProductSchema.plugin(mongoosePaginate);
 
 const SimpleProduct = mongoose.model("SimpleProduct", simpleProductSchema);
 export default SimpleProduct;

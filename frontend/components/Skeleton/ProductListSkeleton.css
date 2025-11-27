@@ -1,0 +1,94 @@
+/* ProductListSkeleton.css - শুধু এই সাইজগুলো লাগবে, কারণ TD তে প্যাডিং যোগ করা হয়েছে */
+
+/* বেস স্টাইল এবং শাইন এনিমেশন (আগের মতোই থাকবে) */
+.skeleton-box {
+  background-color: #1e293b;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  height: 1rem; /* ডিফল্ট হাইট */
+}
+
+/* শাইন এনিমেশন (এটি পরিবর্তন হবে না) */
+.skeleton-box::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.05) 20%,
+    /* শাইন কালার */ rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* --- নির্দিষ্ট সাইজ (Specific Sizes) --- */
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+.image-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+/* Product/Title & SKU */
+.title-bar {
+  height: 14px;
+}
+.sku-bar {
+  height: 10px;
+}
+
+/* Badge & Status */
+.badge-pill {
+  width: 65px;
+  height: 24px;
+  border-radius: 12px;
+}
+.status-pill {
+  width: 70px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+/* Price, Stock, Category/Brand */
+.text-bar.medium {
+  height: 14px;
+}
+.price-main {
+  height: 14px;
+}
+.price-sub {
+  height: 10px;
+}
+.stock-num {
+  height: 14px;
+}
+.stock-text {
+  height: 10px;
+}
+
+/* Actions */
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+/* *Note: layout properties (display: flex, gap, width) গুলো এখন ProductListSkeleton.jsx ফাইল থেকে Tailwind ক্লাস দিয়ে হ্যান্ডেল করা হচ্ছে। */

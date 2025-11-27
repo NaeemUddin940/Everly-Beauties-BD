@@ -1,4 +1,5 @@
 "use client";
+import createSlug from "@/app/utils/SlugGenerator";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
@@ -7,32 +8,35 @@ import { useTagStore } from "@/ZustandStore/useTagStore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
-    backgroundColor: "#1F2937", // bg-gray-800
-    borderColor: state.isFocused ? "#f472b6" : "#374151", // focus:border-rose-gold
+    backgroundColor: "#1F2937",
+    borderColor: state.isFocused ? "#f472b6" : "#374151",
     borderRadius: "0.75rem",
     padding: "0.25rem",
     minHeight: "3rem",
-    boxShadow: state.isFocused ? "0 0 0 2px #f472b6" : "none", // Tailwind focus:ring-2 focus:ring-rose-gold
-    outline: "none", // blue default remove
+    boxShadow: state.isFocused ? "0 0 0 2px #f472b6" : "none",
+    outline: "none",
   }),
-  input: (provided) => ({
+  multiValueRemove: (provided) => ({
     ...provided,
-    color: "#fff",
+    color: "#F43F5E", // normal red
+    cursor: "pointer",
+    backgroundColor: "#ffa2a2",
+    ":hover": {
+      backgroundColor: "#ffa2c6",
+      color: "#be123c", // darker red on hover
+    },
   }),
-  placeholder: (provided) => ({
-    ...provided,
-    color: "#9CA3AF",
-  }),
-  singleValue: (provided) => ({
-    ...provided,
-    color: "#fff",
-  }),
+  input: (provided) => ({ ...provided, color: "#fff" }),
+  placeholder: (provided) => ({ ...provided, color: "#9CA3AF" }),
+  singleValue: (provided) => ({ ...provided, color: "#fff" }),
+
   option: (provided, state) => ({
     ...provided,
     backgroundColor: state.isFocused
@@ -43,29 +47,43 @@ const customStyles = {
     color: "#fff",
     paddingLeft: state.data.indent ? "2rem" : "0.75rem",
   }),
+
   menu: (provided) => ({
     ...provided,
     backgroundColor: "#1F2937",
     borderRadius: "0.75rem",
+    zIndex: 9999,
+  }),
+
+  // 🔥 MOST IMPORTANT for fixing dropdown clipping
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 99999,
   }),
 };
 
 export default function CreateSimpleProductPage() {
-  const { getAllCategory, getCategory } = useCategoryStore();
+  // stores
+  const { getCategory, getAllCategory } = useCategoryStore();
   const { getAllBrands, allBrands } = useBrandStore();
   const { getAllScreenSolution, allScreenSolution } = useScreenSolutionStore();
   const { getAllTags, allTags } = useTagStore();
-  const { createSimpleProduct } = useSimpleProductStore();
-  const [simpleProductImage, setSimpleProductImage] = useState(null);
-  const [galleryImages, setGalleryImages] = useState([]);
+  const { createSimpleProduct, isLoading } = useSimpleProductStore();
 
-  useEffect(() => {
-    getCategory();
-    getAllBrands();
-    getAllScreenSolution();
-    getAllTags();
-  }, [getCategory, getAllBrands, getAllScreenSolution, getAllTags]);
-  const { register, handleSubmit, control, reset, setValue } = useForm({
+  // local states for previews
+  const [simpleProductImagePreview, setSimpleProductImagePreview] =
+    useState(null);
+  const [galleryImagesPreview, setGalleryImagesPreview] = useState([]);
+  const [galleryFiles, setGalleryFiles] = useState([]);
+
+  // price local (for validation)
+  const [price, setPrice] = useState({
+    regularPrice: 0,
+    salePrice: 0,
+  });
+
+  // react hook form
+  const { register, handleSubmit, control, reset, setValue, watch } = useForm({
     defaultValues: {
       name: "",
       slug: "",
@@ -89,7 +107,7 @@ export default function CreateSimpleProductPage() {
       category: "",
       brand: "",
       screenSolution: "",
-      tags: "",
+      tags: [], // array for multi
       visibility: "Published",
       isActive: true,
       productImage: null,
@@ -97,120 +115,176 @@ export default function CreateSimpleProductPage() {
     },
   });
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  // For Autho Slug generation
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
 
-    if (file) {
-      setSimpleProductImage(URL.createObjectURL(file));
-      setValue("productImage", file);
-    }
+  useEffect(() => {
+    const newSlug = createSlug(name);
+    setSlug(newSlug);
+    setValue("slug", newSlug); // update react-hook-form value
+  }, [name, setValue]);
+
+  // fetch options on mount (empty dependency array to avoid re-trigger)
+  useEffect(() => {
+    getCategory();
+    getAllBrands();
+    getAllScreenSolution();
+    getAllTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // build select options safely (guard for undefined)
+  const categoryOptions =
+    getAllCategory?.categories?.flatMap((category) => [
+      { value: category.name, label: category.name },
+      ...(category.subCategories?.map((sub) => ({
+        value: sub.name,
+        label: sub.name,
+        indent: true,
+      })) || []),
+    ]) || [];
+
+  const brandOptions =
+    allBrands?.allBrands?.map((b) => ({ value: b.name, label: b.name })) || [];
+
+  const screenOptions =
+    allScreenSolution?.allScreenSolution?.map((s) => ({
+      value: s.name,
+      label: s.name,
+    })) || [];
+
+  const tagOptions =
+    allTags?.tags?.map((t) => ({ value: t.name, label: t.name })) || [];
+
+  // handle file change for single product image
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSimpleProductImagePreview(URL.createObjectURL(file));
+    setValue("productImage", file, { shouldDirty: true, shouldTouch: true });
   };
 
+  // handle multiple gallery files
   const handleSimpleProductImageGallery = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
-    const newImages = files.map((file) => ({
+    const newPreviews = files.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
     }));
+    setGalleryImagesPreview((prev) => [...prev, ...newPreviews]);
+    setGalleryFiles((prev) => [...prev, ...files]);
 
-    setGalleryImages((prev) => [...prev, ...newImages]);
-    setValue("galleryImages", [
-      ...galleryImages,
-      ...newImages.map((img) => img.file),
-    ]);
+    // set RHF field to array of Files
+    const existing = watch("galleryImages") || [];
+    setValue("galleryImages", [...existing, ...files], { shouldDirty: true });
   };
 
-  const categoryOptions = getAllCategory?.categories?.flatMap((category) => [
-    { value: category.name },
-    ...(category.subCategories?.map((sub) => ({
-      value: sub.name,
-      label: sub.name,
-      indent: true, // subcategory indented
-    })) || []),
-  ]);
+  // remove one gallery preview (by index)
+  const removeGalleryImage = (index) => {
+    setGalleryImagesPreview((prev) => prev.filter((_, i) => i !== index));
+    setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+    // update RHF field too
+    const currentFiles = watch("galleryImages") || [];
+    const updated = currentFiles.filter((_, i) => i !== index);
+    setValue("galleryImages", updated);
+  };
 
-  // Brand options
-  const brandOptions = allBrands?.allBrands?.map((b) => ({
-    value: b.name,
-    label: b.name,
-  }));
-
-  // Screen solution options
-  const screenOptions = allScreenSolution?.allScreenSolution?.map((s) => ({
-    value: s.name,
-    label: s.name,
-  }));
-
-  const tagOptions = allTags?.tags?.map((t) => ({
-    value: t.name,
-    label: t.name,
-  }));
+  // price validation to avoid infinite toasts
+  useEffect(() => {
+    if (!price) return;
+    const reg = parseFloat(price.regularPrice) || 0;
+    const sale = parseFloat(price.salePrice) || 0;
+    if (sale > 0 && sale > reg) {
+      toast.error("Sale price must be less than or equal to regular price");
+      // only reset salePrice not both, so user can correct
+      setPrice((p) => ({ ...p, salePrice: 0 }));
+      setValue("salePrice", "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price.regularPrice, price.salePrice]);
 
   const onSubmit = async (data) => {
-    const formData = new FormData();
-
-    // --- Append Basic Text Fields ---
-    formData.append("name", data.name);
-    formData.append("slug", data.slug);
-    formData.append("description", data.description);
-    formData.append("ingredient", data.ingredient);
-    formData.append("usageGuide", data.usageGuide);
-    formData.append("regularPrice", data.regularPrice);
-    formData.append("salePrice", data.salePrice);
-    formData.append("stockQuantity", data.stockQuantity);
-    formData.append("lowStockThreshold", data.lowStockThreshold);
-    formData.append("sku", data.sku);
-
-    // --- Handle Booleans (FormData converts everything to strings) ---
-    formData.append("scheduleSale", data.scheduleSale);
-    formData.append("trackStock", data.trackStock);
-    formData.append("allowBackorders", data.allowBackorders);
-    formData.append("isActive", true); // Or extract from data
-
-    // --- Handle Files ---
-    if (data.productImage) {
-      formData.append("productImage", data.productImage);
-    }
-
-    if (data.galleryImages && data.galleryImages.length > 0) {
-      data.galleryImages.forEach((file) => {
-        formData.append("galleryImages", file);
-      });
-    }
-
-    // --- Handle Relations & Mismatches ---
-    formData.append("category", data.category);
-    formData.append("brand", data.brand);
-    // Backend expects 'skinSolution', Frontend has 'screenSolution'
-    formData.append("skinSolution", data.screenSolution);
-    formData.append("tags", data.tags); // If this is a single string
-    formData.append("visibility", data.visibility);
-
-    // --- Handle Nested SEO Object ---
-    // Option A: Send as JSON string (Easiest to handle if backend parses it)
-    // Option B: Send using bracket notation for Multer to parse into object
-    formData.append("seo[title]", data.title);
-    formData.append("seo[description]", data.description);
-    formData.append("seo[bottomContent]", data.bottomContent);
-    formData.append("seo[schemaMarkup]", data.schemaMarkup);
-    formData.append("seo[canonicalUrl]", data.canonicalUrl);
-    formData.append("seo[focusKeywords]", data.focusKeywords);
-
     try {
-      // Pass formData, NOT 'data'
+      // Basic guard: ensure numeric values are numbers
+      const formData = new FormData();
+
+      // append simple fields
+      formData.append("name", data.name || "");
+      formData.append("slug", data.slug || "");
+      formData.append("description", data.description || "");
+      formData.append("ingredient", data.ingredient || "");
+      formData.append("usageGuide", data.usageGuide || "");
+      formData.append("regularPrice", data.regularPrice || "0");
+      formData.append("salePrice", data.salePrice || "0");
+      formData.append("stockQuantity", data.stockQuantity || "0");
+      formData.append("lowStockThreshold", data.lowStockThreshold || "0");
+      formData.append("sku", data.sku || "");
+      formData.append("scheduleSale", data.scheduleSale ? "true" : "false");
+      formData.append("trackStock", data.trackStock ? "true" : "false");
+      formData.append(
+        "allowBackorders",
+        data.allowBackorders ? "true" : "false"
+      );
+      formData.append("isActive", data.isActive ? "true" : "false");
+      formData.append("visibility", data.visibility || "Published");
+
+      // relations (send values — adjust keys if backend expects ids)
+      formData.append("category", data.category || "");
+      formData.append("brand", data.brand || "");
+      // backend expects 'skinSolution' instead of screenSolution? keep skinSolution as earlier note:
+      formData.append("skinSolution", data.screenSolution || "");
+
+      // tags: send as repeated fields if array
+      if (Array.isArray(data.tags)) {
+        data.tags.forEach((t) => {
+          // t might be string or {value,label}
+          const value = typeof t === "string" ? t : t?.value ?? "";
+          if (value) formData.append("tags[]", value);
+        });
+      } else if (data.tags) {
+        // single string
+        formData.append("tags[]", data.tags);
+      }
+
+      // files
+      if (data.productImage) {
+        formData.append("productImage", data.productImage);
+      }
+
+      // gallery files from local galleryFiles
+      if (galleryFiles && galleryFiles.length) {
+        galleryFiles.forEach((file) => {
+          formData.append("galleryImages", file);
+        });
+      }
+      formData.append("seo[seoTitle]", data.seoTitle);
+      formData.append("seo[seoDescription]", data.seoDescription);
+      formData.append("seo[bottomContent]", data.bottomContent);
+      formData.append("seo[schemaMarkup]", data.schemaMarkup);
+      formData.append("seo[canonicalUrl]", data.canonicalUrl);
+      formData.append("seo[focusKeywords]", data.focusKeywords);
+
       await createSimpleProduct(formData);
+
+      // cleanup UI
       reset();
-      setSimpleProductImage(null);
-      setGalleryImages([]);
-    } catch (error) {
-      console.error("Upload failed", error);
+      setSimpleProductImagePreview(null);
+      setGalleryImagesPreview([]);
+      setGalleryFiles([]);
+      setPrice({ regularPrice: 0, salePrice: 0 });
+    } catch (err) {
+      console.error("Upload failed", err);
     }
   };
+
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)} className="flex-1 p-2">
-        {/* <!-- Top Bar --> */}
+        {/* Top Bar */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -219,20 +293,28 @@ export default function CreateSimpleProductPage() {
             <p className="text-gray-400">Create a new single SKU product</p>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center">
+            <button
+              type="button"
+              className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+            >
               <i className="fas fa-times mr-2"></i> Cancel
             </button>
-            <button className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center">
-              <i className="fas fa-save mr-2"></i> Save Product
+            <button
+              disabled={isLoading}
+              type="submit"
+              className="bg-rose-gold hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center"
+            >
+              <i className="fas fa-save mr-2"></i>{" "}
+              {isLoading ? "Saving..." : "Save Product"}
             </button>
           </div>
         </div>
 
-        {/* <!-- Product Form --> */}
+        {/* Product Form */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* <!-- Left Column - Basic Info --> */}
+          {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* <!-- Basic Information --> */}
+            {/* Basic Information */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <h2 className="text-xl font-bold text-white mb-4">
                 Basic Information
@@ -245,10 +327,12 @@ export default function CreateSimpleProductPage() {
                   <input
                     type="text"
                     {...register("name")}
+                    onChange={(e) => setName(e.target.value)}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Enter product name"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Slug
@@ -256,10 +340,13 @@ export default function CreateSimpleProductPage() {
                   <input
                     type="text"
                     {...register("slug")}
+                    value={slug.toLocaleLowerCase()}
+                    onChange={(e) => setSlug(e.target.value)}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Product Slug"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Description
@@ -268,8 +355,9 @@ export default function CreateSimpleProductPage() {
                     {...register("description")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Enter product description"
-                  ></textarea>
+                  />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Ingredient
@@ -278,8 +366,9 @@ export default function CreateSimpleProductPage() {
                     {...register("ingredient")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Enter product Ingredient"
-                  ></textarea>
+                  />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Usage Guide
@@ -287,13 +376,13 @@ export default function CreateSimpleProductPage() {
                   <textarea
                     {...register("usageGuide")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="Enter product"
-                  ></textarea>
+                    placeholder="Enter product usage guide"
+                  />
                 </div>
               </div>
             </div>
 
-            {/* <!-- Pricing --> */}
+            {/* Pricing */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <h2 className="text-xl font-bold text-white mb-4">Pricing</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -304,10 +393,15 @@ export default function CreateSimpleProductPage() {
                   <input
                     type="number"
                     {...register("regularPrice")}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPrice((p) => ({ ...p, regularPrice: val }));
+                    }}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="0.00"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Sale Price ($)
@@ -315,11 +409,16 @@ export default function CreateSimpleProductPage() {
                   <input
                     type="number"
                     {...register("salePrice")}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPrice((p) => ({ ...p, salePrice: val }));
+                    }}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="0.00"
                   />
                 </div>
               </div>
+
               <div className="mt-4">
                 <label className="flex items-center">
                   <input
@@ -334,7 +433,7 @@ export default function CreateSimpleProductPage() {
               </div>
             </div>
 
-            {/* <!-- Inventory --> */}
+            {/* Inventory */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <h2 className="text-xl font-bold text-white mb-4">Inventory</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -349,6 +448,7 @@ export default function CreateSimpleProductPage() {
                     placeholder="0"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Low Stock Threshold
@@ -360,6 +460,7 @@ export default function CreateSimpleProductPage() {
                     placeholder="5"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     SKU
@@ -372,6 +473,7 @@ export default function CreateSimpleProductPage() {
                   />
                 </div>
               </div>
+
               <div className="mt-4 space-y-2">
                 <label className="flex items-center">
                   <input
@@ -396,7 +498,7 @@ export default function CreateSimpleProductPage() {
               </div>
             </div>
 
-            {/* <!-- SEO Content Publishing --> */}
+            {/* SEO */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <h2 className="text-xl font-bold text-white mb-4">
                 SEO Content For Category Page
@@ -408,24 +510,23 @@ export default function CreateSimpleProductPage() {
                   </label>
                   <input
                     type="text"
-                    {...register("title")}
+                    {...register("seoTitle")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here SEO title"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Description
                   </label>
                   <textarea
-                    {...register("description")}
+                    {...register("seoDescription")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here short description"
-                  ></textarea>
+                  />
                 </div>
 
-                {/* <!-- Make editor using React Draft Wysiwyg  --> */}
-                {/* <!-- start  --> */}
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Bottom Content
@@ -434,9 +535,9 @@ export default function CreateSimpleProductPage() {
                     {...register("bottomContent")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here SEO content"
-                  ></textarea>
+                  />
                 </div>
-                {/* <!-- end  --> */}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Schema Markup
@@ -445,11 +546,12 @@ export default function CreateSimpleProductPage() {
                     {...register("schemaMarkup")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here Schema Markup"
-                  ></textarea>
+                  />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Canonical URL{" "}
+                    Canonical URL
                   </label>
                   <input
                     type="url"
@@ -458,6 +560,7 @@ export default function CreateSimpleProductPage() {
                     placeholder="Write here Canonical URL"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Focus Keywords
@@ -466,7 +569,7 @@ export default function CreateSimpleProductPage() {
                     type="text"
                     {...register("focusKeywords")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                    placeholder="lip care, lip balm, lip scrub, lip treatment, bangladesh"
+                    placeholder="lip care, lip balm, ..."
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Separate with commas
@@ -476,49 +579,46 @@ export default function CreateSimpleProductPage() {
             </div>
           </div>
 
-          {/* <!-- Right Column - Media & Organization --> */}
+          {/* Right Column */}
           <div className="space-y-6">
-            {/* <!-- Product Image --> */}
+            {/* Product Image */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <label
                 htmlFor="simpleProductImage"
-                className="text-xl font-bold text-white mb-4"
+                className="text-xl font-bold text-white mb-4 block"
               >
                 Simple Product Image
-                <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
-                  {simpleProductImage && (
-                    <Image
-                      src={simpleProductImage}
-                      alt="Simple Product Preview"
-                      height={296}
-                      className="object-cover w-full"
-                      width={100}
-                    />
-                  )}
-                  {!simpleProductImage && (
-                    <>
-                      <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
-                      <p className="text-gray-400 mb-2">
-                        Drag & drop category image here
+              </label>
+              <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
+                {simpleProductImagePreview ? (
+                  <Image
+                    src={simpleProductImagePreview}
+                    alt="Simple Product Preview"
+                    height={296}
+                    width={296}
+                    className="object-cover w-full rounded-lg"
+                  />
+                ) : (
+                  <>
+                    <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
+                    <p className="text-gray-400 mb-2">
+                      Drag & drop product image here
+                    </p>
+                    <p className="text-sm text-gray-500">or</p>
+                    <label
+                      htmlFor="simpleProductImage"
+                      className="inline-block bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300"
+                    >
+                      Browse Files
+                    </label>
+                    <div className="mt-4">
+                      <p className="text-xs text-gray-500">
+                        Recommended size: 400x400 pixels. JPG, PNG, or WebP
+                        format.
                       </p>
-                      <p className="text-sm text-gray-500">or</p>
-
-                      <button
-                        type="button"
-                        className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300"
-                      >
-                        Browse Files
-                      </button>
-
-                      <div className="mt-4">
-                        <p className="text-xs text-gray-500">
-                          Recommended size: 400x400 pixels. JPG, PNG, or WebP
-                          format.
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
+                    </div>
+                  </>
+                )}
                 <input
                   id="simpleProductImage"
                   type="file"
@@ -527,59 +627,59 @@ export default function CreateSimpleProductPage() {
                   className="hidden"
                   onChange={handleFileChange}
                 />
-              </label>
+              </div>
             </div>
-            {/* <!-- Product Gallery Images --> */}
+
+            {/* Product Gallery */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <label
                 htmlFor="simpleProductImageGallery"
-                className="text-xl font-bold text-white mb-4"
+                className="text-xl font-bold text-white mb-4 block"
               >
                 Product Gallery
-                <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
-                  {!galleryImages.length ? (
-                    <>
-                      <i className="fas fa-images text-2xl text-rose-gold mb-2"></i>
-                      <p className="text-gray-400 mb-2">
-                        Add product gallery images
-                      </p>
-                      <p className="text-sm text-gray-500">or</p>
-                      <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-xl mt-2 font-medium transition-all duration-300">
-                        Browse Files
-                      </button>
-                      <p className="text-xs text-gray-500 mt-2 text-center">
-                        Add multiple images to showcase your product
-                      </p>
-                    </>
-                  ) : (
-                    <div className="flex flex-wrap gap-4 justify-center">
-                      {galleryImages.map((img, idx) => (
-                        <div key={idx} className="relative">
-                          <Image
-                            src={img.preview}
-                            alt="Gallery Preview"
-                            width={120}
-                            height={120}
-                            className="rounded-lg object-cover h-[120px] w-[120px]"
-                          />
-
-                          {/* Remove Button */}
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setGalleryImages((prev) =>
-                                prev.filter((_, i) => i !== idx)
-                              );
-                            }}
-                            className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              </label>
+              <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
+                {!galleryImagesPreview.length ? (
+                  <>
+                    <i className="fas fa-images text-2xl text-rose-gold mb-2"></i>
+                    <p className="text-gray-400 mb-2">
+                      Add product gallery images
+                    </p>
+                    <p className="text-sm text-gray-500">or</p>
+                    <label
+                      htmlFor="simpleProductImageGallery"
+                      className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-xl mt-2 font-medium transition-all duration-300 inline-block cursor-pointer"
+                    >
+                      Browse Files
+                    </label>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Add multiple images to showcase your product
+                    </p>
+                  </>
+                ) : (
+                  <div className="flex flex-wrap gap-4 justify-center">
+                    {galleryImagesPreview.map((img, idx) => (
+                      <div key={idx} className="relative">
+                        <Image
+                          src={img.preview}
+                          alt={`Gallery Preview ${idx + 1}`}
+                          width={120}
+                          height={120}
+                          className="rounded-lg object-cover h-[120px] w-[120px]"
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            removeGalleryImage(idx);
+                          }}
+                          className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <input
                   id="simpleProductImageGallery"
                   type="file"
@@ -589,10 +689,10 @@ export default function CreateSimpleProductPage() {
                   className="hidden"
                   onChange={handleSimpleProductImageGallery}
                 />
-              </label>
+              </div>
             </div>
 
-            {/* <!-- Organization --> */}
+            {/* Organization */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <h2 className="text-xl font-bold text-white mb-4">
                 Organization
@@ -608,26 +708,25 @@ export default function CreateSimpleProductPage() {
                     render={({ field }) => (
                       <Select
                         {...field}
-                        options={categoryOptions || []}
+                        options={categoryOptions}
                         styles={customStyles}
                         placeholder="---Select Category---"
                         isSearchable
-                        getOptionLabel={(option) =>
-                          option.indent
-                            ? `\u00A0\u00A0\u00A0${option.value}`
-                            : option.value
-                        }
-                        getOptionValue={(option) => option.value}
+                        getOptionLabel={(o) => o.label}
+                        getOptionValue={(o) => o.value}
                         value={
-                          (categoryOptions || []).find(
+                          categoryOptions.find(
                             (c) => c.value === field.value
                           ) || null
                         }
-                        onChange={(option) => field.onChange(option.value)}
+                        onChange={(option) =>
+                          field.onChange(option?.value || "")
+                        }
                       />
                     )}
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Brand
@@ -638,26 +737,22 @@ export default function CreateSimpleProductPage() {
                     render={({ field }) => (
                       <Select
                         {...field}
-                        options={brandOptions || []}
+                        options={brandOptions}
                         styles={customStyles}
                         placeholder="---Select Brand---"
                         isSearchable
-                        getOptionLabel={(option) =>
-                          option.indent
-                            ? `\u00A0\u00A0\u00A0${option.value}`
-                            : option.value
-                        }
-                        getOptionValue={(option) => option.value}
                         value={
-                          (brandOptions || []).find(
-                            (c) => c.value === field.value
-                          ) || null
+                          brandOptions.find((b) => b.value === field.value) ||
+                          null
                         }
-                        onChange={(option) => field.onChange(option.value)}
+                        onChange={(option) =>
+                          field.onChange(option?.value || "")
+                        }
                       />
                     )}
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Screen Solutions
@@ -668,26 +763,22 @@ export default function CreateSimpleProductPage() {
                     render={({ field }) => (
                       <Select
                         {...field}
-                        options={screenOptions || []}
+                        options={screenOptions}
                         styles={customStyles}
                         placeholder="---Select Screen Solution---"
                         isSearchable
-                        getOptionLabel={(option) =>
-                          option.indent
-                            ? `\u00A0\u00A0\u00A0${option.value}`
-                            : option.value
-                        }
-                        getOptionValue={(option) => option.value}
                         value={
-                          (screenOptions || []).find(
-                            (c) => c.value === field.value
-                          ) || null
+                          screenOptions.find((s) => s.value === field.value) ||
+                          null
                         }
-                        onChange={(option) => field.onChange(option.value)}
+                        onChange={(option) =>
+                          field.onChange(option?.value || "")
+                        }
                       />
                     )}
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Tags
@@ -699,27 +790,40 @@ export default function CreateSimpleProductPage() {
                       <CreatableSelect
                         {...field}
                         isClearable
-                        isMulti={false} // single value, change to true if multiple tags
-                        options={tagOptions || []}
+                        isMulti
+                        options={tagOptions}
                         styles={customStyles}
-                        placeholder="Type or select a tag"
-                        getOptionLabel={(option) =>
-                          option.indent
-                            ? `\u00A0\u00A0\u00A0${option.value}`
-                            : option.value
-                        }
-                        getOptionValue={(option) => option.value}
+                        placeholder="Type or select tags"
+                        getOptionLabel={(o) => o.label}
+                        getOptionValue={(o) => o.value}
+                        menuPortalTarget={document.body}
+                        menuPosition="fixed"
                         value={
-                          (tagOptions || []).find(
-                            (c) => c.value === field.value
-                          ) || { value: field.value, label: field.value }
+                          Array.isArray(field.value)
+                            ? field.value.map((v) =>
+                                typeof v === "string"
+                                  ? { value: v, label: v }
+                                  : v
+                              )
+                            : []
                         }
-                        onChange={(option) =>
-                          field.onChange(option?.value || "")
+                        onChange={(options) =>
+                          field.onChange(
+                            options ? options.map((o) => o.value) : []
+                          )
                         }
-                        onCreateOption={(inputValue) =>
-                          field.onChange(inputValue)
-                        }
+                        onCreateOption={(inputValue) => {
+                          // add a new tag (value only)
+                          const newTag = {
+                            value: inputValue,
+                            label: inputValue,
+                          };
+                          const curr = Array.isArray(field.value)
+                            ? field.value
+                            : [];
+                          const updated = [...curr, inputValue];
+                          field.onChange(updated);
+                        }}
                       />
                     )}
                   />
@@ -727,7 +831,7 @@ export default function CreateSimpleProductPage() {
               </div>
             </div>
 
-            {/* <!-- Status --> */}
+            {/* Status */}
             <div className="glassmorphism p-6 rounded-2xl shadow-md">
               <h2 className="text-xl font-bold text-white mb-4">Status</h2>
               <div className="space-y-4">
@@ -735,15 +839,20 @@ export default function CreateSimpleProductPage() {
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Visibility
                   </label>
-                  <select className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent">
-                    <option>Published</option>
-                    <option>Draft</option>
+                  <select
+                    {...register("visibility")}
+                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+                  >
+                    <option value="Published">Published</option>
+                    <option value="Draft">Draft</option>
                   </select>
                 </div>
+
                 <div>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
+                      {...register("isActive")}
                       className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500"
                     />
                     <span className="ml-2 text-sm text-gray-400">

@@ -357,20 +357,61 @@ export const updateSimpleProduct = async (req, res) => {
 
 export const getSimpleAllProduct = async (req, res) => {
   try {
-    const allSimpleProducts = await SimpleProduct.find().sort({
-      createdAt: -1,
+    // Query Params → page, limit
+    let { page = 1, limit = 10 } = req.query;
+    page = Number(page);
+    limit = Number(limit);
+
+    // 1️⃣ Pagination + Sort
+    const paginatedProducts = await SimpleProduct.paginate(
+      {},
+      {
+        page,
+        limit,
+        sort: { createdAt: -1 },
+        lean: true,
+      }
+    );
+
+    // 2️⃣ Total Count
+    const totalProducts = await SimpleProduct.countDocuments();
+
+    // 3️⃣ Active Product Count
+    const activeProducts = await SimpleProduct.countDocuments({
+      isActive: true,
     });
 
-    res.status(201).json({
+    return res.status(200).json({
       success: true,
-      allSimpleProductsCount: allSimpleProducts.length,
-      allSimpleProducts,
+      error: false,
+
+      // Pagination Info
+      pagination: {
+        totalProducts: paginatedProducts.totalDocs,
+        totalPages: paginatedProducts.totalPages,
+        currentPage: paginatedProducts.page,
+        limit: paginatedProducts.limit,
+        hasNextPage: paginatedProducts.hasNextPage,
+        hasPrevPage: paginatedProducts.hasPrevPage,
+        nextPage: paginatedProducts.nextPage,
+        prevPage: paginatedProducts.prevPage,
+      },
+
+      // Final Product List
+      simpleProducts: paginatedProducts.docs,
+
+      // Extra counts
+      totalProducts,
+      activeProducts,
+
+      message: "Successfully fetched all simple products.",
     });
   } catch (error) {
-    // Handle errors
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message || "Internal Server Error to do Something!",
+      error: true,
+      message:
+        error.message || "Internal Server Error to Get All Simple Products.",
     });
   }
 };
