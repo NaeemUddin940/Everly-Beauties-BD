@@ -415,3 +415,25 @@ export const getSimpleAllProduct = async (req, res) => {
     });
   }
 };
+
+export const getSingleProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const singleProduct = await SimpleProduct.findById(productId);
+
+    if (!singleProduct) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found!" });
+    }
+
+    res.status(201).json({ success: true, singleProduct });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error to do Something!",
+    });
+  }
+};

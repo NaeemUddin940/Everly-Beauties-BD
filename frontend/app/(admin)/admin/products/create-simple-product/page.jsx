@@ -231,12 +231,9 @@ export default function CreateSimpleProductPage() {
       );
       formData.append("isActive", data.isActive ? "true" : "false");
       formData.append("visibility", data.visibility || "Published");
-
-      // relations (send values — adjust keys if backend expects ids)
       formData.append("category", data.category || "");
       formData.append("brand", data.brand || "");
-      // backend expects 'skinSolution' instead of screenSolution? keep skinSolution as earlier note:
-      formData.append("skinSolution", data.screenSolution || "");
+      formData.append("skinSolution", data.skinSolution || "");
 
       // tags: send as repeated fields if array
       if (Array.isArray(data.tags)) {
@@ -588,46 +585,46 @@ export default function CreateSimpleProductPage() {
                 className="text-xl font-bold text-white mb-4 block"
               >
                 Simple Product Image
-              </label>
-              <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
-                {simpleProductImagePreview ? (
-                  <Image
-                    src={simpleProductImagePreview}
-                    alt="Simple Product Preview"
-                    height={296}
-                    width={296}
-                    className="object-cover w-full rounded-lg"
-                  />
-                ) : (
-                  <>
-                    <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
-                    <p className="text-gray-400 mb-2">
-                      Drag & drop product image here
-                    </p>
-                    <p className="text-sm text-gray-500">or</p>
-                    <label
-                      htmlFor="simpleProductImage"
-                      className="inline-block bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300"
-                    >
-                      Browse Files
-                    </label>
-                    <div className="mt-4">
-                      <p className="text-xs text-gray-500">
-                        Recommended size: 400x400 pixels. JPG, PNG, or WebP
-                        format.
+                <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
+                  {simpleProductImagePreview ? (
+                    <Image
+                      src={simpleProductImagePreview}
+                      alt="Simple Product Preview"
+                      height={296}
+                      width={296}
+                      className="object-cover w-full rounded-lg"
+                    />
+                  ) : (
+                    <>
+                      <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
+                      <p className="text-gray-400 mb-2">
+                        Drag & drop product image here
                       </p>
-                    </div>
-                  </>
-                )}
-                <input
-                  id="simpleProductImage"
-                  type="file"
-                  name="productImage"
-                  accept="image/png, image/jpeg, image/webp"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-              </div>
+                      <p className="text-sm text-gray-500">or</p>
+                      <label
+                        htmlFor="simpleProductImage"
+                        className="inline-block bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300"
+                      >
+                        Browse Files
+                      </label>
+                      <div className="mt-4">
+                        <p className="text-xs text-gray-500">
+                          Recommended size: 400x400 pixels. JPG, PNG, or WebP
+                          format.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  <input
+                    id="simpleProductImage"
+                    type="file"
+                    name="productImage"
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </div>
+              </label>
             </div>
 
             {/* Product Gallery */}
@@ -637,59 +634,59 @@ export default function CreateSimpleProductPage() {
                 className="text-xl font-bold text-white mb-4 block"
               >
                 Product Gallery
+                <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
+                  {!galleryImagesPreview.length ? (
+                    <>
+                      <i className="fas fa-images text-2xl text-rose-gold mb-2"></i>
+                      <p className="text-gray-400 mb-2">
+                        Add product gallery images
+                      </p>
+                      <p className="text-sm text-gray-500">or</p>
+                      <label
+                        htmlFor="simpleProductImageGallery"
+                        className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-xl mt-2 font-medium transition-all duration-300 inline-block cursor-pointer"
+                      >
+                        Browse Files
+                      </label>
+                      <p className="text-xs text-gray-500 mt-2 text-center">
+                        Add multiple images to showcase your product
+                      </p>
+                    </>
+                  ) : (
+                    <div className="flex flex-wrap gap-4 justify-center">
+                      {galleryImagesPreview.map((img, idx) => (
+                        <div key={idx} className="relative">
+                          <Image
+                            src={img.preview}
+                            alt={`Gallery Preview ${idx + 1}`}
+                            width={120}
+                            height={120}
+                            className="rounded-lg object-cover h-[120px] w-[120px]"
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              removeGalleryImage(idx);
+                            }}
+                            className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <input
+                    id="simpleProductImageGallery"
+                    type="file"
+                    name="galleryImages"
+                    accept="image/png, image/jpeg, image/webp"
+                    multiple
+                    className="hidden"
+                    onChange={handleSimpleProductImageGallery}
+                  />
+                </div>
               </label>
-              <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
-                {!galleryImagesPreview.length ? (
-                  <>
-                    <i className="fas fa-images text-2xl text-rose-gold mb-2"></i>
-                    <p className="text-gray-400 mb-2">
-                      Add product gallery images
-                    </p>
-                    <p className="text-sm text-gray-500">or</p>
-                    <label
-                      htmlFor="simpleProductImageGallery"
-                      className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-xl mt-2 font-medium transition-all duration-300 inline-block cursor-pointer"
-                    >
-                      Browse Files
-                    </label>
-                    <p className="text-xs text-gray-500 mt-2 text-center">
-                      Add multiple images to showcase your product
-                    </p>
-                  </>
-                ) : (
-                  <div className="flex flex-wrap gap-4 justify-center">
-                    {galleryImagesPreview.map((img, idx) => (
-                      <div key={idx} className="relative">
-                        <Image
-                          src={img.preview}
-                          alt={`Gallery Preview ${idx + 1}`}
-                          width={120}
-                          height={120}
-                          className="rounded-lg object-cover h-[120px] w-[120px]"
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            removeGalleryImage(idx);
-                          }}
-                          className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <input
-                  id="simpleProductImageGallery"
-                  type="file"
-                  name="galleryImages"
-                  accept="image/png, image/jpeg, image/webp"
-                  multiple
-                  className="hidden"
-                  onChange={handleSimpleProductImageGallery}
-                />
-              </div>
             </div>
 
             {/* Organization */}
@@ -758,14 +755,14 @@ export default function CreateSimpleProductPage() {
                     Screen Solutions
                   </label>
                   <Controller
-                    name="screenSolution"
+                    name="skinSolution"
                     control={control}
                     render={({ field }) => (
                       <Select
                         {...field}
                         options={screenOptions}
                         styles={customStyles}
-                        placeholder="---Select Screen Solution---"
+                        placeholder="---Select Skin Solution---"
                         isSearchable
                         value={
                           screenOptions.find((s) => s.value === field.value) ||

@@ -371,12 +371,15 @@ export default function ShowAllProducts() {
                             </td>
                             <td className="py-4 px-2">
                               <div className="flex space-x-2">
-                                <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
+                                {/* <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
+                                </button> */}
+                                <Link
+                                  href={`/admin/products/edit-simple-product/${product._id}`}
+                                  className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300"
+                                >
                                   <i className="fas fa-edit text-rose-gold hover:text-pink-500"></i>
-                                </button>
-                                <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
-                                  <i className="fas fa-copy text-blue-400 hover:text-blue-500"></i>
-                                </button>
+                                  {/* <i className="fas fa-copy text-blue-400 hover:text-blue-500"></i> */}
+                                </Link>
                                 <button
                                   onClick={() =>
                                     deleteSimpleProduct(product._id)

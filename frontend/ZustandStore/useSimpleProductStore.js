@@ -88,4 +88,64 @@ export const useSimpleProductStore = create((set, get) => ({
       console.error("Delete Simple Product Error:", error);
     }
   },
+
+  getSingleSimpleProduct: async (productId) => {
+    set({ isLoading: true });
+    try {
+      const res = await axiosInstance.get(
+        `/product/get-single-simple-product/${productId}`
+      );
+
+      if (res.data.success) {
+        set({
+          singleSimpleProduct: res.data.singleProduct,
+          isLoading: false,
+        });
+      } else {
+        set({ singleSimpleProduct: null, isLoading: false });
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch product details"
+      );
+      console.error("Get Single Simple Product Error:", error);
+      set({ isLoading: false });
+    }
+  },
+
+  // UPDATE PRODUCT
+  updateSimpleProduct: async (productId, data) => {
+    set({ isLoading: true });
+    try {
+      const res = await axiosInstance.put(
+        `/product/update-product/${productId}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        set({ isLoading: false });
+
+        // Update the product in the existing array
+        set((state) => ({
+          allSimpleProduct: (state.allSimpleProduct.simpleProducts || []).map(
+            (product) =>
+              product._id === productId ? res.data.updatedProduct : product
+          ),
+        }));
+      }
+
+      // Optionally refresh all products (depends on your logic)
+      await get().getAllSimpleProduct();
+    } catch (error) {
+      set({ isLoading: false });
+      toast.error(error?.response?.data?.message);
+      console.error("Update Simple Product Error:", error);
+    }
+  },
 }));
