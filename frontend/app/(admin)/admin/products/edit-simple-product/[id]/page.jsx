@@ -52,7 +52,7 @@ export default function CreateSimpleProductPage() {
   useEffect(() => {
     if (id) {
       getSingleSimpleProduct(id);
-      getCategory();
+      getAllCategory();
       getAllBrands();
       getAllScreenSolution();
       getAllTags();
@@ -60,7 +60,7 @@ export default function CreateSimpleProductPage() {
   }, [
     id,
     getSingleSimpleProduct,
-    getCategory,
+    getAllCategory,
     getAllBrands,
     getAllScreenSolution,
     getAllTags,
@@ -644,7 +644,7 @@ export default function CreateSimpleProductPage() {
                     {...register("category")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                   >
-                    {getAllCategory?.categories?.map((cat) => (
+                    {getCategory?.categories?.map((cat) => (
                       <option key={cat._id} value={cat.name}>
                         {cat.name}
                       </option>

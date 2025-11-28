@@ -6,7 +6,7 @@ import { create } from "zustand";
 export const useCategoryStore = create((set, get) => ({
   singleSubCategory: null,
   singleMainCategory: null,
-  getAllCategory: null,
+  getCategory: null,
   isUploading: false,
 
   createMainCategory: async (data) => {
@@ -68,14 +68,14 @@ export const useCategoryStore = create((set, get) => ({
   },
 
   // --- Category Fetching ---
-  getCategory: async (page = 1, limit = 10) => {
+  getAllCategory: async (page = 1, limit = 10) => {
     try {
       const res = await axiosInstance.get(
         `/category/get-all-category?page=${page}&limit=${limit}`
       );
 
       set({
-        getAllCategory: res.data,
+        getCategory: res.data,
       });
     } catch (error) {
       console.error("Failed to Get All Categories :", error);

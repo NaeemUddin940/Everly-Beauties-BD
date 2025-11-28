@@ -24,8 +24,8 @@ export default function Page() {
     useCategoryStore();
 
   useEffect(() => {
-    getCategory(page, limit);
-  }, [getCategory, page, limit]);
+    getAllCategory(page, limit);
+  }, [getAllCategory, page, limit]);
 
   console.log(getAllCategory);
   return (
@@ -66,7 +66,7 @@ export default function Page() {
             <div>
               <p className="text-gray-400 text-sm">Total Categories</p>
               <h3 className="text-2xl font-bold text-white mt-2">
-                {getAllCategory?.totalCategories || 0}
+                {getCategory?.totalCategories || 0}
               </h3>
             </div>
             <div className="bg-gradient-pink p-3 rounded-xl">
@@ -81,7 +81,7 @@ export default function Page() {
             <div>
               <p className="text-gray-400 text-sm">Main Categories</p>
               <h3 className="text-2xl font-bold text-white mt-2">
-                {getAllCategory?.mainCategoriesCount || 0}
+                {getCategory?.mainCategoriesCount || 0}
               </h3>
             </div>
             <div className="bg-blue-500 p-3 rounded-xl">
@@ -96,7 +96,7 @@ export default function Page() {
             <div>
               <p className="text-gray-400 text-sm">Subcategories</p>
               <h3 className="text-2xl font-bold text-white mt-2">
-                {getAllCategory?.subCategoriesCount || 0}
+                {getCategory?.subCategoriesCount || 0}
               </h3>
             </div>
             <div className="bg-green-500 p-3 rounded-xl">
@@ -111,7 +111,7 @@ export default function Page() {
             <div>
               <p className="text-gray-400 text-sm">Active Categories</p>
               <h3 className="text-2xl font-bold text-white mt-2">
-                {getAllCategory?.activeCategoryCount || 0}
+                {getCategory?.activeCategoryCount || 0}
               </h3>
             </div>
             <div className="bg-purple-500 p-3 rounded-xl">
@@ -128,12 +128,12 @@ export default function Page() {
         </div>
 
         <div className="space-y-2">
-          {!getAllCategory?.categories?.length ? (
+          {!getCategory?.categories?.length ? (
             <div className="text-center text-gray-400 py-4">
               Category Not Found
             </div>
           ) : (
-            getAllCategory?.categories?.map((cat) => (
+            getCategory?.categories?.map((cat) => (
               <div key={cat._id} className="bg-gray-800 rounded-xl">
                 {/* Trigger Area */}
 
@@ -201,7 +201,7 @@ export default function Page() {
                         onClick={async (e) => {
                           e.stopPropagation();
                           await deleteMainCategory(cat._id);
-                          await getCategory(page, limit);
+                          await getAllCategory(page, limit);
                         }}
                       >
                         <Trash2 />

@@ -7,11 +7,13 @@ import {
 } from "@/components/ui/tooltip";
 import { api } from "@/lib/axios";
 import { exportProducts } from "@/lib/exportProducts";
+import { useBrandStore } from "@/ZustandStore/useBrandStore";
+import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react"; // 👈 useState and useMemo imported
 
 export default function ShowAllProducts() {
   const {
@@ -21,14 +23,107 @@ export default function ShowAllProducts() {
     deleteSimpleProduct,
   } = useSimpleProductStore();
 
+  const { getAllCategory, getCategory } = useCategoryStore();
+
+  const { allBrands, getAllBrands } = useBrandStore();
+
+  // --- 1. 🔍 FILTER STATE ---
+  const [filterOptions, setFilterOptions] = useState({
+    category: "All Categories",
+    brand: "All Brands",
+    type: "All Types",
+    status: "All Status",
+    stock: "All Stock",
+    search: "",
+  });
+
+  // --- 2. 📝 HANDLER FUNCTION ---
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilterOptions((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // --- 3. 🧠 FILTERING LOGIC (useMemo for efficiency) ---
+  const filteredProducts = useMemo(() => {
+    if (!allSimpleProduct?.simpleProducts) return [];
+
+    const products = allSimpleProduct.simpleProducts;
+    const { category, brand, type, status, stock, search } = filterOptions;
+
+    // Convert all products to simple, consistent structure before filtering
+    return products.filter((product) => {
+      // 3.1. Category Filter
+      if (category !== "All Categories" && product.category !== category) {
+        return false;
+      }
+
+      // 3.2. Brand Filter
+      if (brand !== "All Brands" && product.brand !== brand) {
+        return false;
+      }
+
+      // 3.3. Type Filter (Assuming all are 'Simple' for now, modify if variable/combo are added)
+      if (type !== "All Types" && type !== "Simple") {
+        return false; // Since this page only loads simple products
+      }
+
+      // 3.4. Status Filter
+      if (status !== "All Status") {
+        const isActive = product.isActive ? "Active" : "Inactive";
+        if (isActive !== status) {
+          return false;
+        }
+      }
+
+      // 3.5. Stock Filter
+      if (stock !== "All Stock") {
+        let stockStatus;
+        if (product.stockQuantity > 10) {
+          stockStatus = "In Stock";
+        } else if (product.stockQuantity > 0) {
+          stockStatus = "Low Stock";
+        } else {
+          stockStatus = "Out of Stock";
+        }
+
+        if (
+          stockStatus.toLowerCase().replace(/\s/g, "") !==
+          stock.toLowerCase().replace(/\s/g, "")
+        ) {
+          return false;
+        }
+      }
+
+      // 3.6. Search Filter (by name or SKU)
+      if (search) {
+        const lowerSearch = search.toLowerCase();
+        if (
+          !product.name.toLowerCase().includes(lowerSearch) &&
+          !product.sku.toLowerCase().includes(lowerSearch)
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allSimpleProduct, filterOptions]); // Re-run only when products or filters change
+
   useEffect(() => {
+    // ⚠️ Note: Fetching 1000 products to enable client-side filtering.
+    // For large databases, this should be converted to server-side filtering/pagination.
     getAllSimpleProduct(1000);
-  }, [getAllSimpleProduct]);
+    getAllCategory();
+    getAllBrands();
+  }, [getAllSimpleProduct, getAllCategory, getAllBrands]);
 
   return (
     <div>
       <div className=" flex-1 p-2">
-        {/* <!-- Top Bar --> */}
+        {/* */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -43,6 +138,10 @@ export default function ShowAllProducts() {
               <input
                 type="text"
                 placeholder="Search products..."
+                // 📝 Search Handler added
+                name="search"
+                value={filterOptions.search}
+                onChange={handleFilterChange}
                 className="bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
               />
               <i className="fas fa-search absolute bg-red-300 left-3 top-3 text-gray-400"></i>
@@ -58,15 +157,13 @@ export default function ShowAllProducts() {
           </div>
         </div>
 
-        {/* <!-- Product Type Selection --> */}
+        {/* */}
+        {/* ... (Your existing 'Add New Product' section) ... */}
+
         <div className="mb-8">
           <h2 className="text-xl font-bold text-white mb-4">Add New Product</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* <!-- Simple Product Card --> */}
-            <div
-              className="glassmorphism product-type-card p-6 rounded-2xl shadow-md border border-gray-700 cursor-pointer"
-              // onclick="window.location.href='simple-product.html'"
-            >
+            <div className="glassmorphism product-type-card p-6 rounded-2xl shadow-md border border-gray-700 cursor-pointer">
               <div className="flex justify-between items-start mb-4">
                 <div className="bg-blue-500/20 p-3 rounded-xl">
                   <i className="fas fa-cube text-blue-400 text-xl"></i>
@@ -91,11 +188,7 @@ export default function ShowAllProducts() {
               </Link>
             </div>
 
-            {/* <!-- Variable Product Card --> */}
-            <div
-              className="glassmorphism product-type-card p-6 rounded-2xl shadow-md border border-gray-700 cursor-pointer"
-              // onclick="window.location.href='variable-product.html'"
-            >
+            <div className="glassmorphism product-type-card p-6 rounded-2xl shadow-md border border-gray-700 cursor-pointer">
               <div className="flex justify-between items-start mb-4">
                 <div className="bg-purple-500/20 p-3 rounded-xl">
                   <i className="fas fa-palette text-purple-400 text-xl"></i>
@@ -119,11 +212,7 @@ export default function ShowAllProducts() {
               </Link>
             </div>
 
-            {/* <!-- Combo Product Card --> */}
-            <div
-              className="glassmorphism product-type-card p-6 rounded-2xl shadow-md border border-gray-700 cursor-pointer"
-              // onclick="window.location.href='combo-product.html'"
-            >
+            <div className="glassmorphism product-type-card p-6 rounded-2xl shadow-md border border-gray-700 cursor-pointer">
               <div className="flex justify-between items-start mb-4">
                 <div className="bg-green-500/20 p-3 rounded-xl">
                   <i className="fas fa-gift text-green-400 text-xl"></i>
@@ -149,68 +238,107 @@ export default function ShowAllProducts() {
           </div>
         </div>
 
-        {/* <!-- Filters --> */}
+        {/* --- Filters (Updated with Handler and State) --- */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md mb-6">
           <div className="flex flex-wrap gap-4 items-center">
+            {/* Category Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Category
               </label>
-              <select className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent">
-                <option>All Categories</option>
-                <option>Lipstick</option>
-                <option>Foundation</option>
-                <option>Skincare</option>
-                <option>Eyeshadow</option>
+              <select
+                name="category"
+                value={filterOptions.category}
+                onChange={handleFilterChange}
+                className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+              >
+                <option value="All Categories">All Categories</option>
+                {getCategory?.categories?.length > 0 &&
+                  getCategory.categories.map((cat) => (
+                    <option key={cat._id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
               </select>
             </div>
+
+            {/* Brand Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Brand
               </label>
-              <select className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent">
-                <option>All Brands</option>
-                <option>Luxe Beauty</option>
-                <option>Glamour Cosmetics</option>
-                <option>Pure Skin</option>
+              <select
+                name="brand"
+                value={filterOptions.brand}
+                onChange={handleFilterChange}
+                className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+              >
+                <option value="All Brands">All Brands</option>
+                {allBrands?.brands?.length > 0 &&
+                  allBrands.brands.map((brand) => (
+                    <option key={brand._id} value={brand.name}>
+                      {brand.name}
+                    </option>
+                  ))}
               </select>
             </div>
+
+            {/* Type Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Type
               </label>
-              <select className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent">
-                <option>All Types</option>
-                <option>Simple</option>
-                <option>Variable</option>
-                <option>Combo</option>
+              <select
+                name="type"
+                value={filterOptions.type}
+                onChange={handleFilterChange}
+                className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+              >
+                <option value="All Types">All Types</option>
+                <option value="Simple">Simple</option>
+                <option value="Variable">Variable</option>
+                <option value="Combo">Combo</option>
               </select>
             </div>
+
+            {/* Status Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Status
               </label>
-              <select className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent">
-                <option>All Status</option>
-                <option>Active</option>
-                <option>Inactive</option>
+              <select
+                name="status"
+                value={filterOptions.status}
+                onChange={handleFilterChange}
+                className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+              >
+                <option value="All Status">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
               </select>
             </div>
+
+            {/* Stock Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Stock
               </label>
-              <select className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent">
-                <option>All Stock</option>
-                <option>In Stock</option>
-                <option>Low Stock</option>
-                <option>Out of Stock</option>
+              <select
+                name="stock"
+                value={filterOptions.stock}
+                onChange={handleFilterChange}
+                className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+              >
+                <option value="All Stock">All Stock</option>
+                <option value="In Stock">In Stock</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* <!-- Products Table --> */}
+        {/* */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-white">All Products</h2>
@@ -234,15 +362,11 @@ export default function ShowAllProducts() {
             <table className="w-full table-fixed">
               <thead>
                 <tr className="border-b border-gray-700">
-                  {/* 1. Checkbox: (Fixed Width for small content) */}
                   <th className="py-3 px-2 text-left w-[50px]">
                     <input type="checkbox" className="custom-checkbox" />
                   </th>
-                  {/* 2. Image: (Fixed Width for 40px image + padding) */}
                   <th className="py-3 px-2 text-left w-[75px]">Image</th>
-                  {/* 3. Product: (Wide fixed width for name/sku/tooltip) */}
                   <th className="py-3 px-2 text-left w-[220px]">Product</th>
-                  {/* 4-10. Other Columns with fixed widths */}
                   <th className="py-3 px-2 text-left w-24">Type</th>
                   <th className="py-3 px-2 text-left w-32">Category</th>
                   <th className="py-3 px-2 text-left w-28">Brand</th>
@@ -253,32 +377,25 @@ export default function ShowAllProducts() {
                 </tr>
               </thead>
               <tbody className="w-full">
-                {/* 💥 FIX: colSpan="10" <td> wrapper বাদ দেওয়া হয়েছে 💥 */}
                 {isLoading ? (
-                  [
-                    ...Array(
-                      allSimpleProduct?.simpleProducts?.length > 0
-                        ? allSimpleProduct.simpleProducts.length
-                        : 5
-                    ),
-                  ].map((_, index) => (
+                  [...Array(5)].map((_, index) => (
                     <tr
                       key={index}
                       className="border-b border-gray-800 animate-pulse"
                     >
-                      <ProductListSkeleton />
+                      {/* Using 10 here to cover all columns */}
+                      <ProductListSkeleton count={10} />
                     </tr>
                   ))
                 ) : (
                   <>
-                    {/* Simple Products (Data Rows) */}
-                    {allSimpleProduct?.simpleProducts?.length > 0
-                      ? allSimpleProduct?.simpleProducts?.map((product) => (
+                    {/* 🚀 Simple Products (Data Rows) - Now using filteredProducts */}
+                    {filteredProducts.length > 0
+                      ? filteredProducts.map((product) => (
                           <tr
                             key={product._id}
                             className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
                           >
-                            {/* TD Padding Standardization: px-2 everywhere */}
                             <td className="py-4 px-2">
                               <input
                                 type="checkbox"
@@ -286,7 +403,6 @@ export default function ShowAllProducts() {
                               />
                             </td>
                             <td className="py-4 px-2 text-left">
-                              {/* Note: Removed <div> wrapper as per user's last code */}
                               <Image
                                 src={api + product.productImage}
                                 alt={product.name}
@@ -297,8 +413,6 @@ export default function ShowAllProducts() {
                               />
                             </td>
                             <td className="py-4 px-2 text-left">
-                              {" "}
-                              {/* px-2 যোগ করা হলো */}
                               <Tooltip>
                                 <div className="flex items-center">
                                   <div>
@@ -317,7 +431,6 @@ export default function ShowAllProducts() {
                                 </div>
                               </Tooltip>
                             </td>
-                            {/* ... বাকি <td> গুলোর padding px-2 আছে, যা সঠিক ... */}
                             <td className="py-4 px-2">
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-300">
                                 <i className="fas fa-cube mr-1"></i> Simple
@@ -371,14 +484,11 @@ export default function ShowAllProducts() {
                             </td>
                             <td className="py-4 px-2">
                               <div className="flex space-x-2">
-                                {/* <button className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300">
-                                </button> */}
                                 <Link
                                   href={`/admin/products/edit-simple-product/${product._id}`}
                                   className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300"
                                 >
                                   <i className="fas fa-edit text-rose-gold hover:text-pink-500"></i>
-                                  {/* <i className="fas fa-copy text-blue-400 hover:text-blue-500"></i> */}
                                 </Link>
                                 <button
                                   onClick={() =>
@@ -392,14 +502,13 @@ export default function ShowAllProducts() {
                             </td>
                           </tr>
                         ))
-                      : !isLoading &&
-                        allSimpleProduct.length === 0 && (
+                      : !isLoading && (
                           <tr>
                             <td
                               colSpan="10"
                               className="text-center text-gray-400 py-10"
                             >
-                              No Products Found!
+                              No Products Found matching the filters!
                             </td>
                           </tr>
                         )}
