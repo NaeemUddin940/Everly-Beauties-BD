@@ -23,19 +23,20 @@ export const useSimpleProductStore = create((set, get) => ({
         set({ isLoading: false });
 
         // Add newly created product to the existing array
-        set((state) => ({
-          allSimpleProduct: [
-            ...(state.allSimpleProduct || []),
-            res.data.product,
-          ],
-        }));
+        // ... state update logic ...
       }
 
-      // Optionally refresh all products (depends on your logic)
-      await get().getAllSimpleProduct();
+      // ✅ FIX: getAllSimpleProduct কলটিকে try...catch এর বাইরে নিয়ে যান বা এটিকেও সুরক্ষিত করুন।
+      try {
+        await get().getAllSimpleProduct();
+      } catch (refreshError) {
+        // রিফ্রেশ এরর হলে শুধুমাত্র কনসোলে লগ করুন, টোস্ট দেখাবেন না
+        console.error("Failed to refresh product list:", refreshError);
+      }
     } catch (error) {
+      // ❌ মূল createProduct এরর হলে তবেই টোস্ট দেখান
       set({ isLoading: false });
-      toast.error(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "Product creation failed."); // ডিফল্ট মেসেজ দিন
       console.error("Create Simple Product Error:", error);
     }
   },
@@ -76,12 +77,21 @@ export const useSimpleProductStore = create((set, get) => ({
       if (res.data.success) {
         toast.success(res.data.message);
 
-        // Remove the deleted product from the state safely
-        set((state) => ({
-          allSimpleProduct: (
+        // ✅ সমাধান: নতুন ফিল্টার করা অ্যারেটিকে 'simpleProducts' প্রপার্টির মধ্যে রাখুন
+        set((state) => {
+          // 1. নতুন ফিল্টার করা অ্যারে তৈরি করুন
+          const updatedProducts = (
             state.allSimpleProduct.simpleProducts || []
-          ).filter((product) => product._id !== productId),
-        }));
+          ).filter((product) => product._id !== productId);
+
+          // 2. allSimpleProduct অবজেক্টের স্ট্রাকচার বজায় রেখে সেটি আপডেট করুন
+          return {
+            allSimpleProduct: {
+              ...state.allSimpleProduct, // pagination, metadata, ইত্যাদি ধরে রাখুন
+              simpleProducts: updatedProducts, // শুধুমাত্র প্রোডাক্টের অ্যারে আপডেট করুন
+            },
+          };
+        });
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Delete product failed");

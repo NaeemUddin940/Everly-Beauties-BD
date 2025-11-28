@@ -27,6 +27,14 @@ export const createSimpleProduct = async (req, res) => {
       isActive,
     } = req.body;
 
+    if (!name || !slug || !description || !regularPrice || !sku) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please provide all required fields: name, slug, description, regularPrice, sku.",
+      });
+    }
+
     // 🖼️ Multer Files
     const mainImage = req.files["productImage"]?.[0];
     const galleryImages = req.files["galleryImages"] || [];
