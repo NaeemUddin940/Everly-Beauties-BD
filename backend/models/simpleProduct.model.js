@@ -4,11 +4,7 @@ import mongoosePaginate from "mongoose-paginate-v2";
 const simpleProductSchema = new mongoose.Schema(
   {
     // 🟢 Basic Information
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    name: { type: String, required: true, trim: true },
     slug: {
       type: String,
       required: true,
@@ -16,66 +12,25 @@ const simpleProductSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    description: {
-      type: String,
-      default: "",
-    },
-    ingredient: {
-      type: String,
-      default: "",
-    },
-    usageGuide: {
-      type: String,
-      default: "",
-    },
+    description: { type: String, default: "" },
+    ingredient: { type: String, default: "" },
+    usageGuide: { type: String, default: "" },
 
     // 🟢 Pricing
-    regularPrice: {
-      type: Number,
-      required: true,
-    },
-    salePrice: {
-      type: Number,
-      default: 0,
-    },
-    scheduleSale: {
-      type: Boolean,
-      default: false,
-    },
+    regularPrice: { type: Number, required: true },
+    salePrice: { type: Number, default: 0 },
+    scheduleSale: { type: Boolean, default: false },
 
     // 🟢 Inventory
-    stockQuantity: {
-      type: Number,
-      default: 0,
-    },
-    lowStockThreshold: {
-      type: Number,
-      default: 5,
-    },
-    sku: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-    trackStock: {
-      type: Boolean,
-      default: true,
-    },
-    allowBackorders: {
-      type: Boolean,
-      default: false,
-    },
+    stockQuantity: { type: Number, default: 0 },
+    lowStockThreshold: { type: Number, default: 5 },
+    sku: { type: String, unique: true, sparse: true },
+    trackStock: { type: Boolean, default: true },
+    allowBackorders: { type: Boolean, default: false },
 
     // 🟢 Product Images
-    productImage: {
-      type: String, // URL
-      default: "",
-    },
-    galleryImages: [
-      {
-        type: String, // URL list
-      },
-    ],
+    productImage: { type: String, default: "" },
+    galleryImages: [{ type: String }],
 
     // 🟢 SEO Content For Category Page
     seo: {

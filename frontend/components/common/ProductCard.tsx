@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import { api } from "@/lib/axios";
 import Image from "next/image";
 import Link from "next/link";
-import { IoMdHeartEmpty } from "react-icons/io";
+import { useState } from "react";
 import { FaStar } from "react-icons/fa";
+import { IoMdHeartEmpty } from "react-icons/io";
 import QuickViewModal from "./QuickViewModal";
 
 const ProductCard = ({
@@ -65,11 +66,12 @@ const ProductCard = ({
           {/* Product Image */}
           <Link href={`/products/${slug}`}>
             <Image
-              src={mainImage}
+              src={api + mainImage}
               alt={productName}
               width={430}
               height={430}
               className="w-full h-full object-cover cursor-pointer transition-opacity hover:opacity-90"
+              unoptimized
             />
           </Link>
 

@@ -3,10 +3,12 @@
 
 import createSlug from "@/app/utils/SlugGenerator";
 import { useTagStore } from "@/ZustandStore/useTagStore";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function Page() {
+  const router = useRouter();
   const { createTag } = useTagStore();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -28,7 +30,8 @@ export default function Page() {
 
   // Submit Handler
   const onSubmit = async (data) => {
-    console.log("Final Form Data:", data);
+    // console.log("Final Form Data:", data);
+    router.push("/admin/tags");
     await createTag(data);
     reset();
     setSlug("");

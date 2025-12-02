@@ -1,11 +1,12 @@
 "use client";
 
 import { useTagStore } from "@/ZustandStore/useTagStore";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 export default function Page() {
+  const router = useRouter();
   const { updateTag, getSingleTag, singleTag } = useTagStore();
   const { id } = useParams();
 
@@ -31,6 +32,7 @@ export default function Page() {
 
   // Submit Handler
   const onSubmit = async (data) => {
+    router.push("/admin/tags");
     await updateTag(data, id);
   };
 

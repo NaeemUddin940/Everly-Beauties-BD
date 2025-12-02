@@ -2,7 +2,7 @@
 
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -10,6 +10,7 @@ const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function Page() {
   const { id } = useParams();
+  const router = useRouter();
   const isSub = Boolean(id[1]); // sub category কিনা check
 
   const {
@@ -76,9 +77,10 @@ export default function Page() {
 
   /** 📌 Submit Handler */
   const onSubmit = async (formData) => {
+    router.push("/admin/categories");
     if (isSub) {
-      console.log(formData)
-      formData.mainCategoryId = id[0]; // ✔ must include mainCategory for sub
+      console.log(formData);
+      formData.mainCategoryId = id[0];
       await updateSubCategory(formData, id[1]);
       await getSubSingleCategory(id[1]);
     } else {
@@ -170,36 +172,49 @@ export default function Page() {
           <div className="glassmorphism p-6 rounded-2xl shadow-md">
             <label className="text-xl font-bold text-white mb-4 block">
               Category Image
+              <div
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files[0];
+                  if (!file) return;
+                  const fileURL = URL.createObjectURL(file);
+                  setLocalFile(fileURL);
+                  setValue("image", file);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                className="image-upload-area block rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all"
+              >
+                {localFile || serverFile ? (
+                  <Image
+                    src={localFile ? localFile : `${API}${serverFile}`}
+                    alt="category image"
+                    width={400}
+                    height={300}
+                    className="object-cover w-full rounded-md"
+                    unoptimized
+                  />
+                ) : (
+                  <>
+                    <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
+                    <button
+                      onClick={() =>
+                        document.getElementById("categoryFile")?.click()
+                      }
+                      className="text-gray-400"
+                    >
+                      Upload category image
+                    </button>
+                  </>
+                )}
+              </div>
+              <input
+                id="categoryFile"
+                type="file"
+                accept="image/png, image/jpeg, image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
             </label>
-
-            <label
-              htmlFor="categoryFile"
-              className="image-upload-area block rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all"
-            >
-              {localFile || serverFile ? (
-                <Image
-                  src={localFile ? localFile : `${API}${serverFile}`}
-                  alt="category image"
-                  width={400}
-                  height={300}
-                  className="object-cover w-full rounded-md"
-                  unoptimized
-                />
-              ) : (
-                <>
-                  <i className="fas fa-cloud-upload-alt text-3xl text-rose-gold mb-3"></i>
-                  <p className="text-gray-400">Upload category image</p>
-                </>
-              )}
-            </label>
-
-            <input
-              id="categoryFile"
-              type="file"
-              accept="image/png, image/jpeg, image/webp"
-              className="hidden"
-              onChange={handleFileChange}
-            />
           </div>
         </div>
       </div>

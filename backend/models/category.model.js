@@ -8,6 +8,14 @@ const mainCategorySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    seo: {
+      seoTitle: { type: String, default: "" },
+      seoDescription: { type: String, default: "" },
+      bottomContent: { type: String, default: "" },
+      schemaMarkup: { type: String, default: "" },
+      canonicalUrl: { type: String, default: "" },
+      focusKeywords: [{ type: String }],
+    },
     slug: {
       type: String,
       trim: true,
@@ -35,6 +43,14 @@ const subCategorySchema = new mongoose.Schema(
     image: {
       type: String,
       default: null,
+    },
+    seo: {
+      seoTitle: { type: String, default: "" },
+      seoDescription: { type: String, default: "" },
+      bottomContent: { type: String, default: "" },
+      schemaMarkup: { type: String, default: "" },
+      canonicalUrl: { type: String, default: "" },
+      focusKeywords: [{ type: String }],
     },
     slug: {
       type: String,

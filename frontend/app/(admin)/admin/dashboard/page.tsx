@@ -1,9 +1,17 @@
-import Topbar from "@/components/admin/Topbar";
+import Sidebar from "@/components/admin/Sidebar";
+import { Button } from "@/components/ui/button";
+import { SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function page() {
   return (
     <div>
-      <Topbar />
+      <SheetTrigger asChild className="lg:hidden">
+        <Button>jhasjhd</Button>
+        {/* <Topbar /> */}
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[350px] bg-gray-900">
+        <Sidebar />
+      </SheetContent>
       <div className=" flex-1 py-4">
         {/* <!-- Stats Cards --> */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

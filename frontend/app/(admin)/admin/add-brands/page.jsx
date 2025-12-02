@@ -1,12 +1,15 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+
 "use client";
 import createSlug from "@/app/utils/SlugGenerator";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
-/* eslint-disable react-hooks/rules-of-hooks */
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function page() {
+  const router = useRouter();
   const [selectedFile, setSelectedFile] = useState(null);
   const { createBrand } = useBrandStore();
   const [name, setName] = useState("");
@@ -34,6 +37,7 @@ export default function page() {
   }, [name, setValue]);
 
   async function onSubmit(data) {
+    router.push("/admin/brands");
     await createBrand(data);
 
     reset();
@@ -238,6 +242,9 @@ export default function page() {
                       <p className="text-sm text-gray-500">or</p>
                       <button
                         type="button"
+                        onClick={() =>
+                            document.getElementById("brandFile")?.click()
+                          }
                         className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300"
                       >
                         Browse Files

@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
+import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,11 +12,15 @@ export default function page() {
   const [limit, setLimit] = useState(5);
   const { getAllScreenSolution, deleteScreenSolution, allScreenSolution } =
     useScreenSolutionStore();
+  const { getAllSimpleProduct, allSimpleProduct } = useSimpleProductStore();
 
   useEffect(() => {
     getAllScreenSolution(page, limit);
-  }, [getAllScreenSolution, page, limit]);
+    getAllSimpleProduct();
+  }, [getAllScreenSolution, page, limit, getAllSimpleProduct]);
 
+
+  console.log(allSimpleProduct)
   return (
     <div>
       <div className="flex-1 p-2">
@@ -154,7 +159,14 @@ export default function page() {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-rose-gold font-medium">124</span>
+                        <span className="text-rose-gold font-medium">
+                          {
+                            allSimpleProduct?.simpleProducts?.filter(
+                              (product) =>
+                                product.skinSolution === solution?.name
+                            ).length
+                          }
+                        </span>
                       </td>
                       <td className="py-4 px-4">
                         <span

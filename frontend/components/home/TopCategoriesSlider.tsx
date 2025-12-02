@@ -1,20 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Slider from "react-slick";
-import { useQuery } from "@tanstack/react-query";
-import getTopCategories from "../../../../../lib/getTopCategories";
-import getCategories from "../../../../../lib/getCategories";
+
+import { api } from "@/lib/axios";
+import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import "slick-carousel/slick/slick.css";
 
 // Custom Arrows
 const PrevArrow = ({ onClick }: any) => (
   <div
-    className="absolute z-10 left-[-16px] md:left-[-24px] top-1/2 transform -translate-y-1/2 bg-white shadow-md bg-opacity-70 rounded-full flex items-center justify-center w-8 h-8 md:w-10 md:h-10 cursor-pointer"
+    className="absolute z-10 -left-4 md:-left-6 top-1/2 transform -translate-y-1/2 bg-white shadow-md bg-opacity-70 rounded-full flex items-center justify-center w-8 h-8 md:w-10 md:h-10 cursor-pointer"
     onClick={onClick}
   >
     <IoIosArrowBack className="text-pink-500 text-lg md:text-xl" />
@@ -23,35 +23,21 @@ const PrevArrow = ({ onClick }: any) => (
 
 const NextArrow = ({ onClick }: any) => (
   <div
-    className="absolute z-10 right-[-16px] md:right-[-24px] top-1/2 transform -translate-y-1/2 bg-white shadow-md bg-opacity-70 rounded-full flex items-center justify-center w-8 h-8 md:w-10 md:h-10 cursor-pointer"
+    className="absolute z-10 -right-4 md:-right-6 top-1/2 transform -translate-y-1/2 bg-white shadow-md bg-opacity-70 rounded-full flex items-center justify-center w-8 h-8 md:w-10 md:h-10 cursor-pointer"
     onClick={onClick}
   >
     <IoIosArrowForward className="text-pink-500 text-lg md:text-xl" />
   </div>
 );
 
-export default function TopCategoriesSlider() {
-  const {
-    data: topCategories = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["topCategories"],
-    queryFn: getTopCategories,
-    staleTime: 0,
-    cacheTime: 0,
-    keepPreviousData: false,
-    refetchOnWindowFocus: true,
-  });
+export default function TopCategoriesSlider({
+  allCategories,
+}: {
+  allCategories: any;
+}) {
+  const { isLoading, isError } = useCategoryStore();
 
-  const { data: allCategories = [] } = useQuery({
-    queryKey: ["categories"],
-    queryFn: getCategories,
-    staleTime: 0,
-    cacheTime: 0,
-    keepPreviousData: false,
-    refetchOnWindowFocus: true,
-  });
+  console.log(allCategories);
 
   if (isLoading) {
     return (
@@ -80,39 +66,47 @@ export default function TopCategoriesSlider() {
     );
   }
 
-  const matchedCategories = allCategories.filter((cat: any) =>
-    topCategories.some((top: any) => top?._id === cat?._id)
+  const topCategories = allCategories?.categories?.filter(
+    (cat: any) => cat.isFeaturedOnHomePage === true
   );
+
+  console.log(topCategories);
 
   // Slider settings
   const sliderSettings = {
     dots: false,
-    infinite: matchedCategories.length > 1,
+    infinite: allCategories?.activeMainCategoryCount > 1,
     speed: 500,
-    slidesToShow: Math.min(matchedCategories.length, 6),
+    slidesToShow: Math.min(allCategories?.activeMainCategoryCount, 6),
     slidesToScroll: 1,
-    prevArrow: matchedCategories.length > 6 ? <PrevArrow /> : null,
-    nextArrow: matchedCategories.length > 6 ? <NextArrow /> : null,
+    prevArrow:
+      allCategories?.activeMainCategoryCount > 6 ? <PrevArrow /> : null,
+    nextArrow:
+      allCategories?.activeMainCategoryCount > 6 ? <NextArrow /> : null,
     responsive: [
       {
         breakpoint: 1280,
-        settings: { slidesToShow: Math.min(matchedCategories.length, 5) },
+        settings: {
+          slidesToShow: Math.min(allCategories?.activeMainCategoryCount, 5),
+        },
       },
       {
         breakpoint: 1024,
-        settings: { slidesToShow: Math.min(matchedCategories.length, 4) },
+        settings: {
+          slidesToShow: Math.min(allCategories?.activeMainCategoryCount, 4),
+        },
       },
       {
         breakpoint: 768,
         settings: {
-          slidesToShow: Math.min(matchedCategories.length, 3),
+          slidesToShow: Math.min(allCategories?.activeMainCategoryCount, 3),
           arrows: false,
         },
       },
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: Math.min(matchedCategories.length, 2),
+          slidesToShow: Math.min(allCategories?.activeMainCategoryCount, 2),
           arrows: false,
         },
       },
@@ -126,21 +120,21 @@ export default function TopCategoriesSlider() {
       </h2>
       <div className="w-16 h-[3px] bg-[#E91E63] mx-auto mb-8 rounded"></div>
 
-      {matchedCategories.length > 0 ? (
+      {allCategories?.categories?.length > 0 ? (
         <Slider {...sliderSettings}>
-          {matchedCategories.map((category: any) => (
+          {topCategories.map((category: any) => (
             <div key={category?._id} className="px-2">
               <div className="flex flex-col items-center">
                 <Link href={`/category/${category?.slug}`}>
                   <div className="bg-white rounded-full shadow w-[100px] h-[100px] md:w-[120px] md:h-[120px] relative flex items-center justify-center mb-3 cursor-pointer hover:scale-105 transition-transform duration-300">
                     <div className="bg-[#FCE7EE] rounded-full w-[85px] h-[85px] md:w-[100px] md:h-[100px] flex items-center justify-center overflow-hidden">
                       <Image
-                        src={category?.categoryImage}
-                        alt={category?.categoryName}
+                        src={api + category?.image}
+                        alt={category?.name}
                         width={100}
                         height={100}
                         className="w-full h-full object-cover"
-                        priority
+                        unoptimized
                       />
                     </div>
                   </div>

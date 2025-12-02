@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
+import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,9 +12,11 @@ export default function page() {
   // Default Brand List Show
   const [limit, setLimit] = useState(5);
   const { getAllBrands, allBrands, deleteBrand } = useBrandStore();
+  const { getAllSimpleProduct, allSimpleProduct } = useSimpleProductStore();
   useEffect(() => {
     getAllBrands(page, limit);
-  }, [getAllBrands, page, limit]);
+    getAllSimpleProduct();
+  }, [getAllBrands, page, limit, getAllSimpleProduct]);
   return (
     <div>
       <div className="flex-1 p-2">
@@ -106,9 +109,9 @@ export default function page() {
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <h2 className="text-xl font-bold text-white mb-6">Brands List</h2>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-center">
               <thead>
-                <tr className="border-b border-gray-700">
+                <tr className="border-b  border-gray-700">
                   <th className="py-3 px-4 text-left">Brand</th>
                   <th className="py-3 px-4 text-left">Products</th>
                   <th className="py-3 px-4 text-left">Status</th>
@@ -150,7 +153,15 @@ export default function page() {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-rose-gold font-medium">124</span>
+                        <span className="text-rose-gold text-center font-medium">
+                          <p>
+                            {
+                              allSimpleProduct?.simpleProducts?.filter(
+                                (product) => product.brand === brand.name
+                              ).length
+                            }
+                          </p>
+                        </span>
                       </td>
                       <td className="py-4 px-4">
                         <span

@@ -93,13 +93,13 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-gray-900 border-r border-gray-800 h-screen fixed left-0 top-0 z-10 flex flex-col">
       {/* Header */}
-      <div className="p-6 shrink-0">
+      <Link href={"/"} className="p-6 shrink-0">
         <h1 className="text-2xl font-bold text-white flex items-center">
-          <i className="fas fa-palette text-pink-400 mr-2"></i>
-          Glamour<span className="text-pink-500">Admin</span>
+          {/* <i className="fas fa-palette text-pink-400 mr-2"></i> */}
+          Everly<span className="text-pink-500">Beauties</span> <sup>BD</sup>
         </h1>
         <p className="text-gray-400 text-sm mt-1">Cosmetics Dashboard</p>
-      </div>
+      </Link>
 
       {/* Scrollable Menu */}
       <nav className="flex-1 overflow-y-auto">

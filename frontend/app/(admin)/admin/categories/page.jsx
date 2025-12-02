@@ -1,5 +1,6 @@
 "use client";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
+import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -9,6 +10,9 @@ import { useEffect, useState } from "react";
 export default function Page() {
   // ❗ প্রতিটি ক্যাটাগরির collapse এর জন্য আলাদা স্টেট
   const [openCategoryId, setOpenCategoryId] = useState(null);
+  const { getAllSimpleProduct, allSimpleProduct } = useSimpleProductStore();
+  const { getAllCategory, getCategory, deleteSubCategory, deleteMainCategory } =
+    useCategoryStore();
 
   const [page, setPage] = useState(1);
   // Default Brand List Show
@@ -20,14 +24,11 @@ export default function Page() {
     collapsed: { opacity: 0, height: 0, transition: { duration: 0.3 } },
   };
 
-  const { getAllCategory, getCategory, deleteSubCategory, deleteMainCategory } =
-    useCategoryStore();
-
   useEffect(() => {
     getAllCategory(page, limit);
-  }, [getAllCategory, page, limit]);
+    getAllSimpleProduct();
+  }, [getAllCategory, page, limit, getAllSimpleProduct]);
 
-  console.log(getAllCategory);
   return (
     <div className="flex-1 p-2">
       {/* <!-- Top Bar --> */}
@@ -172,8 +173,12 @@ export default function Page() {
                       <div>
                         <h4 className="font-medium text-white">{cat.name}</h4>
                         <p className="text-xs text-gray-400">
-                          48 products • {cat.subCategoryCount || 0}{" "}
-                          subcategories
+                          {
+                            allSimpleProduct?.simpleProducts?.filter(
+                              (prod) => prod.category === cat.name
+                            ).length
+                          }{" "}
+                          products • {cat.subCategoryCount || 0} subcategories
                         </p>
                       </div>
                     </div>
@@ -248,7 +253,12 @@ export default function Page() {
                                     {sub.name}
                                   </h5>
                                   <p className="text-xs text-gray-400">
-                                    22 products
+                                    {
+                                      allSimpleProduct?.simpleProducts?.filter(
+                                        (prod) => prod.category === sub.name
+                                      ).length
+                                    }{" "}
+                                    products
                                   </p>
                                 </div>
                               </div>

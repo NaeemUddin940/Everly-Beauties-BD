@@ -2,13 +2,13 @@
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 /* eslint-disable react-hooks/rules-of-hooks */
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function page() {
   const { id } = useParams();
-
+  const router = useRouter();
   const [localFile, setLocalFile] = useState(null); // User selected file
   const [serverFile, setServerFile] = useState(null); // Server image
   const { updateBrand, singleBrand, getSingleBrand } = useBrandStore();
@@ -52,7 +52,7 @@ export default function page() {
   }, [singleBrand, id, reset]);
 
   async function onSubmit(data) {
-    
+    router.push("/admin/brands");
     await updateBrand(data, id);
 
     setLocalFile(null);

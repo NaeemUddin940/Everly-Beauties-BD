@@ -127,7 +127,7 @@ export default function CreateSimpleProductPage() {
 
   // fetch options on mount (empty dependency array to avoid re-trigger)
   useEffect(() => {
-    getCategory();
+    getAllCategory();
     getAllBrands();
     getAllScreenSolution();
     getAllTags();
@@ -136,7 +136,7 @@ export default function CreateSimpleProductPage() {
 
   // build select options safely (guard for undefined)
   const categoryOptions =
-    getAllCategory?.categories?.flatMap((category) => [
+    getCategory?.categories?.flatMap((category) => [
       { value: category.name, label: category.name },
       ...(category.subCategories?.map((sub) => ({
         value: sub.name,

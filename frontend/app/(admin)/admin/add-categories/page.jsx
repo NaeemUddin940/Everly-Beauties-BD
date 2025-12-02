@@ -3,13 +3,14 @@
 import createSlug from "@/app/utils/SlugGenerator";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function page() {
   const { createMainCategory, createSubCategory, getCategory, getAllCategory } =
     useCategoryStore();
-
+  const router = useRouter();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
 
@@ -38,7 +39,7 @@ export default function page() {
   };
 
   async function onSubmit(data) {
-    console.log(data);
+    router.push("/admin/categories");
     if (data.mainCategoryId) {
       await createSubCategory(data);
     } else {
@@ -50,11 +51,8 @@ export default function page() {
   }
 
   useEffect(() => {
-    async function fetchCategories() {
-      await getCategory();
-    }
-    fetchCategories();
-  }, [getCategory]);
+    getAllCategory();
+  }, [getAllCategory]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -150,7 +148,7 @@ export default function page() {
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                   >
                     <option value="">No Parent (Top Level Category)</option>
-                    {getAllCategory?.categories?.map((cat) => (
+                    {getCategory?.categories?.map((cat) => (
                       <option key={cat._id} value={cat._id}>
                         {cat.name}
                       </option>
@@ -175,6 +173,7 @@ export default function page() {
                   </label>
                   <input
                     type="text"
+                    {...register("seo.seoTitle")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here SEO title"
                   />
@@ -184,6 +183,7 @@ export default function page() {
                     Description
                   </label>
                   <textarea
+                    {...register("seo.seoDescription")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-32 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here short description"
                   ></textarea>
@@ -196,6 +196,7 @@ export default function page() {
                     Bottom Content
                   </label>
                   <textarea
+                    {...register("seo.bottomContent")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here SEO content"
                   ></textarea>
@@ -206,6 +207,7 @@ export default function page() {
                     Schema Markup
                   </label>
                   <textarea
+                    {...register("seo.schemaMarkup")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full h-40 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here Schema Markup"
                   ></textarea>
@@ -216,6 +218,7 @@ export default function page() {
                   </label>
                   <input
                     type="text"
+                    {...register("seo.canonicalUrl")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="Write here Canonical URL"
                   />
@@ -226,6 +229,7 @@ export default function page() {
                   </label>
                   <input
                     type="text"
+                    {...register("seo.focusKeywords")}
                     className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                     placeholder="lip care, lip balm, lip scrub, lip treatment, bangladesh"
                   />
@@ -246,7 +250,18 @@ export default function page() {
                 className="text-xl font-bold text-white mb-4"
               >
                 Category Image
-                <div className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300">
+                <div
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0];
+                    if (!file) return;
+                    const fileURL = URL.createObjectURL(file);
+                    setSelectedFile(fileURL);
+                    setValue("image", file);
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  className="image-upload-area rounded-xl p-8 text-center cursor-pointer border-2 border-dashed border-gray-600 hover:border-rose-gold transition-all duration-300"
+                >
                   {selectedFile && (
                     <Image
                       src={selectedFile}
@@ -270,6 +285,9 @@ export default function page() {
                     <button
                       // id="categoryFile"
                       type="button"
+                      onClick={() =>
+                        document.getElementById("categoryFile")?.click()
+                      }
                       className="bg-pink-400 cursor-pointer hover:bg-pink-600 text-white px-4 py-2 rounded-xl mt-3 font-medium transition-all duration-300"
                     >
                       Browse Files

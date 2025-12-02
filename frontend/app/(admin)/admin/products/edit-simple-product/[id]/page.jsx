@@ -7,7 +7,7 @@ import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 import { useTagStore } from "@/ZustandStore/useTagStore";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function CreateSimpleProductPage() {
@@ -636,21 +636,26 @@ export default function CreateSimpleProductPage() {
                 Organization
               </h2>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Category
-                  </label>
-                  <select
-                    {...register("category")}
-                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                  >
-                    {getCategory?.categories?.map((cat) => (
-                      <option key={cat._id} value={cat.name}>
+                <select
+                  {...register("category")}
+                  className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
+                >
+                  {getCategory?.categories?.map((cat) => (
+                    <React.Fragment key={cat._id}>
+                      {/* Main Category */}
+                      <option value={cat.name} className="font-bold">
                         {cat.name}
                       </option>
-                    ))}
-                  </select>
-                </div>
+
+                      {/* Subcategories with padding-left */}
+                      {cat?.subCategories?.map((sub) => (
+                        <option key={sub._id} value={sub.name} className="pl-5">
+                          └─ {sub.name}
+                        </option>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </select>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">

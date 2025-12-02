@@ -6,8 +6,10 @@ import { create } from "zustand";
 export const useCategoryStore = create((set, get) => ({
   singleSubCategory: null,
   singleMainCategory: null,
-  getCategory: null,
+  getCategory: [],
   isUploading: false,
+  isLoading: false,
+  isError: false,
 
   createMainCategory: async (data) => {
     set({ isUploading: true });
@@ -69,6 +71,7 @@ export const useCategoryStore = create((set, get) => ({
 
   // --- Category Fetching ---
   getAllCategory: async (page = 1, limit = 10) => {
+    set({ isLoading: true, isError: false });
     try {
       const res = await axiosInstance.get(
         `/category/get-all-category?page=${page}&limit=${limit}`
@@ -76,9 +79,12 @@ export const useCategoryStore = create((set, get) => ({
 
       set({
         getCategory: res.data,
+        isLoading: false,
+        isError: false,
       });
     } catch (error) {
       console.error("Failed to Get All Categories :", error);
+      set({ isLoading: false, isError: true });
     }
   },
 
@@ -136,8 +142,8 @@ export const useCategoryStore = create((set, get) => ({
 
       if (res.data.success) {
         toast.success(res.data.message);
-        set({ getAllCategory: res.data });
-        await get().getCategory();
+        set({ getCategory: res.data });
+        await get().getAllCategory();
       }
     } catch (error) {
       toast.error(error.response.data.message);

@@ -5,8 +5,14 @@ import { MainCategory, SubCategory } from "../models/category.model.js";
 //✅ Step 01 : Main Category Create And Upload Category Image Controller
 export const createMainCategory = async (req, res) => {
   try {
-    const { name, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
-      req.body;
+    const {
+      name,
+      slug,
+      isActive,
+      showOnNavigation,
+      isFeaturedOnHomePage,
+      seo,
+    } = req.body;
 
     const uploadedFile = req.file ? req.file.filename : null;
 
@@ -54,6 +60,7 @@ export const createMainCategory = async (req, res) => {
       slug,
       image: `/uploads/categoryImage/${uploadedFile}`,
       isActive,
+      seo,
       isFeaturedOnHomePage,
       showOnNavigation,
     });
@@ -85,6 +92,7 @@ export const createSubCategory = async (req, res) => {
       mainCategoryId,
       isActive,
       showOnNavigation,
+      seo,
       isFeaturedOnHomePage,
     } = req.body;
 
@@ -145,6 +153,7 @@ export const createSubCategory = async (req, res) => {
       image: `/uploads/subCategoryImage/${uploadedFile}`,
       mainCategoryId,
       isActive,
+      seo,
       isFeaturedOnHomePage,
       showOnNavigation,
     });
@@ -400,8 +409,14 @@ export const deleteSubCategory = async (req, res) => {
 //✅ Step 06 : Update Main Category Controller
 export const updateMainCategory = async (req, res) => {
   try {
-    const { name, slug, isActive, showOnNavigation, isFeaturedOnHomePage } =
-      req.body;
+    const {
+      name,
+      slug,
+      isActive,
+      showOnNavigation,
+      isFeaturedOnHomePage,
+      seo,
+    } = req.body;
 
     if (!name && !slug && isActive === undefined && !req.file) {
       return res.status(400).json({
@@ -472,6 +487,7 @@ export const updateMainCategory = async (req, res) => {
           ? isFeaturedOnHomePage
           : mainCategory.isFeaturedOnHomePage,
       image: newImage,
+      seo: seo || mainCategory.seo,
     };
 
     // 4️⃣ Handle image update
@@ -519,6 +535,7 @@ export const updateSubCategory = async (req, res) => {
       showOnNavigation,
       isFeaturedOnHomePage,
       mainCategoryId,
+      seo,
     } = req.body;
 
     // 0️⃣ No field provided
@@ -596,6 +613,7 @@ export const updateSubCategory = async (req, res) => {
           : subCategory.isFeaturedOnHomePage,
       mainCategoryId: mainCategoryId || subCategory.mainCategoryId, // ✔ important
       image: newImage,
+      seo: seo || subCategory.seo,
     };
 
     // 5️⃣ Update Sub Category

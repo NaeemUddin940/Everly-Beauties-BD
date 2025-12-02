@@ -1,4 +1,5 @@
 "use client";
+import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useTagStore } from "@/ZustandStore/useTagStore";
 import Link from "next/link";
@@ -8,12 +9,14 @@ export default function page() {
   const [page, setPage] = useState(1);
   // Default Brand List Show
   const [limit, setLimit] = useState(5);
+  const { getAllSimpleProduct, allSimpleProduct } = useSimpleProductStore();
   const { getAllTags, allTags, deleteTag } = useTagStore();
 
   useEffect(() => {
     getAllTags(page, limit);
-  }, [page, getAllTags, limit]);
-  console.log(allTags);
+    getAllSimpleProduct();
+  }, [page, getAllTags, getAllSimpleProduct, limit]);
+
   return (
     <div>
       <div className="flex-1 p-2">
@@ -137,7 +140,13 @@ export default function page() {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-rose-gold font-medium">48</span>
+                        <span className="text-rose-gold text-center font-medium">
+                          {
+                            allSimpleProduct?.simpleProducts?.filter(
+                              (product) => product.tags.includes(tag.name)
+                            ).length
+                          }
+                        </span>
                       </td>
                       <td className="py-4 px-4">
                         <span

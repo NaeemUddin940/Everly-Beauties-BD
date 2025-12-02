@@ -1,4 +1,3 @@
-import { AuthProvider } from "@/components/context/AuthContext";
 import { CartProvider } from "@/components/context/cart-context";
 import { LoadingProvider } from "@/components/context/LoadingContext";
 import Header from "@/components/header/Header";
@@ -17,17 +16,15 @@ export default function PublicLayout({
     <div className="bg-white">
       <ReactQueryProvider>
         <StoreProvider>
-          {/* <AuthProvider> */}
-            <LoadingProvider>
-              <CartProvider>
-                <Header />
-                {children}
-                <footer />
-              </CartProvider>
-              <FooterSpinner />
-            </LoadingProvider>
-            <Toaster position="top-right" />
-          {/* </AuthProvider> */}
+          <LoadingProvider>
+            <CartProvider>
+              <Header />
+              {children}
+              <footer />
+            </CartProvider>
+            <FooterSpinner />
+          </LoadingProvider>
+          <Toaster position="top-right" />
         </StoreProvider>
       </ReactQueryProvider>
     </div>
