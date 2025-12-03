@@ -10,6 +10,7 @@ import { BiShoppingBag } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
 import { MdFavoriteBorder } from "react-icons/md";
 
+import { api } from "@/lib/axios";
 import { useCart } from "../context/cart-context";
 import { Button } from "../product/custom-button";
 
@@ -18,7 +19,7 @@ const CartWishlist = () => {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
+  console.log(items);
   const openCartModal = () => setIsCartModalOpen(true);
   const closeCartModal = () => setIsCartModalOpen(false);
 
@@ -42,7 +43,7 @@ const CartWishlist = () => {
   }, [isCartModalOpen]);
 
   const handleQuantityChange = (
-    itemId: string,
+    itemId: number,
     newQuantity: number,
     variationId?: string
   ) => {
@@ -118,18 +119,19 @@ const CartWishlist = () => {
                   <div key={item.id + (item.variation?.id || "")}>
                     <div className="flex gap-4 items-center">
                       <Image
-                        src={item.image}
+                        src={api + item.image}
                         alt={item.title}
                         width={50}
                         height={50}
                         className="object-cover rounded"
+                        unoptimized
                       />
                       <div className="flex-1 text-sm">
                         {item.brand && (
                           <p className="text-[#D49E72]">{item.brand}</p>
                         )}
                         <p className="text-sm font-medium">{item.title}</p>
-                        <div className="flex items-center justify-between mt-2 flex-wrap gap-y-1">
+                        <div className="flex items-center justify-between flex-wrap gap-y-1">
                           <div className="flex gap-2 items-center">
                             <p className="text-pink-500 font-bold text-sm">
                               ৳ {item.price}

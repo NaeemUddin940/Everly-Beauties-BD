@@ -37,8 +37,6 @@ export default function TopCategoriesSlider({
 }) {
   const { isLoading, isError } = useCategoryStore();
 
-  console.log(allCategories);
-
   if (isLoading) {
     return (
       <div className="container mx-auto py-3">
@@ -46,13 +44,17 @@ export default function TopCategoriesSlider({
           Shop by Categories
         </h2>
         <div className="w-16 h-[3px] bg-[#E91E63] mx-auto mb-8 rounded"></div>
-        <div className="flex gap-3 overflow-hidden">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="flex flex-col items-center w-[100px]">
-              <div className="skeleton w-full aspect-square rounded-full mb-2"></div>
-              <div className="skeleton h-4 w-20 mx-auto"></div>
-            </div>
-          ))}
+        <div className="flex gap-3 items-center justify-between px-10 overflow-hidden">
+          {Array.from({ length: allCategories?.categories?.length || 6 }).map(
+            (_, index) => (
+              <div key={index} className="flex flex-col items-center w-[100px]">
+                {/* Circular Skeleton */}
+                <div className="w-full aspect-square rounded-full mb-2 bg-gray-300 animate-pulse" />
+                {/* Text Skeleton */}
+                {/* <div className="h-4 w-20 bg-gray-300 animate-pulse rounded" /> */}
+              </div>
+            )
+          )}
         </div>
       </div>
     );

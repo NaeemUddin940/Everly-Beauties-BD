@@ -15,7 +15,9 @@ interface BannerType {
 }
 
 const fetchBanners = async (): Promise<BannerType[]> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/banners-4x`);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/banners-4x`
+  );
   if (!res.ok) throw new Error("Failed to fetch banners");
   return res.json();
 };
@@ -23,7 +25,11 @@ const fetchBanners = async (): Promise<BannerType[]> => {
 const Banner: React.FC = () => {
   const [loaded, setLoaded] = useState<boolean[]>([]);
 
-  const { data: banners = [], isLoading, isError } = useQuery({
+  const {
+    data: banners = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["banners-4x"],
     queryFn: fetchBanners,
     staleTime: 0,

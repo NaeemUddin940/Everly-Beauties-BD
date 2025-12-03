@@ -17,11 +17,11 @@ export default function PublicLayout({
       <ReactQueryProvider>
         <StoreProvider>
           <LoadingProvider>
-            <CartProvider>
+            {/* <CartProvider> */}
               <Header />
               {children}
               <footer />
-            </CartProvider>
+            {/* </CartProvider> */}
             <FooterSpinner />
           </LoadingProvider>
           <Toaster position="top-right" />

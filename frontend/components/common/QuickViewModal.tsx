@@ -1,27 +1,15 @@
 // components/QuickViewModal.jsx
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useState } from 'react';
-import Image from 'next/image';
-import { IoMdStar } from 'react-icons/io';
+import { Dialog, Transition } from "@headlessui/react";
+import Image from "next/image";
+import { Fragment, useState } from "react";
+import { IoMdStar } from "react-icons/io";
 
-const QuickViewModal = ({
-  isOpen,
-  onClose,
-  product,
-  onAddToCart,
-}) => {
+const QuickViewModal = ({ isOpen, onClose, product, onAddToCart }) => {
   const [selectedVariation, setSelectedVariation] = useState(null);
 
   if (!product) return null;
 
-  const {
-    image,
-    title,
-    brand,
-    price,
-    rating = 5,
-    variations = [],
-  } = product;
+  const { image, title, brand, price, rating = 5, variations = [] } = product;
 
   const handleAddToCart = () => {
     if (selectedVariation) {
@@ -33,10 +21,14 @@ const QuickViewModal = ({
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => {
-        setSelectedVariation(null);
-        onClose();
-      }}>
+      <Dialog
+        as="div"
+        className="relative z-50"
+        onClose={() => {
+          setSelectedVariation(null);
+          onClose();
+        }}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -60,10 +52,9 @@ const QuickViewModal = ({
             leaveTo="opacity-0 scale-90"
           >
             <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-
               <div className="flex flex-col md:flex-row gap-6">
                 {/* Left: Product Image */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <Image
                     src={image}
                     alt={title}
@@ -78,26 +69,33 @@ const QuickViewModal = ({
                   <h2 className="text-lg font-semibold">{title}</h2>
                   <p className="text-sm text-gray-500">{brand}</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-pink-600 font-bold text-xl">৳ {price}</span>
+                    <span className="text-pink-600 font-bold text-xl">
+                      ৳ {price}
+                    </span>
                     <div className="flex items-center text-yellow-400">
-                      <IoMdStar /><span className="ml-1 text-gray-600 text-sm">{rating}</span>
+                      <IoMdStar />
+                      <span className="ml-1 text-gray-600 text-sm">
+                        {rating}
+                      </span>
                     </div>
                   </div>
 
                   <div className="mt-4">
-                  <p className="font-semibold text-sm mb-2">
-                    Select a variation:{" "}
-                    <span className="text-pink-600">
-                      {selectedVariation ? selectedVariation.name : ''}
-                    </span>
-                  </p>
+                    <p className="font-semibold text-sm mb-2">
+                      Select a variation:{" "}
+                      <span className="text-pink-600">
+                        {selectedVariation ? selectedVariation.name : ""}
+                      </span>
+                    </p>
                     <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                       {variations.map((variation, idx) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedVariation(variation)}
                           className={`border rounded overflow-hidden focus:outline-none transition-transform hover:scale-105 ${
-                            selectedVariation === variation ? 'border-pink-500 ring-2 ring-pink-300' : 'border-gray-200'
+                            selectedVariation === variation
+                              ? "border-pink-500 ring-2 ring-pink-300"
+                              : "border-gray-200"
                           }`}
                         >
                           <Image
@@ -110,8 +108,9 @@ const QuickViewModal = ({
                         </button>
                       ))}
                     </div>
-                    <p className='font-semibold text-sm mt-2'>
-                      {variations.length} variation{variations.length !== 1 && 's'} available
+                    <p className="font-semibold text-sm mt-2">
+                      {variations.length} variation
+                      {variations.length !== 1 && "s"} available
                     </p>
                   </div>
 
@@ -119,10 +118,12 @@ const QuickViewModal = ({
                     onClick={handleAddToCart}
                     disabled={!selectedVariation}
                     className={`w-full py-2 cursor-pointer rounded font-semibold text-white transition-colors ${
-                      selectedVariation ? 'bg-pink-600 hover:bg-pink-700' : 'bg-gray-300 cursor-not-allowed'
+                      selectedVariation
+                        ? "bg-pink-600 hover:bg-pink-700"
+                        : "bg-gray-300 cursor-not-allowed"
                     }`}
                   >
-                    {selectedVariation ? 'Add to Cart' : 'Select a Variation'}
+                    {selectedVariation ? "Add to Cart" : "Select a Variation"}
                   </button>
                 </div>
               </div>

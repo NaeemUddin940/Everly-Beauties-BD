@@ -13,42 +13,42 @@ import ProductCardSkeleton from "../common/ProductCardSkeleton";
 import { useCart } from "../context/cart-context";
 
 // Product Interface
-interface ApiProduct {
-  _id: string;
-  slug: string;
-  productName: string;
-  price?: string;
-  regularPrice: string;
-  salePrice?: string;
-  mainImage: string;
-  brands?: string;
-  campaign?: {
-    campaignName: string;
-    discount: number;
-    finalPrice: number;
-    status: "active" | "inactive";
-    startDate: string;
-    endDate: string;
-    discountType: "percentage" | "fixed";
-    thumbnailImage?: string;
-  };
-  variations?: Array<{
-    id: number;
-    price: string;
-    regularPrice: string;
-    salePrice?: string;
-    mainImage?: string;
-    attributes?: Record<string, string>;
-  }>;
-  rating?: number;
-  hasFreeShipping?: boolean;
-  permalink?: string;
-  stockStatus?: "in-stock" | "out-of-stock";
-  categories?: Array<{
-    categoryName: string;
-    slug: string;
-  }>;
-}
+// interface ApiProduct {
+//   _id: string;
+//   slug: string;
+//   productName: string;
+//   price?: string;
+//   regularPrice: string;
+//   salePrice?: string;
+//   mainImage: string;
+//   brands?: string;
+//   campaign?: {
+//     campaignName: string;
+//     discount: number;
+//     finalPrice: number;
+//     status: "active" | "inactive";
+//     startDate: string;
+//     endDate: string;
+//     discountType: "percentage" | "fixed";
+//     thumbnailImage?: string;
+//   };
+//   variations?: Array<{
+//     id: number;
+//     price: string;
+//     regularPrice: string;
+//     salePrice?: string;
+//     mainImage?: string;
+//     attributes?: Record<string, string>;
+//   }>;
+//   rating?: number;
+//   hasFreeShipping?: boolean;
+//   permalink?: string;
+//   stockStatus?: "in-stock" | "out-of-stock";
+//   categories?: Array<{
+//     categoryName: string;
+//     slug: string;
+//   }>;
+// }
 
 // Mapping for tabs
 const categoryMapping: Record<string, string> = {
@@ -101,10 +101,10 @@ export default function FeaturedProducts() {
     }
   }, []);
 
-  const products: ApiProduct[] = allSimpleProduct?.simpleProducts || [];
+  const products = allSimpleProduct?.simpleProducts || [];
 
   const handleAddToCart = useCallback(
-    (product: ApiProduct, variation?: any) => {
+    (product: any, variation?: any) => {
       if (product.stockStatus === "out-of-stock") {
         toast.error("Product is out of stock");
         return;
@@ -116,11 +116,11 @@ export default function FeaturedProducts() {
           : Number(product.salePrice || product.regularPrice);
 
       addItem({
-        id: parseFloat(product._id),
+        id: product._id,
         slug: product.slug,
-        mainImage: product.mainImage,
-        productName: product.productName,
-        brands: product.brands,
+        image: product.productImage,
+        title: product.name,
+        brand: product.brand,
         price: priceToUse,
         regularPrice: Number(product.regularPrice),
         variation,
@@ -211,7 +211,7 @@ export default function FeaturedProducts() {
       {renderTabs()}
       {products.length > 0 ? (
         <Slider {...sliderSettings}>
-          {products.map((product) => {
+          {products.map((product: any) => {
             const priceToUse =
               product.campaign?.status === "active"
                 ? product.campaign.finalPrice
@@ -225,8 +225,8 @@ export default function FeaturedProducts() {
                 <ProductCard
                   {...product}
                   price={priceToUse}
-                  mainImage={product?.productImage}
-                  productName={product?.name}
+                  image={product?.productImage}
+                  title={product?.name}
                   regularPrice={Number(product.regularPrice)}
                   campaignName={product.campaign?.campaignName || ""}
                   rating={product.rating}
