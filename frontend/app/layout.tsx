@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-page-custom-font */
 import { CartProvider } from "@/components/context/cart-context";
-import { ThemeProvider } from "@/components/ui/theme-providet";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -41,16 +40,7 @@ export default function RootLayout({
         cz-shortcut-listen="true"
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="white"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-        </CartProvider>
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );

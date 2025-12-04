@@ -1,7 +1,7 @@
 "use client"
 
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/app/components/product/custom-button"
+import { Button } from "@/components/product/custom-button"
 
 interface PaginationProps {
   currentPage: number

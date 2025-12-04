@@ -2,9 +2,9 @@ export interface Product {
   id: number
   name: string
   price: string
-  regular_price: string
-  sale_price: string | null
-  image: string | null
+  regularPrice: string
+  salePrice: string | null
+  productImage: string | null
   permalink: string
   rating_count: number
   average_rating: number

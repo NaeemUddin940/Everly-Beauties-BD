@@ -7,6 +7,7 @@ export const useSimpleProductStore = create((set, get) => ({
   allSimpleProduct: [],
   singleSimpleProduct: null,
   isLoading: false,
+  isError: false,
 
   // CREATE PRODUCT
   createSimpleProduct: async (data) => {
@@ -43,7 +44,7 @@ export const useSimpleProductStore = create((set, get) => ({
 
   // GET ALL PRODUCTS
   getAllSimpleProduct: async (delay) => {
-    set({ isLoading: true });
+    set({ isLoading: true, isError: false });
     try {
       const res = await axiosInstance.get("/product/get-all-simple-product");
       // artificial delay: 1 second (1000ms)
@@ -53,17 +54,18 @@ export const useSimpleProductStore = create((set, get) => ({
       if (res.data.success) {
         // Assign only the array, not the whole response object
         set({
-          allSimpleProduct: res.data || [],
           isLoading: false,
+          allSimpleProduct: res.data || [],
+          isError: false,
         });
       } else {
         // In case success is false
-        set({ allSimpleProduct: [], isLoading: false });
+        set({ allSimpleProduct: [], isLoading: false, isError: true });
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to fetch products");
       console.error("Get All Simple Products Error:", error);
-      set({ isLoading: false });
+      set({ isLoading: false, isError: true });
     }
   },
 
@@ -99,27 +101,53 @@ export const useSimpleProductStore = create((set, get) => ({
     }
   },
 
-  getSingleSimpleProduct: async (productId) => {
-    set({ isLoading: true });
+  getSingleSimpleProduct: async (slug) => {
+    set({ isLoading: true, isError: false });
     try {
       const res = await axiosInstance.get(
-        `/product/get-single-simple-product/${productId}`
+        `/product/get-single-simple-product/${slug}`
       );
 
       if (res.data.success) {
         set({
           singleSimpleProduct: res.data.singleProduct,
           isLoading: false,
+          isError: false,
         });
       } else {
-        set({ singleSimpleProduct: null, isLoading: false });
+        set({ singleSimpleProduct: null, isLoading: false, isError: true });
       }
     } catch (error) {
       toast.error(
         error?.response?.data?.message || "Failed to fetch product details"
       );
       console.error("Get Single Simple Product Error:", error);
-      set({ isLoading: false });
+      set({ isLoading: false, isError: true });
+    }
+  },
+
+  getSingleSimpleProductBySlug: async (slug) => {
+    set({ isLoading: true, isError: false });
+    try {
+      const res = await axiosInstance.get(
+        `/product/get-single-simple-product-by-slug/${slug}`
+      );
+
+      if (res.data.success) {
+        set({
+          singleSimpleProduct: res.data.singleProduct,
+          isLoading: false,
+          isError: false,
+        });
+      } else {
+        set({ singleSimpleProduct: null, isLoading: false, isError: true });
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch product details"
+      );
+      console.error("Get Single Simple Product Error:", error);
+      set({ isLoading: false, isError: true });
     }
   },
 

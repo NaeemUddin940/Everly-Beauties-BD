@@ -3,7 +3,8 @@ import {
   createSimpleProduct,
   deleteSimpleProduct,
   getSimpleAllProduct,
-  getSingleProduct,
+  getSingleProductById,
+  getSingleProductBySlug,
   updateSimpleProduct,
 } from "../controllers/simpleProduct.controller.js";
 import { uploadTo } from "../middlewares/fileUpload.js";
@@ -40,6 +41,10 @@ productRoute.put(
 );
 
 productRoute.get("/get-all-simple-product", getSimpleAllProduct);
-productRoute.get("/get-single-simple-product/:productId", getSingleProduct);
+productRoute.get("/get-single-simple-product/:productId", getSingleProductById);
+productRoute.get(
+  "/get-single-simple-product-by-slug/:slug",
+  getSingleProductBySlug
+);
 
 export default productRoute;

@@ -223,7 +223,7 @@ export default function FeaturedProducts() {
                 className="px-1 pb-2 md:px-2 md:pb-3 h-[450px]"
               >
                 <ProductCard
-                  {...product}
+                  slug={product?.slug}
                   price={priceToUse}
                   image={product?.productImage}
                   title={product?.name}
@@ -232,11 +232,11 @@ export default function FeaturedProducts() {
                   rating={product.rating}
                   onAddToCart={() => handleAddToCart(product)}
                   onWishlistToggle={() => handleWishlistToggle(product._id)}
-                  discount={
-                    product.campaign?.status === "active"
-                      ? product.campaign.discount
-                      : undefined
-                  }
+                  // discount={
+                  //   product.campaign?.status === "active"
+                  //     ? product.campaign.discount
+                  //     : undefined
+                  // }
                 />
               </div>
             );

@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
-import { Button } from "@/app/components/product/custom-button"
-import { Checkbox } from "@/app/components/product/custom-checkbox"
-import { Slider } from "@/app/components/product/custom-slider"
-import type { FilterOptions, FilterState } from "@/types/product"
+import { Button } from "@/components/product/custom-button";
+import { Checkbox } from "@/components/product/custom-checkbox";
+import { Slider } from "@/components/product/custom-slider";
+import type { FilterOptions, FilterState } from "@/types/product";
+import { ChevronDown } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 interface FilterDropdownProps {
-  title: string
-  children: React.ReactNode
+  title: string;
+  children: React.ReactNode;
 }
 
 export function FilterDropdown({ title, children }: FilterDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="relative z-20">
@@ -39,29 +39,33 @@ export function FilterDropdown({ title, children }: FilterDropdownProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface PriceFilterDropdownProps {
-  filterOptions: FilterOptions
-  filters: FilterState
-  onFiltersChange: (filters: FilterState) => void
+  filterOptions: FilterOptions;
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
 }
 
-export function PriceFilterDropdown({ filterOptions, filters, onFiltersChange }: PriceFilterDropdownProps) {
+export function PriceFilterDropdown({
+  filterOptions,
+  filters,
+  onFiltersChange,
+}: PriceFilterDropdownProps) {
   const [priceRange, setPriceRange] = useState([
     filters.min_price || filterOptions.price_range.min,
     filters.max_price || filterOptions.price_range.max,
-  ])
+  ]);
 
   const handlePriceChange = (values: number[]) => {
-    setPriceRange(values)
+    setPriceRange(values);
     onFiltersChange({
       ...filters,
       min_price: values[0],
       max_price: values[1],
-    })
-  }
+    });
+  };
 
   return (
     <FilterDropdown title="Price Range">
@@ -84,7 +88,12 @@ export function PriceFilterDropdown({ filterOptions, filters, onFiltersChange }:
             type="number"
             placeholder="Min"
             value={priceRange[0]}
-            onChange={(e) => handlePriceChange([Number.parseInt(e.target.value) || 0, priceRange[1]])}
+            onChange={(e) =>
+              handlePriceChange([
+                Number.parseInt(e.target.value) || 0,
+                priceRange[1],
+              ])
+            }
             className="w-full text-xs border border-gray-300 rounded-md px-2 py-1 focus:ring-pink-500 focus:border-pink-500"
           />
           <span className="text-gray-400">-</span>
@@ -93,40 +102,53 @@ export function PriceFilterDropdown({ filterOptions, filters, onFiltersChange }:
             placeholder="Max"
             value={priceRange[1]}
             onChange={(e) =>
-              handlePriceChange([priceRange[0], Number.parseInt(e.target.value) || filterOptions.price_range.max])
+              handlePriceChange([
+                priceRange[0],
+                Number.parseInt(e.target.value) ||
+                  filterOptions.price_range.max,
+              ])
             }
             className="w-full text-xs border border-gray-300 rounded-md px-2 py-1 focus:ring-pink-500 focus:border-pink-500"
           />
         </div>
       </div>
     </FilterDropdown>
-  )
+  );
 }
 
 interface CategoryFilterDropdownProps {
-  filterOptions: FilterOptions
-  filters: FilterState
-  onFiltersChange: (filters: FilterState) => void
+  filterOptions: FilterOptions;
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
 }
 
-export function CategoryFilterDropdown({ filterOptions, filters, onFiltersChange }: CategoryFilterDropdownProps) {
+export function CategoryFilterDropdown({
+  filterOptions,
+  filters,
+  onFiltersChange,
+}: CategoryFilterDropdownProps) {
   const handleCategoryChange = (categorySlug: string, checked: boolean) => {
-    const currentCategories = filters.categories ? filters.categories.split(",") : []
-    let newCategories
+    const currentCategories = filters.categories
+      ? filters.categories.split(",")
+      : [];
+    let newCategories;
 
     if (checked) {
-      newCategories = [...currentCategories, categorySlug]
+      newCategories = [...currentCategories, categorySlug];
     } else {
-      newCategories = currentCategories.filter((cat) => cat !== categorySlug)
+      newCategories = currentCategories.filter((cat) => cat !== categorySlug);
     }
 
     onFiltersChange({
       ...filters,
-      categories: newCategories.length > 0 ? newCategories.join(",") : undefined,
-    })
-  }
+      categories:
+        newCategories.length > 0 ? newCategories.join(",") : undefined,
+    });
+  };
 
-  const currentCategories = filters.categories ? filters.categories.split(",") : []
+  const currentCategories = filters.categories
+    ? filters.categories.split(",")
+    : [];
 
   return (
     <FilterDropdown title="Categories">
@@ -139,10 +161,15 @@ export function CategoryFilterDropdown({ filterOptions, filters, onFiltersChange
                 <Checkbox
                   id={`desktop-category-${category.slug}`}
                   checked={currentCategories.includes(category.slug)}
-                  onCheckedChange={(checked) => handleCategoryChange(category.slug, checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    handleCategoryChange(category.slug, checked as boolean)
+                  }
                   className="h-3 w-3"
                 />
-                <label htmlFor={`desktop-category-${category.slug}`} className="text-xs text-gray-700 cursor-pointer">
+                <label
+                  htmlFor={`desktop-category-${category.slug}`}
+                  className="text-xs text-gray-700 cursor-pointer"
+                >
                   {category.name} ({category.count})
                 </label>
               </div>
@@ -153,33 +180,37 @@ export function CategoryFilterDropdown({ filterOptions, filters, onFiltersChange
         </div>
       </div>
     </FilterDropdown>
-  )
+  );
 }
 
 interface BrandFilterDropdownProps {
-  filterOptions: FilterOptions
-  filters: FilterState
-  onFiltersChange: (filters: FilterState) => void
+  filterOptions: FilterOptions;
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
 }
 
-export function BrandFilterDropdown({ filterOptions, filters, onFiltersChange }: BrandFilterDropdownProps) {
+export function BrandFilterDropdown({
+  filterOptions,
+  filters,
+  onFiltersChange,
+}: BrandFilterDropdownProps) {
   const handleBrandChange = (brandSlug: string, checked: boolean) => {
-    const currentBrands = filters.brand ? filters.brand.split(",") : []
-    let newBrands
+    const currentBrands = filters.brand ? filters.brand.split(",") : [];
+    let newBrands;
 
     if (checked) {
-      newBrands = [...currentBrands, brandSlug]
+      newBrands = [...currentBrands, brandSlug];
     } else {
-      newBrands = currentBrands.filter((brand) => brand !== brandSlug)
+      newBrands = currentBrands.filter((brand) => brand !== brandSlug);
     }
 
     onFiltersChange({
       ...filters,
       brand: newBrands.length > 0 ? newBrands.join(",") : undefined,
-    })
-  }
+    });
+  };
 
-  const currentBrands = filters.brand ? filters.brand.split(",") : []
+  const currentBrands = filters.brand ? filters.brand.split(",") : [];
 
   return (
     <FilterDropdown title="Brands">
@@ -192,10 +223,15 @@ export function BrandFilterDropdown({ filterOptions, filters, onFiltersChange }:
                 <Checkbox
                   id={`desktop-brand-${brand.slug}`}
                   checked={currentBrands.includes(brand.slug)}
-                  onCheckedChange={(checked) => handleBrandChange(brand.slug, checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    handleBrandChange(brand.slug, checked as boolean)
+                  }
                   className="h-3 w-3"
                 />
-                <label htmlFor={`desktop-brand-${brand.slug}`} className="text-xs text-gray-700 cursor-pointer">
+                <label
+                  htmlFor={`desktop-brand-${brand.slug}`}
+                  className="text-xs text-gray-700 cursor-pointer"
+                >
                   {brand.name} ({brand.count})
                 </label>
               </div>
@@ -206,5 +242,5 @@ export function BrandFilterDropdown({ filterOptions, filters, onFiltersChange }:
         </div>
       </div>
     </FilterDropdown>
-  )
+  );
 }

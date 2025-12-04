@@ -77,6 +77,16 @@ export const createSimpleProduct = async (req, res) => {
       });
     }
 
+    const mainImagePath = `/uploads/SimpleProductImage/${mainImage.filename}`;
+
+    // Gallery images path
+    const galleryImagesPaths = galleryImages.map(
+      (img) => `/uploads/SimpleProductImage/${img.filename}`
+    );
+
+    // Main image কে gallery-এর first element হিসেবে add করা
+    const finalGalleryImages = [mainImagePath, ...galleryImagesPaths];
+
     // 🟢 Create product
     const newProduct = await SimpleProduct.create({
       name,
@@ -92,13 +102,8 @@ export const createSimpleProduct = async (req, res) => {
       sku,
       trackStock,
       allowBackorders,
-
-      productImage: `/uploads/SimpleProductImage/${mainImage.filename}`,
-
-      galleryImages: galleryImages.map(
-        (img) => `/uploads/SimpleProductImage/${img.filename}`
-      ),
-
+      productImage: mainImagePath, // Main image
+      galleryImages: finalGalleryImages, // Main image + gallery
       seo,
       category,
       brand,
@@ -424,12 +429,33 @@ export const getSimpleAllProduct = async (req, res) => {
   }
 };
 
-export const getSingleProduct = async (req, res) => {
+export const getSingleProductById = async (req, res) => {
   try {
     const { productId } = req.params;
 
     const singleProduct = await SimpleProduct.findById(productId);
 
+    if (!singleProduct) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found!" });
+    }
+
+    res.status(201).json({ success: true, singleProduct });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error to do Something!",
+    });
+  }
+};
+
+export const getSingleProductBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const singleProduct = await SimpleProduct.findOne({ slug });
     if (!singleProduct) {
       return res
         .status(404)

@@ -2,6 +2,7 @@
 
 import Sidebar from "@/components/admin/Sidebar";
 import { Sheet } from "@/components/ui/sheet";
+import { ThemeProvider } from "@/components/ui/theme-providet";
 import { useAuthStore } from "@/ZustandStore/useAuthStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -37,14 +38,21 @@ export default function AdminLayout({
   }
 
   return (
-    <Sheet>
-      <Toaster position="top-right" />
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      <div className="lg:ml-65 px-3">
-        <main>{children}</main>
-      </div>
-    </Sheet>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <Sheet>
+        <Toaster position="top-right" />
+        <div className="hidden lg:block">
+          <Sidebar />
+        </div>
+        <div className="lg:ml-65 px-3">
+          <main>{children}</main>
+        </div>
+      </Sheet>
+    </ThemeProvider>
   );
 }

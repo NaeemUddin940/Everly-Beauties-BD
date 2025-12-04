@@ -185,7 +185,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           rating: numericRating,
           variations,
         }}
-        onAddToCart={(variation) => onAddToCart(variation)}
+        onAddToCart={(variation: any) => onAddToCart(variation)}
       />
     </>
   );

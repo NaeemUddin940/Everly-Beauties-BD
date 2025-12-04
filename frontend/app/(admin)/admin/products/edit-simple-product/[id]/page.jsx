@@ -156,20 +156,23 @@ export default function CreateSimpleProductPage() {
 
   // --- FORM SUBMISSION HANDLER ---
   const onSubmit = async (data) => {
-    // 1. FormData অবজেক্ট তৈরি করুন
-    console.log(data);
+    console.log("Form data before submit:", data);
+
     const formData = new FormData();
+
+    // 1️⃣ সাধারণ ফিল্ডগুলো
     for (const key in data) {
       if (
         typeof data[key] !== "object" &&
-        key !== "focusKeywords" &&
-        key !== "seoTitle" &&
-        key !== "seoDescription" &&
-        key !== "bottomContent" &&
-        key !== "schemaMarkup" &&
-        key !== "canonicalUrl"
+        ![
+          "focusKeywords",
+          "seoTitle",
+          "seoDescription",
+          "bottomContent",
+          "schemaMarkup",
+          "canonicalUrl",
+        ].includes(key)
       ) {
-        // Boolean values need to be converted to string or 1/0 for FormData if API requires it
         if (typeof data[key] === "boolean") {
           formData.append(key, data[key] ? "true" : "false");
         } else {
@@ -178,12 +181,10 @@ export default function CreateSimpleProductPage() {
       }
     }
 
-    // 3. Tags (স্ট্রিং অ্যারে) যুক্ত করুন -- FIX HERE
-    // সমস্যা সমাধান: JSON.stringify ব্যবহার করা হয়েছে যাতে এটি একটি অ্যারে হিসেবে যায়
+    // 2️⃣ Tags
     formData.append("tags", data.tag);
 
-    // 4. SEO ডেটা যুক্ত করুন
-    // সার্ভার যদি একটি nested SEO object আশা করে
+    // 3️⃣ SEO ডেটা
     formData.append("seo[seoTitle]", data.seoTitle);
     formData.append("seo[seoDescription]", data.seoDescription);
     formData.append("seo[bottomContent]", data.bottomContent);
@@ -191,38 +192,43 @@ export default function CreateSimpleProductPage() {
     formData.append("seo[canonicalUrl]", data.canonicalUrl);
     formData.append("seo[focusKeywords]", data.focusKeywords);
 
-    // 5. ইমেজ ফাইল এবং URL যুক্ত করুন
-
-    // Main Product Image
+    // 4️⃣ Main Product Image
     if (productImageFile) {
-      // নতুন ফাইল সিলেক্ট করা হলে
+      // নতুন file select করলে
       formData.append("productImage", productImageFile);
     } else if (
       simpleProductImagePreview &&
       !simpleProductImagePreview.startsWith("blob:")
     ) {
-      // কোনো নতুন ফাইল সিলেক্ট না হলে, কিন্তু পুরাতন ইমেজ URL থাকলে
+      // পুরনো main image URL থাকলে
       formData.append("productImage", simpleProductImagePreview);
     }
 
-    // Gallery Images
-    const existingGalleryImagePaths = galleryImagesPreview
-      .filter((item) => item.file === null) // only items that are existing images
-      .map((item) => item.preview); // grab their URL path
+    // 5️⃣ Gallery Images (merge existing + new uploads)
+    const mergedGalleryImages = [];
 
-    // বিদ্যমান URL গুলোকে একটি JSON অ্যারে হিসাবে যোগ করুন
-    formData.append("galleryImages", JSON.stringify(existingGalleryImagePaths));
-
-    // নতুন ফাইলগুলো (newly uploaded files) যোগ করুন
-    galleryImageFiles.forEach((file) => {
-      // 'galleryFiles' হলো সেই কী যা আপনার সার্ভার ইমেজ ফাইলগুলো আশা করে
-      formData.append("galleryImages", file);
+    // Existing images
+    galleryImagesPreview.forEach((item) => {
+      if (!item.file) {
+        mergedGalleryImages.push(item.preview); // server URL
+      }
     });
 
-    // 6. API তে FormData পাঠান
-    console.log("Submitting form data...", formData);
+    // নতুন uploads
+    galleryImageFiles.forEach((file) => {
+      mergedGalleryImages.push(file); // file object
+    });
+
+    // FormData এ append
+    mergedGalleryImages.forEach((img) => {
+      formData.append("galleryImages", img);
+    });
+
+    // 6️⃣ API call
+    console.log("Submitting merged form data...", formData);
     await updateSimpleProduct(id, formData);
-    // Submit হওয়ার পরে অন্য পেজে রিডাইরেক্ট করতে পারেন
+
+    // Submit হলে redirect
     router.push("/admin/products");
   };
 
