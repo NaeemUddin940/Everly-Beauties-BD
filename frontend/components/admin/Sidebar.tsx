@@ -18,6 +18,7 @@ import {
   FaUsers,
   FaUserShield,
 } from "react-icons/fa";
+import { MdCampaign } from "react-icons/md";
 
 const sidebarMenu = [
   {
@@ -27,35 +28,43 @@ const sidebarMenu = [
       { name: "Hero Slider", href: "/admin/hero-slider", icon: FaImages },
       { name: "Products", href: "/admin/products", icon: FaBoxOpen },
       {
+        name: "Campaigns",
+        icon: MdCampaign,
+        subItems: [
+          { name: "Add Campaign", href: "/admin/campaigns/add-new-campaigns" },
+          { name: "All Campaigns", href: "/admin/campaigns" },
+        ],
+      },
+      {
         name: "Categories",
         icon: BiCategory,
         subItems: [
+          { name: "Add Category", href: "/admin/categories/add-categories" },
           { name: "All Categories", href: "/admin/categories" },
-          { name: "Add Category", href: "/admin/add-categories" },
         ],
       },
       {
         name: "Tags",
         icon: FaTags,
         subItems: [
+          { name: "Add Tag", href: "/admin/tags/add-tags" },
           { name: "All Tags", href: "/admin/tags" },
-          { name: "Add Tag", href: "/admin/add-tags" },
         ],
       },
       {
         name: "Brands",
         icon: FaCopyright,
         subItems: [
+          { name: "Add Brand", href: "/admin/brands/add-brands" },
           { name: "All Brands", href: "/admin/brands" },
-          { name: "Add Brand", href: "/admin/add-brands" },
         ],
       },
       {
         name: "Screen Solutions",
         icon: FaSpa,
         subItems: [
+          { name: "Add Solution", href: "/admin/screen-solutions/add-screen-solutions" },
           { name: "All Solutions", href: "/admin/screen-solutions" },
-          { name: "Add Solution", href: "/admin/add-screen-solutions" },
         ],
       },
     ],

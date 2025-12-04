@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import PublicLayout from "@/app/(public)/layout";
 import Container from "@/components/common/Container";
@@ -132,16 +133,16 @@ export default function ProductPage(props: {
     return <div className="p-6">Product not found.</div>;
   }
 
-  const brandName =
-    singleSimpleProduct?.attributes?.find(
-      (attr) => attr.name.toLowerCase() === "brand"
-    )?.options?.[0] || " ";
+  // const brandName =
+  //   singleSimpleProduct?.attributes?.find(
+  //     (attr) => attr.name.toLowerCase() === "brand"
+  //   )?.options?.[0] || " ";
 
   const categories = singleSimpleProduct?.categories || [];
 
   const getMetaValue = (key: string): string => {
     return (
-      singleSimpleProduct?.meta_data?.find((item) => item.key === key)?.value ||
+      singleSimpleProduct?.meta_data?.find((item:any) => item.key === key)?.value ||
       ""
     );
   };
@@ -152,7 +153,7 @@ export default function ProductPage(props: {
   const productId = singleSimpleProduct?.id;
 
   const ingredientsMetaData = singleSimpleProduct?.meta_data?.find(
-    (meta) => meta.key === "ingredients"
+    (meta:any) => meta.key === "ingredients"
   );
   const ingredientsContent = ingredientsMetaData?.value;
 
@@ -228,7 +229,7 @@ export default function ProductPage(props: {
           <div className="lg:w-1/2">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-semibold tracking-wider text-gray-500">
-                {brandName}
+                {singleSimpleProduct?.brand}
               </span>
               <div className="flex gap-2">
                 {singleSimpleProduct?.isTopSelling && (

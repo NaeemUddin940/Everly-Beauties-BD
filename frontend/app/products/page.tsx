@@ -215,7 +215,7 @@ export default function ShopPage() {
       brand: brand,
       price: finalPrice,
       regular_price: finalRegularPrice,
-      campaign_name: product.campaign_name || "",
+      campaign_name: product?.campaign_name || "",
       variations: [],
       rating: rating,
       // hasFreeShipping: product.hasFreeShipping,

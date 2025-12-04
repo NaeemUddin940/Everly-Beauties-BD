@@ -7,23 +7,6 @@ export const createCampaign = async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // let largeImage = "";
-    // let mobileImage = "";
-
-    // if (thumbnailImage.large) {
-    //   const imageResponse = await cloudinary.uploader.upload(
-    //     thumbnailImage.large
-    //   );
-    //   largeImage = imageResponse.secure_url;
-    // }
-
-    // if (thumbnailImage.mobile) {
-    //   const imageResponse = await cloudinary.uploader.upload(
-    //     thumbnailImage.mobile
-    //   );
-    //   mobileImage = imageResponse.secure_url;
-    // }
-
     const campaign = new Campaign({
       campaignName,
       permalink,
