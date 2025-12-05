@@ -63,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       onAddToCart();
     }
   };
-
+  console.log(api);
   return (
     <>
       <div

@@ -1,7 +1,7 @@
 import Campaign from "../models/campaign.model.js";
 
 export const createCampaign = async (req, res) => {
-  const { campaignName, permalink, endDate, thumbnailImage } = req.body;
+  const { campaignName,discountType,discountAmount, permalink,startDate, endDate, thumbnailImage } = req.body;
   try {
     if (!campaignName || !permalink || !endDate || !thumbnailImage) {
       return res.status(400).json({ error: "All fields are required" });

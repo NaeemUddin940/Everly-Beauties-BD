@@ -10,6 +10,7 @@ import { exportProducts } from "@/lib/exportProducts";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
+import { useVariableProduct } from "@/ZustandStore/useVariableProduct";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,9 +25,9 @@ export default function ShowAllProducts() {
   } = useSimpleProductStore();
 
   const { getAllCategory, getCategory } = useCategoryStore();
-
+  const { getVariableProduct, variableProducts } = useVariableProduct();
   const { allBrands, getAllBrands } = useBrandStore();
-
+  console.log("variableProducts", variableProducts);
   // --- 1. 🔍 FILTER STATE ---
   const [filterOptions, setFilterOptions] = useState({
     category: "All Categories",
@@ -118,7 +119,8 @@ export default function ShowAllProducts() {
     getAllSimpleProduct(1000);
     getAllCategory();
     getAllBrands();
-  }, [getAllSimpleProduct, getAllCategory, getAllBrands]);
+    getVariableProduct();
+  }, [getAllSimpleProduct, getAllCategory, getAllBrands, getVariableProduct]);
 
   return (
     <div>

@@ -10,6 +10,7 @@ import screenSolutionRoute from "./routes/screenSolution.route.js";
 import productRoute from "./routes/simpleProduct.route.js";
 import tagRoute from "./routes/tag.route.js";
 import userRoute from "./routes/user.route.js";
+import variableProduct from "./routes/variableProduct.route.js";
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use("/api/offers/campaign", campaignRoute);
 app.use("/api/brand", brandRoute);
 app.use("/api/tag", tagRoute);
 app.use("/api/screensolution", screenSolutionRoute);
+app.use("/api/variable/product", variableProduct);
 
 // Server is Running
 app.listen(port, () => {

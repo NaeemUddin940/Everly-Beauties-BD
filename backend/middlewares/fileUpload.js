@@ -28,16 +28,44 @@ export const uploadTo = (folderName) => {
     },
   });
 
-  // // 🛑 IMPORTANT: Prevent upload if title already exists
-  // const fileFilter = async (req, file, cb) => {
-  //   const exists = await MainCategory.findOne({ name: req.body.name });
+  return multer({ storage });
+};
 
-  //   if (exists) {
-  //     return cb(new Error(`Category '${req.body.name}' already exists`));
-  //   }
+// Special uploader for variable product fields: places files into
+// different folders depending on the field name.
+export const uploadVariableProduct = () => {
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const base = "./uploads";
+      let folder = "others";
 
-  //   cb(null, true);
-  // };
+      if (file.fieldname === "mainImage") {
+        folder = "variableProductImage";
+      } else if (file.fieldname === "galleryImages") {
+        folder = "variableProductImages";
+      } else if (
+        file.fieldname &&
+        (file.fieldname.startsWith("variationImage") ||
+          file.fieldname.startsWith("variationImages"))
+      ) {
+        folder = "variableProductVariation";
+      }
+
+      const fullPath = path.join(base, folder);
+
+      if (!fs.existsSync(fullPath)) {
+        fs.mkdirSync(fullPath, { recursive: true });
+      }
+
+      cb(null, fullPath);
+    },
+
+    filename: (req, file, cb) => {
+      const uniqueName =
+        crypto.randomBytes(5).toString("hex") + path.extname(file.originalname);
+      cb(null, uniqueName);
+    },
+  });
 
   return multer({ storage });
 };

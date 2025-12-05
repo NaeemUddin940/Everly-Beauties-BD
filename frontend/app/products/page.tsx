@@ -26,6 +26,7 @@ import { useCart } from "@/components/context/cart-context";
 import { Button } from "@/components/product/custom-button";
 import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 import toast from "react-hot-toast";
+import PublicLayout from "../(public)/layout";
 
 export default function ShopPage() {
   const { getAllSimpleProduct, allSimpleProduct, isLoading, isError } =
@@ -325,73 +326,19 @@ export default function ShopPage() {
   }
 
   return (
-    <Container className="my-10">
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Mobile Filter Button and Sort */}
-        <div className="lg:hidden mb-6 flex items-center justify-between border-b border-gray-200 pb-4">
-          <Button
-            variant="outline"
-            onClick={() => setIsFilterModalOpen(true)}
-            className="inline-flex items-center"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-
-          <Select
-            options={sortOptions}
-            value={filters.orderby || "menu_order"}
-            onValueChange={handleSortChange}
-            placeholder="Sort by: Featured"
-            className="w-48"
-          />
-        </div>
-
-        {/* Mobile Filter Modal */}
-        <Modal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          title="Filter Options"
-        >
-          <FilterSidebar
-            filterOptions={apiData.filter_options}
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onClose={() => setIsFilterModalOpen(false)}
-            isMobile={true}
-          />
-        </Modal>
-
-        {/* Main Content */}
-        <main className="w-full">
-          {/* Desktop Filter Bar */}
-          <div className="hidden lg:flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
-            <div className="flex items-center space-x-4 flex-wrap">
-              <span className="text-sm font-medium text-gray-700">
-                Filter by:
-              </span>
-              <PriceFilterDropdown
-                filterOptions={apiData.filter_options}
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-              />
-              {apiData.filter_options.categories &&
-                apiData.filter_options.categories.length > 0 && (
-                  <CategoryFilterDropdown
-                    filterOptions={apiData.filter_options}
-                    filters={filters}
-                    onFiltersChange={handleFiltersChange}
-                  />
-                )}
-              {apiData.filter_options.brands &&
-                apiData.filter_options.brands.length > 0 && (
-                  <BrandFilterDropdown
-                    filterOptions={apiData.filter_options}
-                    filters={filters}
-                    onFiltersChange={handleFiltersChange}
-                  />
-                )}
-            </div>
+    <PublicLayout>
+      <Container className="my-10">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Mobile Filter Button and Sort */}
+          <div className="lg:hidden mb-6 flex items-center justify-between border-b border-gray-200 pb-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsFilterModalOpen(true)}
+              className="inline-flex items-center"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filter
+            </Button>
 
             <Select
               options={sortOptions}
@@ -402,82 +349,140 @@ export default function ShopPage() {
             />
           </div>
 
-          {/* Applied Filters */}
-          <AppliedFilters
-            filters={filters}
-            filterOptions={apiData.filter_options}
-            onFiltersChange={handleFiltersChange}
-            onClearAll={clearAllFilters}
-          />
-
-          {/* Results Count */}
-          <div className="mb-4">
-            {isLoading ? (
-              <div className="bg-gray-200 rounded w-48 h-4 animate-pulse"></div>
-            ) : (
-              <p className="text-sm text-gray-600">
-                Showing {(currentPage - 1) * 12 + 1} -{" "}
-                {Math.min(currentPage * 12, productCount)} of {productCount}{" "}
-                results
-              </p>
-            )}
-          </div>
-
-          {/* Products Grid */}
-          {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {[...Array(12)].map((_, i) => (
-                <ProductSkeleton key={i} />
-              ))}
-            </div>
-          ) : productsToRender.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4">
-              {productsToRender.map((product: any) => {
-                const convertedProduct = convertProductForCard(product);
-                console.log(convertedProduct);
-                return (
-                  <div key={product.id} className="px-1 pb-2 md:px-2 md:pb-3">
-                    <ProductCard
-                      id={convertedProduct.id}
-                      slug={convertedProduct.slug}
-                      image={convertedProduct.image}
-                      title={convertedProduct.title}
-                      brand={convertedProduct.brand}
-                      price={convertedProduct.price}
-                      regularPrice={convertedProduct.regular_price}
-                      campaignName={convertedProduct.campaign_name}
-                      variations={convertedProduct.variations}
-                      rating={convertedProduct.rating}
-                      // hasFreeShipping={convertedProduct.hasFreeShipping}
-                      onAddToCart={() => handleAddToCart(product)}
-                      onWishlistToggle={() => handleWishlistToggle(product.id)}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-600 text-lg mb-4">No products found</p>
-              <p className="text-gray-500 mb-6">
-                Try adjusting your filters or search criteria
-              </p>
-              <Button onClick={clearAllFilters} variant="outline">
-                Clear All Filters
-              </Button>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {!isLoading && productCount > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
+          {/* Mobile Filter Modal */}
+          <Modal
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            title="Filter Options"
+          >
+            <FilterSidebar
+              filterOptions={apiData.filter_options}
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClose={() => setIsFilterModalOpen(false)}
+              isMobile={true}
             />
-          )}
-        </main>
-      </div>
-    </Container>
+          </Modal>
+
+          {/* Main Content */}
+          <main className="w-full">
+            {/* Desktop Filter Bar */}
+            <div className="hidden lg:flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
+              <div className="flex items-center space-x-4 flex-wrap">
+                <span className="text-sm font-medium text-gray-700">
+                  Filter by:
+                </span>
+                <PriceFilterDropdown
+                  filterOptions={apiData.filter_options}
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                />
+                {apiData.filter_options.categories &&
+                  apiData.filter_options.categories.length > 0 && (
+                    <CategoryFilterDropdown
+                      filterOptions={apiData.filter_options}
+                      filters={filters}
+                      onFiltersChange={handleFiltersChange}
+                    />
+                  )}
+                {apiData.filter_options.brands &&
+                  apiData.filter_options.brands.length > 0 && (
+                    <BrandFilterDropdown
+                      filterOptions={apiData.filter_options}
+                      filters={filters}
+                      onFiltersChange={handleFiltersChange}
+                    />
+                  )}
+              </div>
+
+              <Select
+                options={sortOptions}
+                value={filters.orderby || "menu_order"}
+                onValueChange={handleSortChange}
+                placeholder="Sort by: Featured"
+                className="w-48"
+              />
+            </div>
+
+            {/* Applied Filters */}
+            <AppliedFilters
+              filters={filters}
+              filterOptions={apiData.filter_options}
+              onFiltersChange={handleFiltersChange}
+              onClearAll={clearAllFilters}
+            />
+
+            {/* Results Count */}
+            <div className="mb-4">
+              {isLoading ? (
+                <div className="bg-gray-200 rounded w-48 h-4 animate-pulse"></div>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  Showing {(currentPage - 1) * 12 + 1} -{" "}
+                  {Math.min(currentPage * 12, productCount)} of {productCount}{" "}
+                  results
+                </p>
+              )}
+            </div>
+
+            {/* Products Grid */}
+            {isLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {[...Array(12)].map((_, i) => (
+                  <ProductSkeleton key={i} />
+                ))}
+              </div>
+            ) : productsToRender.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4">
+                {productsToRender.map((product: any) => {
+                  const convertedProduct = convertProductForCard(product);
+                  console.log(convertedProduct);
+                  return (
+                    <div key={product.id} className="px-1 pb-2 md:px-2 md:pb-3">
+                      <ProductCard
+                        id={convertedProduct.id}
+                        slug={convertedProduct.slug}
+                        image={convertedProduct.image}
+                        title={convertedProduct.title}
+                        brand={convertedProduct.brand}
+                        price={convertedProduct.price}
+                        regularPrice={convertedProduct.regular_price}
+                        campaignName={convertedProduct.campaign_name}
+                        variations={convertedProduct.variations}
+                        rating={convertedProduct.rating}
+                        // hasFreeShipping={convertedProduct.hasFreeShipping}
+                        onAddToCart={() => handleAddToCart(product)}
+                        onWishlistToggle={() =>
+                          handleWishlistToggle(product.id)
+                        }
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg mb-4">No products found</p>
+                <p className="text-gray-500 mb-6">
+                  Try adjusting your filters or search criteria
+                </p>
+                <Button onClick={clearAllFilters} variant="outline">
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!isLoading && productCount > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </main>
+        </div>
+      </Container>
+    </PublicLayout>
   );
 }
