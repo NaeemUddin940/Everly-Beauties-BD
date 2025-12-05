@@ -4,6 +4,7 @@ import {
   generateVariations,
   getVariableProduct,
   getVariableProducts,
+  updateVariableProduct,
 } from "../controllers/variableProduct.controller.js";
 import { uploadVariableProduct } from "../middlewares/fileUpload.js";
 import { multerErrorHandler } from "../middlewares/multerErrorHandler.js";
@@ -27,5 +28,13 @@ variableProduct.get("/get", getVariableProducts);
 
 // Get single variable product
 variableProduct.get("/:id", getVariableProduct);
+
+variableProduct.put(
+  "/update/:id",
+  // use a single multer instance that routes files to folders based on fieldname
+  uploadVariableProduct().any(),
+  multerErrorHandler,
+  updateVariableProduct
+);
 
 export default variableProduct;

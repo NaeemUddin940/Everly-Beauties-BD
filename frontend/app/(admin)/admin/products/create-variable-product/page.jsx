@@ -1,4 +1,8 @@
 "use client";
+import { useBrandStore } from "@/ZustandStore/useBrandStore";
+import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
+import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
+import { useTagStore } from "@/ZustandStore/useTagStore";
 import { useVariableProduct } from "@/ZustandStore/useVariableProduct";
 import Image from "next/image";
 import Link from "next/link";
@@ -129,7 +133,11 @@ const CreateVariableProduct = () => {
     "vegan",
   ]);
   const tagsRef = useRef(null);
-  const { createVariableProduct, variableProducts } = useVariableProduct();
+  const { createVariableProduct, updateVariableProduct } = useVariableProduct();
+  const { getAllBrands, allBrands } = useBrandStore();
+  const { getAllCategory, getCategory } = useCategoryStore();
+  const { allTags, getAllTags } = useTagStore();
+  const { getAllScreenSolution, allScreenSolution } = useScreenSolutionStore();
 
   // এই স্টেটগুলো শুধুমাত্র UI preview-এর জন্য
   const [mainImagePreview, setMainImagePreview] = useState(null);
@@ -168,16 +176,6 @@ const CreateVariableProduct = () => {
   const searchRef = useRef(null);
   const valueInputRef = useRef(null);
 
-  const brands = [
-    "Luxe Beauty",
-    "Glamour Cosmetics",
-    "Pure Skin",
-    "Eco Beauty",
-    "Royal Fragrances",
-    "Nature Glow",
-    "Urban Chic",
-  ];
-
   const screenSolutions = [
     "Oily Skin",
     "Dry Skin",
@@ -200,11 +198,15 @@ const CreateVariableProduct = () => {
     "Makeup shop",
   ];
 
-  const [mostUsedCategories, setMostUsedCategories] = useState([
-    "Shampoo",
-    "Hair Oil",
-    "Makeup shop",
-  ]);
+  // const [mostUsedCategories, setMostUsedCategories] = useState([
+  //   "Shampoo",
+  //   "Hair Oil",
+  //   "Makeup shop",
+  // ]);
+
+  const [showAllTags, setShowAllTags] = useState(false);
+
+  const displayedTags = showAllTags ? allTags?.tags : allTags?.tags.slice(0, 5);
 
   // Filter tag suggestions based on input
   const tagSuggestions = availableTags
@@ -535,7 +537,8 @@ const CreateVariableProduct = () => {
       }
 
       // createVariableProduct ফাংশনে FormData পাঠান
-      await createVariableProduct(formData);
+      // await createVariableProduct(formData);
+      await updateVariableProduct(formData, "6932dafef51d0bb57d356282");
     } catch (error) {
       console.error("Error saving product:", error);
     }
@@ -903,6 +906,14 @@ const CreateVariableProduct = () => {
   const addValueFromSuggestion = (attributeId, value) => {
     addValueToSelectedAttribute(attributeId, value);
   };
+
+  useEffect(() => {
+    getAllBrands();
+    getAllCategory();
+    getAllTags();
+    getAllScreenSolution();
+  }, [getAllBrands, getAllCategory, getAllTags, getAllScreenSolution]);
+  // console.log(allScreenSolution);
 
   return (
     <div className="flex-1 p-8">
@@ -1847,77 +1858,75 @@ const CreateVariableProduct = () => {
 
                 {/* Categories List with Scroll */}
                 <div className="space-y-1 max-h-60 overflow-y-auto pr-2">
-                  {categories
-                    .filter((category) => {
+                  {getCategory?.categories
+                    ?.filter((category) => {
                       if (!categorySearch) return true;
-                      return category
-                        .toLowerCase()
+                      return category?.name.toLowerCase()
                         .includes(categorySearch.toLowerCase());
                     })
                     .map((category) => (
                       <label
-                        key={category}
+                        key={category._id}
                         className="flex items-center p-2 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
                       >
                         <input
                           type="checkbox"
-                          checked={selectedCategories.includes(category)}
+                          checked={selectedCategories.includes(category.name)}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setSelectedCategories((prev) => [
                                 ...prev,
-                                category,
+                                category.name,
                               ]);
                             } else {
                               setSelectedCategories((prev) =>
-                                prev.filter((c) => c !== category)
+                                prev.filter((c) => c.name !== category.name)
                               );
                             }
                           }}
                           className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500 cursor-pointer"
                         />
                         <span className="ml-3 text-sm text-gray-300">
-                          {category}
+                          {category.name}
                         </span>
                       </label>
                     ))}
 
                   {/* Most Used Categories (if tab selected) */}
-                  {categoryTab === "mostUsed" &&
-                    mostUsedCategories.length > 0 && (
-                      <>
-                        <div className="text-xs text-gray-500 mt-4 mb-2 px-2">
-                          Frequently used:
-                        </div>
-                        {mostUsedCategories.map((category) => (
-                          <label
-                            key={category}
-                            className="flex items-center p-2 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedCategories.includes(category)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedCategories((prev) => [
-                                    ...prev,
-                                    category,
-                                  ]);
-                                } else {
-                                  setSelectedCategories((prev) =>
-                                    prev.filter((c) => c !== category)
-                                  );
-                                }
-                              }}
-                              className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500 cursor-pointer"
-                            />
-                            <span className="ml-3 text-sm text-gray-300">
-                              {category}
-                            </span>
-                          </label>
-                        ))}
-                      </>
-                    )}
+                  {categoryTab === "mostUsed" && categories.length > 0 && (
+                    <>
+                      <div className="text-xs text-gray-500 mt-4 mb-2 px-2">
+                        Frequently used:
+                      </div>
+                      {categories.map((category) => (
+                        <label
+                          key={category}
+                          className="flex items-center p-2 hover:bg-gray-800/50 rounded-lg cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedCategories.includes(category)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedCategories((prev) => [
+                                  ...prev,
+                                  category,
+                                ]);
+                              } else {
+                                setSelectedCategories((prev) =>
+                                  prev.filter((c) => c !== category)
+                                );
+                              }
+                            }}
+                            className="rounded bg-gray-700 border-gray-600 text-rose-gold focus:ring-rose-500 cursor-pointer"
+                          />
+                          <span className="ml-3 text-sm text-gray-300">
+                            {category}
+                          </span>
+                        </label>
+                      ))}
+                    </>
+                  )}
                 </div>
 
                 {/* Selected Categories Badges */}
@@ -2005,9 +2014,9 @@ const CreateVariableProduct = () => {
                   className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                 >
                   <option value="">Select Brand</option>
-                  {brands.map((brand) => (
-                    <option key={brand} value={brand}>
-                      {brand}
+                  {allBrands?.allBrands?.map((brand) => (
+                    <option key={brand._id} value={brand.name}>
+                      {brand.name}
                     </option>
                   ))}
                 </select>
@@ -2023,9 +2032,9 @@ const CreateVariableProduct = () => {
                   className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
                 >
                   <option value="">Select Screen Solutions</option>
-                  {screenSolutions.map((solution) => (
-                    <option key={solution} value={solution}>
-                      {solution}
+                  {allScreenSolution?.allScreenSolution?.map((solution) => (
+                    <option key={solution._id} value={solution.name}>
+                      {solution.name}
                     </option>
                   ))}
                 </select>
@@ -2133,10 +2142,10 @@ const CreateVariableProduct = () => {
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {selectedTags.map((tag, index) => (
+                      {selectedTags.map((tag) => (
                         <span
-                          key={index}
-                          className="px-3 py-1.5 rounded-lg text-sm flex items-center bg-gradient-to-r from-gray-800 to-gray-900 text-gray-300 border border-gray-700"
+                          key={tag}
+                          className="px-3 py-1.5 rounded-lg text-sm flex items-center bg-linear-to-r from-gray-800 to-gray-900 text-gray-300 border border-gray-700"
                         >
                           <FaTag className="mr-2 text-rose-gold" />
                           {tag}
@@ -2156,31 +2165,46 @@ const CreateVariableProduct = () => {
                 <div className="mt-3">
                   <p className="text-sm text-gray-400 mb-2">Popular Tags:</p>
                   <div className="flex flex-wrap gap-2">
-                    {popularTags.slice(0, 8).map((tag, index) => (
+                    {displayedTags?.map((tag) => (
                       <button
-                        key={index}
+                        key={tag._id}
                         onClick={() => {
-                          if (!selectedTags.includes(tag)) {
-                            addTag(tag);
+                          if (!selectedTags.includes(tag.name)) {
+                            addTag(tag.name);
                           }
                         }}
-                        disabled={selectedTags.includes(tag)}
+                        disabled={selectedTags.includes(tag.name)}
                         className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${
-                          selectedTags.includes(tag)
+                          selectedTags.includes(tag.name.toLowerCase())
                             ? "bg-rose-gold text-white cursor-default"
                             : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
                         }`}
                       >
-                        {tag}
-                        {selectedTags.includes(tag) && (
+                        {tag.name.toLowerCase()}
+                        {selectedTags.includes(tag.name) && (
                           <FaCheck className="inline ml-1" />
                         )}
                       </button>
                     ))}
-                    {availableTags.length > 8 && (
-                      <span className="text-xs text-gray-500 self-center">
-                        + {availableTags.length - 8} more
-                      </span>
+
+                    {/* + more button */}
+                    {!showAllTags && allTags?.totalTags > 5 && (
+                      <button
+                        onClick={() => setShowAllTags(true)}
+                        className="text-xs text-gray-500 underline hover:text-white"
+                      >
+                        + {allTags?.totalTags - 5} more
+                      </button>
+                    )}
+
+                    {/* Show Less button */}
+                    {showAllTags && allTags?.totalTags > 5 && (
+                      <button
+                        onClick={() => setShowAllTags(false)}
+                        className="text-xs text-gray-500 underline hover:text-white"
+                      >
+                        Show Less
+                      </button>
                     )}
                   </div>
                 </div>
@@ -2415,7 +2439,7 @@ const CreateVariableProduct = () => {
             </h2>
             <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
               <div className="flex items-center mb-3">
-                <div className="w-12 h-12 rounded-lg overflow-hidden mr-3 bg-gradient-to-br from-rose-gold to-pink-600 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg overflow-hidden mr-3 bg-linear-to-br from-rose-gold to-pink-600 flex items-center justify-center">
                   {mainImagePreview ? (
                     <Image
                       height={48}

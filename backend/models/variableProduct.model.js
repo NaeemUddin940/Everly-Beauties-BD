@@ -68,24 +68,10 @@ const variableProductSchema = new Schema(
     galleryImages: [String], // Array of URLs
 
     // Organization (from Organization section)
-    categories: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "MainCategory",
-      },
-    ],
-    brand: {
-      type: Schema.Types.ObjectId,
-      ref: "Brand",
-    },
-    tags: [
-      {
-        type: String,
-        lowercase: true,
-        trim: true,
-      },
-    ],
-    screenSolution: String,
+    categories: [String], // যেমন: ["Makeup shop", "Hair Care Shop"]
+    brand: String, // যেমন: "Luxe Beauty"
+    tags: [String], // যেমন: ["cosmetics", "makeup", "beauty"]
+    screenSolution: String, // যেমন: "Oily Skin"
 
     // SEO (from SEO Settings section)
     seo: {
