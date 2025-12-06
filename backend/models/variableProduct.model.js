@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
+import mongoosePaginate from "mongoose-paginate-v2"
 
 // Main Product Schema
 const variableProductSchema = new Schema(
@@ -22,7 +23,7 @@ const variableProductSchema = new Schema(
     usageGuide: String,
 
     // Product Type
-    productType: {
+    type: {
       type: String,
       default: "variable",
     },
@@ -140,6 +141,8 @@ variableProductSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
 });
+
+variableProductSchema.plugin(mongoosePaginate);
 
 // Create and export model
 const VariableProduct = mongoose.model(

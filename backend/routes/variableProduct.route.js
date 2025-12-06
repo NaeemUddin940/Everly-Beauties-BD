@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createVariableProduct,
+  deleteVariableProduct,
   generateVariations,
   getVariableProduct,
   getVariableProducts,
@@ -28,6 +29,7 @@ variableProduct.get("/get", getVariableProducts);
 
 // Get single variable product
 variableProduct.get("/:id", getVariableProduct);
+variableProduct.delete("/delete/:id", deleteVariableProduct);
 
 variableProduct.put(
   "/update/:id",

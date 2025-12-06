@@ -61,6 +61,10 @@ const simpleProductSchema = new mongoose.Schema(
       enum: ["Published", "Draft"],
       default: "Published",
     },
+    type: {
+      type: String,
+      default: "simple",
+    },
     isActive: {
       type: Boolean,
       default: true,

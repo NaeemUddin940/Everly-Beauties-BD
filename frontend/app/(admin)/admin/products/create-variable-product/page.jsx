@@ -446,7 +446,6 @@ const CreateVariableProduct = () => {
   // UPDATED handleSave function
   const handleSave = async () => {
     try {
-      // FormData তৈরি করুন
       const formData = new FormData();
 
       // Basic product data যোগ করুন
@@ -457,7 +456,7 @@ const CreateVariableProduct = () => {
       formData.append("usageGuide", productData.usageGuide);
       formData.append("productType", "variable");
 
-      // Attributes যোগ করুন
+      // Attributes
       const attributesData = selectedAttributes.map((attr) => ({
         name: attr.name,
         values: attr.values,
@@ -465,7 +464,7 @@ const CreateVariableProduct = () => {
       }));
       formData.append("attributes", JSON.stringify(attributesData));
 
-      // Variations যোগ করুন (ছবি বাদে)
+      // Variations
       const variationsForServer = variations.map((variation) => ({
         attributes: variation.attributes,
         sku: variation.sku,
@@ -475,35 +474,31 @@ const CreateVariableProduct = () => {
       }));
       formData.append("variations", JSON.stringify(variationsForServer));
 
-      // Main image যোগ করুন
-      if (mainImageFile) {
-        formData.append("mainImage", mainImageFile);
-      } else {
-        // যদি ছবি না থাকে তবে খালি ফাইল বা null সেট করুন
-        formData.append("mainImage", "");
-      }
+      // Main image
+      if (mainImageFile) formData.append("mainImage", mainImageFile);
+      else formData.append("mainImage", "");
 
-      // Gallery images যোগ করুন
+      // Gallery images
       if (galleryImageFiles.length > 0) {
-        galleryImageFiles.forEach((file, index) => {
-          formData.append(`galleryImages`, file);
-        });
+        galleryImageFiles.forEach((file) =>
+          formData.append("galleryImages", file)
+        );
       } else {
         formData.append("galleryImages", "");
       }
 
-      // Variation images যোগ করুন
+      // Variation images
       Object.entries(variationImageFiles).forEach(([variationId, file]) => {
         formData.append(`variationImages[${variationId}]`, file);
       });
 
-      // অন্যান্য ডেটা যোগ করুন
+      // Other fields
       formData.append("categories", JSON.stringify(selectedCategories));
       formData.append("brand", productData.brand);
       formData.append("tags", JSON.stringify(selectedTags));
       formData.append("screenSolution", productData.screenSolution);
 
-      // SEO ডেটা যোগ করুন
+      // SEO
       const seoData = {
         title: productData.title,
         description: productData.seoDescription,
@@ -530,15 +525,45 @@ const CreateVariableProduct = () => {
       formData.append("isActive", productData.isActive.toString());
       formData.append("visibility", productData.visibility);
 
-      // FormData কনসোলে দেখুন (debugging এর জন্য)
+      // Debugging
       console.log("=== FormData Contents ===");
       for (let [key, value] of formData.entries()) {
         console.log(`${key}:`, value);
       }
 
-      // createVariableProduct ফাংশনে FormData পাঠান
-      // await createVariableProduct(formData);
-      await updateVariableProduct(formData, "6932dafef51d0bb57d356282");
+      // Submit FormData
+      await createVariableProduct(formData);
+
+      // === Clear all state after submission ===
+      setProductData({
+        name: "",
+        slug: "",
+        description: "",
+        ingredients: "",
+        usageGuide: "",
+        brand: "",
+        mainImage: null,
+        screenSolution: "",
+        title: "",
+        seoDescription: "",
+        focusKeywords: "",
+        canonicalUrl: "",
+        schemaMarkup: "",
+        bottomContent: "",
+        visibility: "draft",
+        isActive: true,
+      });
+      setSelectedCategories([]);
+      setSelectedAttributes([]);
+      setVariations([]);
+      setSelectedTags([]);
+      setMainImagePreview(null);
+      setGalleryImagesPreview([]);
+      setMainImageFile(null);
+      setGalleryImageFiles([]);
+      setVariationImageFiles({});
+
+      console.log("Form cleared successfully!");
     } catch (error) {
       console.error("Error saving product:", error);
     }
@@ -1861,7 +1886,8 @@ const CreateVariableProduct = () => {
                   {getCategory?.categories
                     ?.filter((category) => {
                       if (!categorySearch) return true;
-                      return category?.name.toLowerCase()
+                      return category?.name
+                        .toLowerCase()
                         .includes(categorySearch.toLowerCase());
                     })
                     .map((category) => (

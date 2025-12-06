@@ -14,20 +14,101 @@ import { useVariableProduct } from "@/ZustandStore/useVariableProduct";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react"; // 👈 useState and useMemo imported
+import { useEffect, useMemo, useState } from "react";
+
+// --- 1. ⚙️ Data Normalization Helper Function ---
+// This function standardizes the properties for both product types.
+const normalizeProduct = (product) => {
+  // Common properties
+  const common = {
+    _id: product._id,
+    name: product.name,
+    productImage: product.productImage,
+    category: product.category,
+    brand: product.brand,
+    isActive: product.isActive,
+    // Add Link for editing based on type
+    editLink:
+      product.type === "simple"
+        ? `/admin/products/edit-simple-product/${product._id}`
+        : `/admin/products/edit-variable-product/${product._id}`,
+    // Add delete function name (assuming you'll add deleteVariableProduct)
+    deleteAction:
+      product.type === "simple"
+        ? "deleteSimpleProduct"
+        : "deleteVariableProduct",
+  };
+
+  if (product.type === "simple") {
+    return {
+      ...common,
+      type: "simple",
+      sku: product.sku,
+      regularPrice: product.regularPrice,
+      salePrice: product.salePrice,
+      stockQuantity: product.stockQuantity,
+    };
+  } else if (product.type === "variable") {
+    // Variable Products don't have a single price/stock like Simple ones.
+    // We calculate a summary (min/max price, total stock)
+    const skus = product.sku || [];
+    const minPrice = skus.reduce(
+      (min, sku) => Math.min(min, sku.regularPrice),
+      Infinity
+    );
+    const maxPrice = skus.reduce(
+      (max, sku) => Math.max(max, sku.regularPrice),
+      -Infinity
+    );
+    const totalStock = skus.reduce(
+      (total, sku) => total + sku.stockQuantity,
+      0
+    );
+
+    return {
+      ...common,
+      productImage: product.mainImage,
+      category: product.categories[0],
+      type: "variable",
+      // Variable Product uses a summary for the main list view
+      sku: product?.skus?.length > 0 ? product.skus[0].sku : "N/A", // Use first SKU for display
+      regularPrice: minPrice !== Infinity ? `${minPrice}-${maxPrice}` : "N/A", // Price range
+      salePrice: "N/A", // No sale price summary needed for list view
+      stockQuantity: totalStock,
+    };
+  }
+
+  // Fallback for other types like Combo (if implemented later)
+  return {
+    ...common,
+    type: "Unknown",
+    sku: "N/A",
+    regularPrice: "N/A",
+    salePrice: "N/A",
+    stockQuantity: 0,
+  };
+};
 
 export default function ShowAllProducts() {
   const {
     getAllSimpleProduct,
-    isLoading,
+    isLoading: isLoadingSimple, // Renamed to avoid collision
     allSimpleProduct,
     deleteSimpleProduct,
   } = useSimpleProductStore();
 
   const { getAllCategory, getCategory } = useCategoryStore();
-  const { getVariableProduct, variableProducts } = useVariableProduct();
+  const {
+    getVariableProduct,
+    variableProducts,
+    isLoading: isLoadingVariable, // Renamed to avoid collision
+    deleteVariableProduct, // ⚠️ ASSUMING YOU HAVE THIS ACTION IN useVariableProduct
+  } = useVariableProduct();
+
   const { allBrands, getAllBrands } = useBrandStore();
-  console.log("variableProducts", variableProducts);
+
+  const isLoading = isLoadingSimple || isLoadingVariable; // Combine loading states
+
   // --- 1. 🔍 FILTER STATE ---
   const [filterOptions, setFilterOptions] = useState({
     category: "All Categories",
@@ -49,13 +130,21 @@ export default function ShowAllProducts() {
 
   // --- 3. 🧠 FILTERING LOGIC (useMemo for efficiency) ---
   const filteredProducts = useMemo(() => {
-    if (!allSimpleProduct?.simpleProducts) return [];
+    const simpleList = allSimpleProduct?.simpleProducts || [];
+    const variableList = variableProducts?.products || []; // Accessing the correct array
+    console.log(simpleList);
+    console.log(variableList);
+    // 3.0. Combine and Normalize Data
+    const combinedList = [
+      ...simpleList.map((p) => normalizeProduct({ ...p, type: "simple" })),
+      ...variableList.map((p) => normalizeProduct({ ...p, type: "variable" })),
+    ];
 
-    const products = allSimpleProduct.simpleProducts;
+    console.log(combinedList);
+
     const { category, brand, type, status, stock, search } = filterOptions;
 
-    // Convert all products to simple, consistent structure before filtering
-    return products.filter((product) => {
+    return combinedList.filter((product) => {
       // 3.1. Category Filter
       if (category !== "All Categories" && product.category !== category) {
         return false;
@@ -66,9 +155,9 @@ export default function ShowAllProducts() {
         return false;
       }
 
-      // 3.3. Type Filter (Assuming all are 'Simple' for now, modify if variable/combo are added)
-      if (type !== "All Types" && type !== "Simple") {
-        return false; // Since this page only loads simple products
+      // 3.3. Type Filter
+      if (type !== "All Types" && product.type !== type) {
+        return false;
       }
 
       // 3.4. Status Filter
@@ -101,6 +190,7 @@ export default function ShowAllProducts() {
       // 3.6. Search Filter (by name or SKU)
       if (search) {
         const lowerSearch = search.toLowerCase();
+        // Check for product.sku, which is only present after normalization
         if (
           !product.name.toLowerCase().includes(lowerSearch) &&
           !product.sku.toLowerCase().includes(lowerSearch)
@@ -111,21 +201,54 @@ export default function ShowAllProducts() {
 
       return true;
     });
-  }, [allSimpleProduct, filterOptions]); // Re-run only when products or filters change
+  }, [allSimpleProduct, variableProducts, filterOptions]); // Dependency updated
+
+  // --- 4. 🧹 Delete Handler Function ---
+  // A wrapper to call the correct delete action based on product type
+  const handleDeleteProduct = (product) => {
+    if (product.type === "simple") {
+      deleteSimpleProduct(product._id);
+    } else if (product.type === "variable") {
+      deleteVariableProduct(product._id);
+    }
+  };
 
   useEffect(() => {
-    // ⚠️ Note: Fetching 1000 products to enable client-side filtering.
-    // For large databases, this should be converted to server-side filtering/pagination.
-    getAllSimpleProduct(1000);
+    // Fetch all products, categories, and brands
+    getAllSimpleProduct();
+    getVariableProduct(); // Fetch variable products
     getAllCategory();
     getAllBrands();
-    getVariableProduct();
-  }, [getAllSimpleProduct, getAllCategory, getAllBrands, getVariableProduct]);
+  }, [getAllSimpleProduct, getVariableProduct, getAllCategory, getAllBrands]);
+
+  // Helper for Type Badge styling
+  const getTypeBadge = (type) => {
+    let style = "";
+    let icon = "";
+    if (type === "simple") {
+      style = "bg-blue-500/20 text-blue-300";
+      icon = "fas fa-cube";
+    } else if (type === "variable") {
+      style = "bg-purple-500/20 text-purple-300";
+      icon = "fas fa-palette";
+    } else if (type === "Combo") {
+      style = "bg-green-500/20 text-green-300";
+      icon = "fas fa-gift";
+    }
+    return (
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${style}`}
+      >
+        <i className={`${icon} mr-1`}></i> {type}
+      </span>
+    );
+  };
 
   return (
     <div>
       <div className=" flex-1 p-2">
-        {/* */}
+        {/* ... (Your existing header content) ... */}
+
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -159,9 +282,7 @@ export default function ShowAllProducts() {
           </div>
         </div>
 
-        {/* */}
         {/* ... (Your existing 'Add New Product' section) ... */}
-
         <div className="mb-8">
           <h2 className="text-xl font-bold text-white mb-4">Add New Product</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -240,7 +361,7 @@ export default function ShowAllProducts() {
           </div>
         </div>
 
-        {/* --- Filters (Updated with Handler and State) --- */}
+        {/* --- Filters (No change needed here, it uses existing state/handler) --- */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md mb-6">
           <div className="flex flex-wrap gap-4 items-center">
             {/* Category Filter */}
@@ -297,8 +418,8 @@ export default function ShowAllProducts() {
                 className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
               >
                 <option value="All Types">All Types</option>
-                <option value="Simple">Simple</option>
-                <option value="Variable">Variable</option>
+                <option value="simple">Simple</option>
+                <option value="variable">Variable</option>
                 <option value="Combo">Combo</option>
               </select>
             </div>
@@ -340,19 +461,23 @@ export default function ShowAllProducts() {
           </div>
         </div>
 
-        {/* */}
+        {/* --- Product Table (Updated Rendering) --- */}
         <div className="glassmorphism p-6 rounded-2xl shadow-md">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-white">All Products</h2>
             <div className="flex space-x-2">
               <button
-                onClick={() => exportProducts(allSimpleProduct)}
+                // Pass combined products for export if needed, or update exportProducts
+                onClick={() => exportProducts(filteredProducts)}
                 className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition-all duration-300 flex items-center"
               >
                 <i className="fas fa-download mr-2"></i> Export
               </button>
               <button
-                onClick={() => getAllSimpleProduct(1000)}
+                onClick={() => {
+                  getAllSimpleProduct(1000);
+                  getVariableProduct(1000);
+                }}
                 className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition-all duration-300 flex items-center"
               >
                 <i className="fas fa-sync-alt mr-2"></i> Refresh
@@ -391,7 +516,7 @@ export default function ShowAllProducts() {
                   ))
                 ) : (
                   <>
-                    {/* 🚀 Simple Products (Data Rows) - Now using filteredProducts */}
+                    {/* 🚀 Combined Products (Data Rows) - Using filteredProducts */}
                     {filteredProducts.length > 0
                       ? filteredProducts.map((product) => (
                           <tr
@@ -405,14 +530,17 @@ export default function ShowAllProducts() {
                               />
                             </td>
                             <td className="py-4 px-2 text-left">
-                              <Image
-                                src={api + product.productImage}
-                                alt={product.name}
-                                width={100}
-                                height={100}
-                                className="object-cover h-full w-full rounded-md"
-                                unoptimized
-                              />
+                              {/* Use optional chaining as some variable products might not have an image */}
+                              {product.productImage && (
+                                <Image
+                                  src={api + product.productImage}
+                                  alt={product.name}
+                                  width={100}
+                                  height={100}
+                                  className="object-cover h-full w-full rounded-md"
+                                  unoptimized
+                                />
+                              )}
                             </td>
                             <td className="py-4 px-2 text-left">
                               <Tooltip>
@@ -433,10 +561,9 @@ export default function ShowAllProducts() {
                                 </div>
                               </Tooltip>
                             </td>
+                            {/* Type Column: Use the helper function */}
                             <td className="py-4 px-2">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-300">
-                                <i className="fas fa-cube mr-1"></i> Simple
-                              </span>
+                              {getTypeBadge(product.type)}
                             </td>
                             <td className="py-4 px-2">
                               {product.category || "No Category Found!"}
@@ -445,13 +572,16 @@ export default function ShowAllProducts() {
                               {product.brand || "No Brand Found!"}
                             </td>
                             <td className="py-4 px-2">
+                              {/* Price Column: Shows range for Variable, single for Simple */}
                               <p className="font-medium text-white">
                                 {product.regularPrice} <span>tk</span>
                               </p>
-                              <p className="text-sm text-gray-400 line-through">
-                                {product.salePrice}
-                                <span> tk</span>
-                              </p>
+                              {product.type === "simple" && (
+                                <p className="text-sm text-gray-400 line-through">
+                                  {product.salePrice}
+                                  <span> tk</span>
+                                </p>
+                              )}
                             </td>
                             <td className="py-4 px-2">
                               <p className="font-medium text-white">
@@ -486,16 +616,16 @@ export default function ShowAllProducts() {
                             </td>
                             <td className="py-4 px-2">
                               <div className="flex space-x-2">
+                                {/* Edit Link: Use the normalized editLink */}
                                 <Link
-                                  href={`/admin/products/edit-simple-product/${product._id}`}
+                                  href={product.editLink}
                                   className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300"
                                 >
                                   <i className="fas fa-edit text-rose-gold hover:text-pink-500"></i>
                                 </Link>
+                                {/* Delete Button: Use the combined handler */}
                                 <button
-                                  onClick={() =>
-                                    deleteSimpleProduct(product._id)
-                                  }
+                                  onClick={() => handleDeleteProduct(product)}
                                   className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 pb-2 rounded-lg transition-all duration-300"
                                 >
                                   <Trash2 className="fas fa-trash text-red-400 hover:text-red-500" />
