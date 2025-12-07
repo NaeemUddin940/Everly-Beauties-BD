@@ -90,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {/* Product Image */}
           <Link href={`/products/${slug}`}>
             <Image
-              src={api + image}
+              src={ image}
               alt={title}
               width={430}
               height={430}

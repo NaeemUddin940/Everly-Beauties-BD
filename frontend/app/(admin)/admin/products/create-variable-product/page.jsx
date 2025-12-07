@@ -124,14 +124,7 @@ const CreateVariableProduct = () => {
     "spf",
     "primer",
   ]);
-  const [popularTags, setPopularTags] = useState([
-    "makeup",
-    "cosmetics",
-    "beauty",
-    "skincare",
-    "natural",
-    "vegan",
-  ]);
+
   const tagsRef = useRef(null);
   const { createVariableProduct, updateVariableProduct } = useVariableProduct();
   const { getAllBrands, allBrands } = useBrandStore();

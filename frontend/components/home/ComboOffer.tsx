@@ -1,17 +1,16 @@
 "use client";
 
+import combobg from "@/assets/img/bg/apple-shopping-event-full-bg-opt.jpg";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import ProductCard from "@/app/components/common/ProductCard";
-import ProductCardSkeleton from "@/app/components/common/ProductCardSkeleton";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import Combobg from "@/app/assets/img/bg/apple-shopping-event-full-bg-opt.jpg";
-import { useCart } from "@/app/context/cart-context";
 import toast from "react-hot-toast";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick-theme.css";
+import "slick-carousel/slick/slick.css";
+import ProductCard from "../common/ProductCard";
+import ProductCardSkeleton from "../common/ProductCardSkeleton";
+import { useCart } from "../context/cart-context";
 
 // Product interface
 interface ApiProduct {
@@ -29,14 +28,93 @@ interface ApiProduct {
   hasFreeShipping: boolean;
 }
 
-// Fetch combo products
-const fetchComboProducts = async (): Promise<ApiProduct[]> => {
-  const res = await fetch(
-    "https://everlybeautiesbd.com/wp-json/custom/v1/combo-products"
-  );
-  if (!res.ok) throw new Error("Failed to fetch combo products");
-  return res.json();
-};
+// Dummy data only - no fetch calls
+const dummyProducts: ApiProduct[] = [
+  {
+    id: 1,
+    slug: "combo-skincare-set-1",
+    title: "Premium Skincare Combo Pack",
+    price: "2499",
+    regular_price: "3499",
+    sale_price: "2499",
+    image: "../../assets/img/products/1-1-430x430.webp",
+    brand: "DermaCare",
+    campaign_name: "Summer Special",
+    variations: [],
+    rating: 4.5,
+    hasFreeShipping: true,
+  },
+  {
+    id: 2,
+    slug: "makeup-combo-set",
+    title: "Complete Makeup Kit",
+    price: "1899",
+    regular_price: "2599",
+    sale_price: "1899",
+    image: "../../assets/img/products/1-3-430x430.webp",
+    brand: "Glamour",
+    campaign_name: "Combo Offer",
+    variations: [],
+    rating: 4.2,
+    hasFreeShipping: true,
+  },
+  {
+    id: 3,
+    slug: "hair-care-bundle",
+    title: "Hair Care Essential Bundle",
+    price: "1799",
+    regular_price: "2299",
+    sale_price: "1799",
+    image: "../../assets/img/products/1-430x430.webp",
+    brand: "HairLux",
+    campaign_name: "Hair Festival",
+    variations: [],
+    rating: 4.7,
+    hasFreeShipping: false,
+  },
+  {
+    id: 4,
+    slug: "fragrance-combo",
+    title: "Perfume Collection Set",
+    price: "3299",
+    regular_price: "4599",
+    sale_price: "3299",
+    image: "../../assets/img/products/aurora-amore-430x430.webp",
+    brand: "Scentify",
+    campaign_name: "Luxury Combo",
+    variations: [],
+    rating: 4.8,
+    hasFreeShipping: true,
+  },
+  {
+    id: 5,
+    slug: "face-wash-toner-combo",
+    title: "Face Wash & Toner Combo",
+    price: "899",
+    regular_price: "1299",
+    sale_price: "899",
+    image: "../../assets/img/products/evle-430x430.webp",
+    brand: "PureSkin",
+    campaign_name: "Daily Care",
+    variations: [],
+    rating: 4.3,
+    hasFreeShipping: true,
+  },
+  {
+    id: 6,
+    slug: "body-lotion-combo",
+    title: "Body Lotion Trio Pack",
+    price: "1499",
+    regular_price: "1999",
+    sale_price: "1499",
+    image: "../../assets/img/products/glitter-primer-430x430.webp",
+    brand: "BodyBliss",
+    campaign_name: "Winter Special",
+    variations: [],
+    rating: 4.4,
+    hasFreeShipping: false,
+  },
+];
 
 const PrevArrow = (props: any) => {
   const { onClick } = props;
@@ -63,10 +141,18 @@ const NextArrow = (props: any) => {
 };
 
 const ComboOffer = () => {
-  const queryClient = useQueryClient();
-
   // Track if device is mobile (less than 768px)
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate loading for 1 second
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -79,35 +165,21 @@ const ComboOffer = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    queryClient.prefetchQuery({
-      queryKey: ["comboProducts"],
-      queryFn: fetchComboProducts,
-    });
-  }, [queryClient]);
-
-  const {
-    data: products = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery<ApiProduct[], Error>({
-    queryKey: ["comboProducts"],
-    queryFn: fetchComboProducts,
-    staleTime: 0,
-    cacheTime: 0,
-    keepPreviousData: false,
-    refetchOnWindowFocus: true,
-  });
-
   const { addItem } = useCart();
 
   const handleAddToCart = useCallback(
     (product: ApiProduct, variation?: any) => {
+      // Validate and fix image URL if needed
+      let imageUrl = product.image;
+      if (imageUrl.startsWith("../../")) {
+        // Convert relative path to absolute or use a placeholder
+        imageUrl = "https://picsum.photos/400/400"; // Fallback image
+      }
+
       addItem({
         id: product.id,
         slug: product.slug,
-        image: product.image,
+        image: imageUrl,
         title: product.title,
         brand: product.brand,
         price: Number(product.price),
@@ -121,6 +193,7 @@ const ComboOffer = () => {
 
   const handleWishlistToggle = (productId: number) => {
     console.log(`Wishlist toggled: ${productId}`);
+    toast.success("Added to wishlist");
   };
 
   const settings = {
@@ -144,7 +217,7 @@ const ComboOffer = () => {
     <div>
       <div
         className="rounded-xl mx-auto mt-5 py-4 px-4"
-        style={{ backgroundImage: `url(${Combobg.src})` }}
+        style={{ backgroundImage: `url(${combobg.src})` }}
       >
         <div className="flex justify-between items-center">
           <div>
@@ -186,32 +259,35 @@ const ComboOffer = () => {
                 </div>
               ))}
             </Slider>
-          ) : isError ? (
-            <div className="bg-red-50 p-4 rounded-lg text-red-600">
-              <p>Failed to load combo offers: {error.message}</p>
-            </div>
           ) : (
-            <Slider {...settings}>
-              {products.map((product) => (
-                <div key={product.id} className="px-1 pb-2 md:px-2 md:pb-3">
-                  <ProductCard
-                    id={product.id}
-                    slug={product.slug}
-                    image={product.image}
-                    title={product.title}
-                    brand={product.brand}
-                    price={parseFloat(product.price)}
-                    regularPrice={parseFloat(product.regular_price)}
-                    campaignName={product.campaign_name}
-                    variations={product.variations}
-                    rating={product.rating}
-                    hasFreeShipping={product.hasFreeShipping}
-                    onAddToCart={() => handleAddToCart(product)}
-                    onWishlistToggle={() => handleWishlistToggle(product.id)}
-                  />
-                </div>
-              ))}
-            </Slider>
+            <>
+              {/* Notification for demo data */}
+              <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+                <p>Showing demo combo offers</p>
+              </div>
+
+              <Slider {...settings}>
+                {dummyProducts.map((product) => (
+                  <div key={product.id} className="px-1 pb-2 md:px-2 md:pb-3">
+                    <ProductCard
+                      id={product.id}
+                      slug={product.slug}
+                      image={product.image}
+                      title={product.title}
+                      brand={product.brand}
+                      price={parseFloat(product.price)}
+                      regularPrice={parseFloat(product.regular_price)}
+                      campaignName={product.campaign_name}
+                      variations={product.variations}
+                      rating={product.rating}
+                      hasFreeShipping={product.hasFreeShipping}
+                      onAddToCart={() => handleAddToCart(product)}
+                      onWishlistToggle={() => handleWishlistToggle(product.id)}
+                    />
+                  </div>
+                ))}
+              </Slider>
+            </>
           )}
         </div>
       </div>

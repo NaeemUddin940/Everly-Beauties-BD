@@ -1,6 +1,7 @@
 "use client";
 import Container from "@/components/common/Container";
 import CampaignBanner from "@/components/home/CampaignBanner";
+import ComboOffer from "@/components/home/ComboOffer";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import HeroSlider from "@/components/home/HeroSlider";
 import Slide_of_features from "@/components/home/Slide_of_features";
@@ -28,7 +29,7 @@ export default function Page() {
         <FeaturedProducts />
         <TopCategoriesSlider allCategories={getCategory} />
         {/* <Banner /> */}
-        {/* <ComboOffer /> */}
+        <ComboOffer />
         {/* <OfferBanner /> */}
         {/* <ProductCategoryTabs/> */}
         {/* <FeaturedBrands /> */}
