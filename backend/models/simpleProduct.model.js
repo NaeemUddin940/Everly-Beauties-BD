@@ -29,7 +29,7 @@ const simpleProductSchema = new mongoose.Schema(
     allowBackorders: { type: Boolean, default: false },
 
     // 🟢 Product Images
-    productImage: { type: String, default: "" },
+    mainImage: { type: String, default: "" },
     galleryImages: [{ type: String }],
 
     // 🟢 SEO Content For Category Page

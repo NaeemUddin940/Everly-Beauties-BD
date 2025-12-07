@@ -172,7 +172,7 @@ const ComboProductCreationPage = () => {
   const { allTags, getAllTags } = useTagStore();
   const { allScreenSolution, getAllScreenSolution } = useScreenSolutionStore();
   const { allSimpleProduct, getAllSimpleProduct } = useSimpleProductStore();
-  const { getAllComboProduct } = useComboProductStore();
+  const { createComboProduct } = useComboProductStore();
 
   const [availableTags, setAvailableTags] = useState<string[]>([
     "cosmetics",
@@ -597,7 +597,7 @@ const ComboProductCreationPage = () => {
       name: formData.name,
       description: formData.description,
       slug: formData.slug,
-      image:formData.image,
+      mainImage:formData.image,
       components: formData.components.map((comp) => ({
         productId: comp.productId,
         name: comp.name,
@@ -628,7 +628,7 @@ const ComboProductCreationPage = () => {
 
     console.log("Saving combo data:", comboData);
 
-    getAllComboProduct(comboData);
+    createComboProduct(comboData);
     // API call to save combo
     // const response = await fetch("/api/admin/combos", {
     //   method: "POST",

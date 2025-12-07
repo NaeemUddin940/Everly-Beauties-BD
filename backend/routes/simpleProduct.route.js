@@ -17,7 +17,7 @@ const productRoute = Router();
 productRoute.post(
   "/create-product",
   uploadTo("SimpleProductImage").fields([
-    { name: "productImage", maxCount: 1 },
+    { name: "mainImage", maxCount: 1 },
     { name: "galleryImages", maxCount: 10 },
   ]),
   multerErrorHandler,
@@ -31,7 +31,7 @@ productRoute.delete("/delete-product/:productId", deleteSimpleProduct);
 productRoute.put(
   "/update-product/:productId",
   uploadTo("SimpleProductImage").fields([
-    { name: "productImage", maxCount: 1 },
+    { name: "mainImage", maxCount: 1 },
     { name: "galleryImages", maxCount: 10 },
   ]),
   multerErrorHandler,

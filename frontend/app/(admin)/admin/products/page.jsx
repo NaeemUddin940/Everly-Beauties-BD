@@ -5,7 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { api } from "@/lib/axios";
+import { api, axiosInstance } from "@/lib/axios";
 import { exportProducts } from "@/lib/exportProducts";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
@@ -98,6 +98,7 @@ export default function ShowAllProducts() {
   } = useSimpleProductStore();
 
   const { getAllCategory, getCategory } = useCategoryStore();
+  const [showAllProducts, setShowAllProducts] = useState([]);
   const {
     getVariableProduct,
     variableProducts,
@@ -213,8 +214,18 @@ export default function ShowAllProducts() {
     }
   };
 
+  async function fetchAllProducts() {
+    try {
+      const res = await axiosInstance.get(`/get-all-products/`);
+      console.log("sdr", res);
+      // set({ variableProducts: res.data.data });
+    } catch (error) {
+      console.error("Failed to Get Variable Product:", error);
+    }
+  }
+
   useEffect(() => {
-    // Fetch all products, categories, and brands
+    fetchAllProducts();
     getAllSimpleProduct();
     getVariableProduct(); // Fetch variable products
     getAllCategory();

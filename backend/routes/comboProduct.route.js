@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { createComboProduct } from "../controllers/comboProduct.controller.js";
+import {
+  createComboProduct,
+  editComboProduct,
+  getAllComboProduct,
+} from "../controllers/comboProduct.controller.js";
 import { uploadTo } from "../middlewares/fileUpload.js";
 
 const comboProductRoute = Router();
@@ -7,7 +11,16 @@ const comboProductRoute = Router();
 comboProductRoute.post(
   "/create",
   uploadTo("comboProductImage").single("image"),
+  //   multerErrorHandler,
   createComboProduct
 );
 
+comboProductRoute.get("/get", getAllComboProduct);
+
+comboProductRoute.put(
+  "/eidt",
+  uploadTo("comboProductImage").single("image"),
+  //   multerErrorHandler,
+  editComboProduct
+);
 export default comboProductRoute;

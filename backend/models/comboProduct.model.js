@@ -38,9 +38,13 @@ const ComboSchema = new Schema(
 
     isActive: { type: Boolean, default: true },
     hasFreeShipping: { type: Boolean, default: false },
+    type: {
+      type: String,
+      default: "combo",
+    },
 
     // Image from multer/file upload
-    image: { type: String },
+    mainImage: { type: String },
 
     // SEO Fields
     title: String,
