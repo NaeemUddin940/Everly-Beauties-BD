@@ -5,6 +5,7 @@ import connectDB from "./config/connectDb.js";
 import brandRoute from "./routes/brand.route.js";
 import campaignRoute from "./routes/campaign.route.js";
 import categoryRoute from "./routes/category.route.js";
+import comboProductRoute from "./routes/comboProduct.route.js";
 import heroSliderRoute from "./routes/heroslider.route.js";
 import screenSolutionRoute from "./routes/screenSolution.route.js";
 import productRoute from "./routes/simpleProduct.route.js";
@@ -43,6 +44,7 @@ app.use("/api/brand", brandRoute);
 app.use("/api/tag", tagRoute);
 app.use("/api/screensolution", screenSolutionRoute);
 app.use("/api/variable/product", variableProduct);
+app.use("/api/combo/product", comboProductRoute);
 
 // Server is Running
 app.listen(port, () => {

@@ -2,6 +2,7 @@
 import { api } from "@/lib/axios";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
+import { useComboProductStore } from "@/ZustandStore/useComboProductStore";
 import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
 import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
 import { useTagStore } from "@/ZustandStore/useTagStore";
@@ -171,6 +172,7 @@ const ComboProductCreationPage = () => {
   const { allTags, getAllTags } = useTagStore();
   const { allScreenSolution, getAllScreenSolution } = useScreenSolutionStore();
   const { allSimpleProduct, getAllSimpleProduct } = useSimpleProductStore();
+  const { getAllComboProduct } = useComboProductStore();
 
   const [availableTags, setAvailableTags] = useState<string[]>([
     "cosmetics",
@@ -590,51 +592,53 @@ const ComboProductCreationPage = () => {
     }
 
     // try {
-      // Prepare data for API
-      const comboData = {
-        name: formData.name,
-        description: formData.description,
-        slug: formData.slug,
-        components: formData.components.map((comp) => ({
-          productId: comp.productId,
-          name: comp.name,
-          sku: comp.sku,
-          originalPrice: comp.originalPrice,
-          customPrice: comp.customPrice,
-          quantity: comp.quantity,
-          thumbnail: comp.thumbnail,
-        })),
-        comboRegularPrice: formData.comboRegularPrice,
-        comboSalePrice: formData.comboSalePrice,
-        discountPercentage: formData.discountPercentage,
-        limitedTimeOffer: formData.limitedTimeOffer,
-        category: selectedCategories.join(", "),
-        brand: formData.brand,
-        tags: selectedTags,
-        visibility: formData.visibility,
-        isActive: formData.isActive,
-        hasFreeShipping: formData.hasFreeShipping,
-        title: formData.title,
-        seoDescription: formData.seoDescription,
-        bottomContent: formData.bottomContent,
-        schemaMarkup: formData.schemaMarkup,
-        canonicalUrl: formData.canonicalUrl,
-        focusKeywords: formData.focusKeywords,
-        screenSolution: formData.screenSolution,
-      };
+    // Prepare data for API
+    const comboData = {
+      name: formData.name,
+      description: formData.description,
+      slug: formData.slug,
+      image:formData.image,
+      components: formData.components.map((comp) => ({
+        productId: comp.productId,
+        name: comp.name,
+        sku: comp.sku,
+        originalPrice: comp.originalPrice,
+        customPrice: comp.customPrice,
+        quantity: comp.quantity,
+        thumbnail: comp.thumbnail,
+      })),
+      comboRegularPrice: formData.comboRegularPrice,
+      comboSalePrice: formData.comboSalePrice,
+      discountPercentage: formData.discountPercentage,
+      limitedTimeOffer: formData.limitedTimeOffer,
+      category: selectedCategories.join(", "),
+      brand: formData.brand,
+      tags: selectedTags,
+      visibility: formData.visibility,
+      isActive: formData.isActive,
+      hasFreeShipping: formData.hasFreeShipping,
+      title: formData.title,
+      seoDescription: formData.seoDescription,
+      bottomContent: formData.bottomContent,
+      schemaMarkup: formData.schemaMarkup,
+      canonicalUrl: formData.canonicalUrl,
+      focusKeywords: formData.focusKeywords,
+      screenSolution: formData.screenSolution,
+    };
 
-      console.log("Saving combo data:", comboData);
+    console.log("Saving combo data:", comboData);
 
-      // API call to save combo
-      // const response = await fetch("/api/admin/combos", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(comboData),
-      // });
+    getAllComboProduct(comboData);
+    // API call to save combo
+    // const response = await fetch("/api/admin/combos", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(comboData),
+    // });
 
-      // const result = await response.json();
+    // const result = await response.json();
 
     //   if (result.success) {
     //     // toast.success("Combo created successfully!");
