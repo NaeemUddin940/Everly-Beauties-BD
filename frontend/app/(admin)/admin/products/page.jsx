@@ -14,7 +14,7 @@ import { useVariableProduct } from "@/ZustandStore/useVariableProduct";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 // --- 1. ⚙️ Data Normalization Helper Function ---
 // This function standardizes the properties for both product types.
@@ -115,9 +115,11 @@ export default function ShowAllProducts() {
     category: "All Categories",
     brand: "All Brands",
     type: "All Types",
-    status: "All Status",
+    isActive: "All Status",
     stock: "All Stock",
     search: "",
+    page: 1,
+    limit: 5,
   });
 
   // --- 2. 📝 HANDLER FUNCTION ---
@@ -129,108 +131,48 @@ export default function ShowAllProducts() {
     }));
   };
 
-  // --- 3. 🧠 FILTERING LOGIC (useMemo for efficiency) ---
-  const filteredProducts = useMemo(() => {
-    const simpleList = allSimpleProduct?.simpleProducts || [];
-    const variableList = variableProducts?.products || []; // Accessing the correct array
-    console.log(simpleList);
-    console.log(variableList);
-    // 3.0. Combine and Normalize Data
-    const combinedList = [
-      ...simpleList.map((p) => normalizeProduct({ ...p, type: "simple" })),
-      ...variableList.map((p) => normalizeProduct({ ...p, type: "variable" })),
-    ];
-
-    console.log(combinedList);
-
-    const { category, brand, type, status, stock, search } = filterOptions;
-
-    return combinedList.filter((product) => {
-      // 3.1. Category Filter
-      if (category !== "All Categories" && product.category !== category) {
-        return false;
-      }
-
-      // 3.2. Brand Filter
-      if (brand !== "All Brands" && product.brand !== brand) {
-        return false;
-      }
-
-      // 3.3. Type Filter
-      if (type !== "All Types" && product.type !== type) {
-        return false;
-      }
-
-      // 3.4. Status Filter
-      if (status !== "All Status") {
-        const isActive = product.isActive ? "Active" : "Inactive";
-        if (isActive !== status) {
-          return false;
-        }
-      }
-
-      // 3.5. Stock Filter
-      if (stock !== "All Stock") {
-        let stockStatus;
-        if (product.stockQuantity > 10) {
-          stockStatus = "In Stock";
-        } else if (product.stockQuantity > 0) {
-          stockStatus = "Low Stock";
-        } else {
-          stockStatus = "Out of Stock";
-        }
-
-        if (
-          stockStatus.toLowerCase().replace(/\s/g, "") !==
-          stock.toLowerCase().replace(/\s/g, "")
-        ) {
-          return false;
-        }
-      }
-
-      // 3.6. Search Filter (by name or SKU)
-      if (search) {
-        const lowerSearch = search.toLowerCase();
-        // Check for product.sku, which is only present after normalization
-        if (
-          !product.name.toLowerCase().includes(lowerSearch) &&
-          !product.sku.toLowerCase().includes(lowerSearch)
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [allSimpleProduct, variableProducts, filterOptions]); // Dependency updated
-
-  // --- 4. 🧹 Delete Handler Function ---
-  // A wrapper to call the correct delete action based on product type
-  const handleDeleteProduct = (product) => {
-    if (product.type === "simple") {
-      deleteSimpleProduct(product._id);
-    } else if (product.type === "variable") {
-      deleteVariableProduct(product._id);
-    }
-  };
-
-  async function fetchAllProducts() {
+  async function fetchAllProducts(filters = {}) {
     try {
-      const res = await axiosInstance.get(`/get-all-products/`);
-      console.log("sdr", res);
-      // set({ variableProducts: res.data.data });
+      // Build query string from filters
+      const params = new URLSearchParams({
+        ...filters, // category, type, brand, status, stock, search
+      }).toString();
+
+      const res = await axiosInstance.get(
+        `/products/get-all-products?${params}`
+      );
+      setShowAllProducts(res.data);
+
+      // Assuming your backend returns { simpleProducts: [...], variableProducts: [...] }
+      // Set the data into Zustand stores
+      if (res.data.simpleProducts) {
+        getAllSimpleProduct(res.data.simpleProducts); // or set in store directly
+      }
+      if (res.data.variableProducts) {
+        getVariableProduct(res.data.variableProducts); // or set in store directly
+      }
     } catch (error) {
-      console.error("Failed to Get Variable Product:", error);
+      console.error("Failed to fetch all products:", error);
     }
   }
 
   useEffect(() => {
-    fetchAllProducts();
+    // --- 1. Define static filters ---
+
+    // --- 2. Call fetchAllProducts with static filters ---
+    fetchAllProducts(filterOptions);
+
     getAllSimpleProduct();
     getVariableProduct(); // Fetch variable products
     getAllCategory();
     getAllBrands();
-  }, [getAllSimpleProduct, getVariableProduct, getAllCategory, getAllBrands]);
+  }, [
+    getAllSimpleProduct,
+    getVariableProduct,
+    filterOptions,
+    getAllCategory,
+    getAllBrands,
+  ]);
 
   // Helper for Type Badge styling
   const getTypeBadge = (type) => {
@@ -242,7 +184,7 @@ export default function ShowAllProducts() {
     } else if (type === "variable") {
       style = "bg-purple-500/20 text-purple-300";
       icon = "fas fa-palette";
-    } else if (type === "Combo") {
+    } else if (type === "combo") {
       style = "bg-green-500/20 text-green-300";
       icon = "fas fa-gift";
     }
@@ -250,9 +192,61 @@ export default function ShowAllProducts() {
       <span
         className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${style}`}
       >
-        <i className={`${icon} mr-1`}></i> {type}
+        <i className={`${icon} mr-1`}></i>{" "}
+        {type.charAt(0).toUpperCase() + type.slice(1)}
       </span>
     );
+  };
+
+  // --- Get Edit Link ---
+  const getEditLink = (product) => {
+    switch (product.type) {
+      case "simple":
+        return `/admin/products/edit-simple-product/${product._id}`;
+      case "variable":
+        return `/admin/products/edit-variable-product/${product._id}`;
+      case "combo":
+        return `/admin/products/edit-combo-product/${product._id}`;
+      default:
+        return "#";
+    }
+  };
+
+  // --- Handle Delete Product ---
+  const handleDeleteProduct = async (product) => {
+    if (!window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
+      return;
+    }
+
+    try {
+      let endpoint = "";
+      let deleteFunction = null;
+
+      if (product.type === "simple") {
+        endpoint = `/simpleProduct/delete-simple-product/${product._id}`;
+        deleteFunction = deleteSimpleProduct;
+      } else if (product.type === "variable") {
+        endpoint = `/variableProduct/delete-variable-product/${product._id}`;
+        deleteFunction = deleteVariableProduct;
+      } else if (product.type === "combo") {
+        endpoint = `/combo/delete-combo/${product._id}`;
+      }
+
+      const response = await axiosInstance.delete(endpoint);
+
+      if (response.data.success) {
+        // Refresh the product list
+        fetchAllProducts(filters);
+
+        // Also update the store if deleteFunction exists
+        if (deleteFunction) {
+          deleteFunction(product._id);
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product");
+    }
   };
 
   return (
@@ -441,14 +435,14 @@ export default function ShowAllProducts() {
                 Status
               </label>
               <select
-                name="status"
-                value={filterOptions.status}
+                name="isActive"
+                value={filterOptions.isActive}
                 onChange={handleFilterChange}
                 className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-rose-gold focus:border-transparent"
               >
                 <option value="All Status">All Status</option>
                 <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="In Active">In Active</option>
               </select>
             </div>
 
@@ -528,8 +522,8 @@ export default function ShowAllProducts() {
                 ) : (
                   <>
                     {/* 🚀 Combined Products (Data Rows) - Using filteredProducts */}
-                    {filteredProducts.length > 0
-                      ? filteredProducts.map((product) => (
+                    {showAllProducts?.data?.length > 0
+                      ? showAllProducts?.data?.map((product) => (
                           <tr
                             key={product._id}
                             className="border-b border-gray-800 hover:bg-gray-800/50 transition-all duration-300"
@@ -587,12 +581,11 @@ export default function ShowAllProducts() {
                               <p className="font-medium text-white">
                                 {product.regularPrice} <span>tk</span>
                               </p>
-                              {product.type === "simple" && (
-                                <p className="text-sm text-gray-400 line-through">
-                                  {product.salePrice}
-                                  <span> tk</span>
-                                </p>
-                              )}
+
+                              <p className="text-sm text-gray-400 line-through">
+                                {product.salePrice}
+                                <span> tk</span>
+                              </p>
                             </td>
                             <td className="py-4 px-2">
                               <p className="font-medium text-white">
@@ -629,7 +622,7 @@ export default function ShowAllProducts() {
                               <div className="flex space-x-2">
                                 {/* Edit Link: Use the normalized editLink */}
                                 <Link
-                                  href={product.editLink}
+                                  href={getEditLink(product)}
                                   className="bg-gray-700 cursor-pointer hover:bg-gray-600 px-2 py-1 rounded-lg transition-all duration-300"
                                 >
                                   <i className="fas fa-edit text-rose-gold hover:text-pink-500"></i>
@@ -658,6 +651,93 @@ export default function ShowAllProducts() {
                   </>
                 )}
               </tbody>
+
+              {/* --- Pagination --- */}
+              <div className="flex items-center justify-between mt-6">
+                {/* Left: Showing info + limit */}
+                <div className="flex gap-5 items-center">
+                  <p className="text-gray-400 whitespace-nowrap">
+                    Showing page {showAllProducts?.pagination?.currentPage} of{" "}
+                    {showAllProducts?.pagination?.totalPages} | Total Products:{" "}
+                    {showAllProducts?.pagination?.totalDocs}
+                  </p>
+
+                  <select
+                    value={filterOptions.limit}
+                    onChange={(e) =>
+                      setFilterOptions((prev) => ({
+                        ...prev,
+                        limit: parseInt(e.target.value, 10), // make sure it's a number
+                        page: 1, // Reset to first page when limit changes
+                      }))
+                    }
+                    className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 w-24"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+
+                {/* Right: Pagination buttons */}
+                <div className="flex items-center gap-2 ml-auto">
+                  {/* Prev Button */}
+                  <button
+                    disabled={!showAllProducts?.pagination?.hasPrevPage}
+                    onClick={() =>
+                      setFilterOptions((prev) => ({
+                        ...prev,
+                        page: prev.page - 1,
+                      }))
+                    }
+                    className="bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-30 rounded-lg transition-all duration-300 w-8 h-8"
+                  >
+                    <i className="fas fa-chevron-left"></i>
+                  </button>
+
+                  {/* Page Numbers */}
+                  {[...Array(showAllProducts?.pagination?.totalPages)].map(
+                    (_, index) => {
+                      const pageNumber = index + 1;
+                      const isActive =
+                        pageNumber === showAllProducts?.pagination?.currentPage;
+
+                      return (
+                        <button
+                          key={pageNumber}
+                          onClick={() =>
+                            setFilterOptions((prev) => ({
+                              ...prev,
+                              page: pageNumber,
+                            }))
+                          }
+                          className={`p-2 rounded-lg w-10 transition-all duration-300 cursor-pointer ${
+                            isActive
+                              ? "bg-rose-gold text-white"
+                              : "bg-gray-800 hover:bg-gray-700"
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    }
+                  )}
+
+                  {/* Next Button */}
+                  <button
+                    disabled={!showAllProducts?.pagination?.hasNextPage}
+                    onClick={() =>
+                      setFilterOptions((prev) => ({
+                        ...prev,
+                        page: prev.page + 1,
+                      }))
+                    }
+                    className="bg-gray-800 hover:bg-gray-700 cursor-pointer disabled:hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-30 w-8 h-8 rounded-lg transition-all duration-300"
+                  >
+                    <i className="fas fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
             </table>
           </div>
         </div>

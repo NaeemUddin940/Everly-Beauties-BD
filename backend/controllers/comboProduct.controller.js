@@ -7,48 +7,54 @@ import VariableProduct from "../models/variableProduct.model.js";
 // ======== All Products like Simple, Variable and Combo ======== //
 export const getAllProducts = async (req, res) => {
   try {
+    // ----- Pagination -----
     const pageNum = parseInt(req.query.page) || 1;
-    const limitNum = parseInt(req.query.limit) || 10;
+    const limitNum = parseInt(req.query.limit) || 5;
     const skip = (pageNum - 1) * limitNum;
 
-    // Filters
-    const categoryFilter =
-      req.query.category && req.query.category !== "All Categories";
-    const brandFilter = req.query.brand && req.query.brand !== "All Brands";
-    const statusFilter = req.query.status && req.query.status !== "All Status";
-    const stockFilter = req.query.stock && req.query.stock !== "All Stock";
-    const typeFilter = req.query.type && req.query.type !== "All Types";
+    // ----- Extract filters -----
+    const {
+      category = "All Categories",
+      brand = "All Brands",
+      type = "All Types",
+      isActive = "All Status",
+      stock = "All Stock",
+      search = "",
+    } = req.query;
 
-    // Base filter object
+    // ----- Base Mongo filter -----
     const baseFilter = {};
-    if (categoryFilter) baseFilter.category = req.query.category;
-    if (brandFilter) baseFilter.brand = req.query.brand;
-    if (statusFilter) baseFilter.isActive = req.query.status === "Active";
 
-    // Fetch all products in parallel
-    const [combos, variables, simples] = await Promise.all([
-      typeFilter === "combo" || !typeFilter
-        ? ComboProduct.find(baseFilter)
-        : [],
-      typeFilter === "variable" || !typeFilter
-        ? VariableProduct.find(baseFilter)
-        : [],
-      typeFilter === "simple" || !typeFilter
-        ? SimpleProduct.find(baseFilter)
-        : [],
+    if (category !== "All Categories") baseFilter.category = category;
+    if (brand !== "All Brands") baseFilter.brand = brand;
+    if (isActive !== "All Status") baseFilter.isActive = isActive === "Active";
+    if (search) baseFilter.name = { $regex: search, $options: "i" };
+
+    // ----- Product type filter -----
+    const typeLower = type.toLowerCase();
+    const fetchCombo = type === "All Types" || typeLower === "combo";
+    const fetchVariable = type === "All Types" || typeLower === "variable";
+    const fetchSimple = type === "All Types" || typeLower === "simple";
+
+    // ----- Fetch products -----
+    const [combo, variable, simple] = await Promise.all([
+      fetchCombo ? ComboProduct.find(baseFilter) : [],
+      fetchVariable ? VariableProduct.find(baseFilter) : [],
+      fetchSimple ? SimpleProduct.find(baseFilter) : [],
     ]);
 
-    // Merge products
+    // ----- Merge products with type info -----
     let allProducts = [
-      ...combos.map((p) => ({ ...p.toObject(), type: "combo" })),
-      ...variables.map((p) => ({ ...p.toObject(), type: "variable" })),
-      ...simples.map((p) => ({ ...p.toObject(), type: "simple" })),
+      ...combo.map((p) => ({ ...p.toObject(), type: "combo" })),
+      ...variable.map((p) => ({ ...p.toObject(), type: "variable" })),
+      ...simple.map((p) => ({ ...p.toObject(), type: "simple" })),
     ];
 
-    // Stock filter
-    if (stockFilter) {
+    // ----- Stock filter -----
+    if (stock !== "All Stock") {
       allProducts = allProducts.filter((product) => {
         let stockQty = product.stockQuantity || 0;
+
         if (product.type === "variable") {
           stockQty =
             product.skus?.reduce(
@@ -59,22 +65,22 @@ export const getAllProducts = async (req, res) => {
           stockQty = product.components?.length || 0;
         }
 
-        if (req.query.stock === "In Stock") return stockQty > 10;
-        if (req.query.stock === "Low Stock")
-          return stockQty > 0 && stockQty <= 10;
-        if (req.query.stock === "Out of Stock") return stockQty === 0;
+        if (stock === "In Stock") return stockQty > 10;
+        if (stock === "Low Stock") return stockQty > 0 && stockQty <= 10;
+        if (stock === "Out of Stock") return stockQty === 0;
         return true;
       });
     }
 
-    // Sort (default newest first)
+    // ----- Sort newest first -----
     allProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // Pagination
+    // ----- Pagination -----
     const totalDocs = allProducts.length;
     const totalPages = Math.ceil(totalDocs / limitNum);
     const paginated = allProducts.slice(skip, skip + limitNum);
 
+    // ----- Response -----
     res.status(200).json({
       success: true,
       pagination: {
