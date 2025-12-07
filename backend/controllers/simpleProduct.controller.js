@@ -36,7 +36,7 @@ export const createSimpleProduct = async (req, res) => {
     }
 
     // 🖼️ Multer Files
-    const mainImage = req.files["productImage"]?.[0];
+    const mainImage = req.files["mainImage"]?.[0];
     const galleryImages = req.files["galleryImages"] || [];
 
     // ❌ Main image required
@@ -102,7 +102,7 @@ export const createSimpleProduct = async (req, res) => {
       sku,
       trackStock,
       allowBackorders,
-      productImage: mainImagePath, // Main image
+      mainImage: mainImagePath, // Main image
       galleryImages: finalGalleryImages, // Main image + gallery
       seo,
       category,
@@ -143,10 +143,10 @@ export const deleteSimpleProduct = async (req, res) => {
     }
 
     // 2️⃣ Delete main image
-    if (product.productImage) {
+    if (product.mainImage) {
       const mainImagePath = path.join(
         "uploads/SimpleProductImage",
-        path.basename(product.productImage)
+        path.basename(product.mainImage)
       );
       if (fs.existsSync(mainImagePath)) {
         fs.unlinkSync(mainImagePath);
@@ -265,19 +265,19 @@ export const updateSimpleProduct = async (req, res) => {
     }
 
     // 3️⃣ Handle file updates
-    const mainImageFile = req.files?.["productImage"]?.[0];
+    const mainImageFile = req.files?.["mainImage"]?.[0];
     const galleryFiles = req.files?.["galleryImages"] || [];
 
     // 3a. Update main image
     if (mainImageFile) {
-      if (product.productImage) {
+      if (product.mainImage) {
         const oldMainPath = path.join(
           "uploads/SimpleProductImage",
-          path.basename(product.productImage)
+          path.basename(product.mainImage)
         );
         if (fs.existsSync(oldMainPath)) fs.unlinkSync(oldMainPath);
       }
-      product.productImage = `/uploads/SimpleProductImage/${mainImageFile.filename}`;
+      product.mainImage = `/uploads/SimpleProductImage/${mainImageFile.filename}`;
     }
 
     // 3b. Handle gallery images replacement

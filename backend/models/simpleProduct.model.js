@@ -20,6 +20,7 @@ const simpleProductSchema = new mongoose.Schema(
     regularPrice: { type: Number, required: true },
     salePrice: { type: Number, default: 0 },
     scheduleSale: { type: Boolean, default: false },
+    rating: { type: Number, default: 0 },
 
     // 🟢 Inventory
     stockQuantity: { type: Number, default: 0 },

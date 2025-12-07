@@ -377,3 +377,36 @@ export const editComboProduct = async (req, res) => {
     });
   }
 };
+
+export const getComboProductById = async (req, res) => {
+  try {
+    const { id } = req.params; // get id from URL
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required",
+      });
+    }
+
+    const product = await ComboProduct.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Combo Product not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message:
+        error.message || "Internal Server Error while fetching Combo Product",
+    });
+  }
+};

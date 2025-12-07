@@ -4,7 +4,8 @@ import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
 import { useTagStore } from "@/ZustandStore/useTagStore";
-import { useVariableProduct } from "@/ZustandStore/useVariableProduct";
+import { useVariableProductStore } from "@/ZustandStore/useVariableProduct";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -37,7 +38,7 @@ const EditVariableProduct = () => {
     updateVariableProduct,
     getVariableProductById,
     singleVariableProduct,
-  } = useVariableProduct();
+  } = useVariableProductStore();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -208,6 +209,8 @@ const EditVariableProduct = () => {
     setShowTagSuggestions(false);
   };
 
+
+  
   // Function to remove a tag
   const removeTag = (tagToRemove) => {
     setSelectedTags((prev) => prev.filter((tag) => tag !== tagToRemove));
@@ -1926,7 +1929,7 @@ const EditVariableProduct = () => {
                     unoptimized
                     className="w-32 h-32 object-cover rounded-xl mx-auto border-2 border-gray-600"
                   />
-                  
+
                   <button
                     onClick={() => {
                       setMainImagePreview(null);

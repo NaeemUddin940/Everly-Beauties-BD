@@ -10,7 +10,8 @@ import { exportProducts } from "@/lib/exportProducts";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
-import { useVariableProduct } from "@/ZustandStore/useVariableProduct";
+import { useVariableProductStore } from "@/ZustandStore/useVariableProduct";
+
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,76 +19,6 @@ import { useEffect, useState } from "react";
 
 // --- 1. ⚙️ Data Normalization Helper Function ---
 // This function standardizes the properties for both product types.
-const normalizeProduct = (product) => {
-  // Common properties
-  const common = {
-    _id: product._id,
-    name: product.name,
-    productImage: product.productImage,
-    category: product.category,
-    brand: product.brand,
-    isActive: product.isActive,
-    // Add Link for editing based on type
-    editLink:
-      product.type === "simple"
-        ? `/admin/products/edit-simple-product/${product._id}`
-        : `/admin/products/edit-variable-product/${product._id}`,
-    // Add delete function name (assuming you'll add deleteVariableProduct)
-    deleteAction:
-      product.type === "simple"
-        ? "deleteSimpleProduct"
-        : "deleteVariableProduct",
-  };
-
-  if (product.type === "simple") {
-    return {
-      ...common,
-      type: "simple",
-      sku: product.sku,
-      regularPrice: product.regularPrice,
-      salePrice: product.salePrice,
-      stockQuantity: product.stockQuantity,
-    };
-  } else if (product.type === "variable") {
-    // Variable Products don't have a single price/stock like Simple ones.
-    // We calculate a summary (min/max price, total stock)
-    const skus = product.sku || [];
-    const minPrice = skus.reduce(
-      (min, sku) => Math.min(min, sku.regularPrice),
-      Infinity
-    );
-    const maxPrice = skus.reduce(
-      (max, sku) => Math.max(max, sku.regularPrice),
-      -Infinity
-    );
-    const totalStock = skus.reduce(
-      (total, sku) => total + sku.stockQuantity,
-      0
-    );
-
-    return {
-      ...common,
-      productImage: product.mainImage,
-      category: product.categories[0],
-      type: "variable",
-      // Variable Product uses a summary for the main list view
-      sku: product?.skus?.length > 0 ? product.skus[0].sku : "N/A", // Use first SKU for display
-      regularPrice: minPrice !== Infinity ? `${minPrice}-${maxPrice}` : "N/A", // Price range
-      salePrice: "N/A", // No sale price summary needed for list view
-      stockQuantity: totalStock,
-    };
-  }
-
-  // Fallback for other types like Combo (if implemented later)
-  return {
-    ...common,
-    type: "Unknown",
-    sku: "N/A",
-    regularPrice: "N/A",
-    salePrice: "N/A",
-    stockQuantity: 0,
-  };
-};
 
 export default function ShowAllProducts() {
   const {
@@ -104,7 +35,7 @@ export default function ShowAllProducts() {
     variableProducts,
     isLoading: isLoadingVariable, // Renamed to avoid collision
     deleteVariableProduct, // ⚠️ ASSUMING YOU HAVE THIS ACTION IN useVariableProduct
-  } = useVariableProduct();
+  } = useVariableProductStore();
 
   const { allBrands, getAllBrands } = useBrandStore();
 
@@ -536,9 +467,9 @@ export default function ShowAllProducts() {
                             </td>
                             <td className="py-4 px-2 text-left">
                               {/* Use optional chaining as some variable products might not have an image */}
-                              {product.productImage && (
+                              {product.mainImage && (
                                 <Image
-                                  src={api + product.productImage}
+                                  src={api + product.mainImage}
                                   alt={product.name}
                                   width={100}
                                   height={100}

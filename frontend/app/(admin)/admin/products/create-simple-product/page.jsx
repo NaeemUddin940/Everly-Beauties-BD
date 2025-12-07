@@ -110,7 +110,7 @@ export default function CreateSimpleProductPage() {
       tags: [], // array for multi
       visibility: "Published",
       isActive: true,
-      productImage: null,
+      mainImage: null,
       galleryImages: [],
     },
   });
@@ -163,7 +163,7 @@ export default function CreateSimpleProductPage() {
     if (!file) return;
 
     setSimpleProductImagePreview(URL.createObjectURL(file));
-    setValue("productImage", file, { shouldDirty: true, shouldTouch: true });
+    setValue("mainImage", file, { shouldDirty: true, shouldTouch: true });
   };
 
   // handle multiple gallery files
@@ -248,8 +248,8 @@ export default function CreateSimpleProductPage() {
       }
 
       // files
-      if (data.productImage) {
-        formData.append("productImage", data.productImage);
+      if (data.mainImage) {
+        formData.append("mainImage", data.mainImage);
       }
 
       // gallery files from local galleryFiles
@@ -618,7 +618,7 @@ export default function CreateSimpleProductPage() {
                   <input
                     id="simpleProductImage"
                     type="file"
-                    name="productImage"
+                    name="mainImage"
                     accept="image/png, image/jpeg, image/webp"
                     className="hidden"
                     onChange={handleFileChange}

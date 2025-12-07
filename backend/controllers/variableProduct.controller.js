@@ -438,9 +438,9 @@ export const getVariableProducts = async (req, res) => {
 // Get single variable product
 export const getVariableProduct = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
 
-    const product = await VariableProduct.findById(id)
+    const product = await VariableProduct.findById(slug)
       .populate("categories", "name slug")
       .populate("brand", "name logo website");
 
