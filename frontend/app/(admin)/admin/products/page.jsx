@@ -23,7 +23,7 @@ const normalizeProduct = (product) => {
   const common = {
     _id: product._id,
     name: product.name,
-    productImage: product.productImage,
+    mainImage: product.mainImage,
     category: product.category,
     brand: product.brand,
     isActive: product.isActive,
@@ -67,7 +67,7 @@ const normalizeProduct = (product) => {
 
     return {
       ...common,
-      productImage: product.mainImage,
+      mainImage: product.mainImage,
       category: product.categories[0],
       type: "variable",
       // Variable Product uses a summary for the main list view
@@ -542,9 +542,9 @@ export default function ShowAllProducts() {
                             </td>
                             <td className="py-4 px-2 text-left">
                               {/* Use optional chaining as some variable products might not have an image */}
-                              {product.productImage && (
+                              {product.mainImage && (
                                 <Image
-                                  src={api + product.productImage}
+                                  src={api + product.mainImage}
                                   alt={product.name}
                                   width={100}
                                   height={100}

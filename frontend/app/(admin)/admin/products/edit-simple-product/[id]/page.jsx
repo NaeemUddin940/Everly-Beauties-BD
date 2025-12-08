@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
+import { api } from "@/lib/axios";
 import { useBrandStore } from "@/ZustandStore/useBrandStore";
 import { useCategoryStore } from "@/ZustandStore/useCategoryStore";
 import { useScreenSolutionStore } from "@/ZustandStore/useScreenSolutionStore";
@@ -32,7 +33,6 @@ export default function CreateSimpleProductPage() {
 
   // State for handling dynamic product tags
   const [productTags, setProductTags] = useState([]);
-  const [tagInput, setTagInput] = useState("");
 
   // React Hook Form Initialization
   const { register, handleSubmit, reset } = useForm();
@@ -45,7 +45,7 @@ export default function CreateSimpleProductPage() {
       return path;
     }
     // Otherwise, assume it's an existing file path and needs the base URL prefix.
-    return process.env.NEXT_PUBLIC_API_BASE_URL + path;
+    return api + path;
   };
 
   // --- DATA FETCHING & FORM POPULATION ---
@@ -98,7 +98,7 @@ export default function CreateSimpleProductPage() {
       });
 
       // 2. Set dynamic states (Images & Tags)
-      setSimpleProductImagePreview(singleSimpleProduct.productImage || null);
+      setSimpleProductImagePreview(singleSimpleProduct.mainImage || null);
 
       if (singleSimpleProduct.galleryImages) {
         // existing images have only the preview URL (path) and no file object
@@ -195,13 +195,13 @@ export default function CreateSimpleProductPage() {
     // 4️⃣ Main Product Image
     if (productImageFile) {
       // নতুন file select করলে
-      formData.append("productImage", productImageFile);
+      formData.append("mainImage", productImageFile);
     } else if (
       simpleProductImagePreview &&
       !simpleProductImagePreview.startsWith("blob:")
     ) {
       // পুরনো main image URL থাকলে
-      formData.append("productImage", simpleProductImagePreview);
+      formData.append("mainImage", simpleProductImagePreview);
     }
 
     // 5️⃣ Gallery Images (merge existing + new uploads)
@@ -572,7 +572,7 @@ export default function CreateSimpleProductPage() {
                 <input
                   id="simpleProductImage"
                   type="file"
-                  name="productImage"
+                  name="mainImage"
                   accept="image/png, image/jpeg, image/webp"
                   className="hidden"
                   onChange={handleFileChange}
