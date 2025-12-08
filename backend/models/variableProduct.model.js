@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 const Schema = mongoose.Schema;
-import mongoosePaginate from "mongoose-paginate-v2"
 
 // Main Product Schema
 const variableProductSchema = new Schema(
@@ -21,6 +21,7 @@ const variableProductSchema = new Schema(
     description: String,
     ingredients: String,
     usageGuide: String,
+    rating: { type: Number, default: 0 },
 
     // Product Type
     type: {

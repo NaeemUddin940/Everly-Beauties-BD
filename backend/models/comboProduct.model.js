@@ -45,6 +45,7 @@ const ComboSchema = new Schema(
 
     // Image from multer/file upload
     mainImage: { type: String },
+    rating: { type: Number, default: 0 },
 
     // SEO Fields
     title: String,

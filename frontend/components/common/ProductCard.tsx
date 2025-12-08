@@ -63,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       onAddToCart();
     }
   };
-  console.log(api);
+  console.log(api + image);
   return (
     <>
       <div
@@ -90,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {/* Product Image */}
           <Link href={`/products/${slug}`}>
             <Image
-              src={ image}
+              src={api + image}
               alt={title}
               width={430}
               height={430}

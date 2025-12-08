@@ -302,7 +302,7 @@ export default function Page() {
           )}
         </div>
         {/* <!-- Pagination --> */}
-        <div className="flex justify-between items-center mt-6">
+        <div className="flex justify-between items-center w-full mt-6">
           <div className="flex gap-5 items-center">
             <p className="text-gray-400 whitespace-nowrap">
               Showing {getAllCategory?.pagination?.currentPage} to{" "}

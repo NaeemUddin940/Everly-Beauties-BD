@@ -118,7 +118,7 @@ export default function FeaturedProducts() {
       addItem({
         id: product._id,
         slug: product.slug,
-        image: product.productImage,
+        image: product.mainImage,
         title: product.name,
         brand: product.brand,
         price: priceToUse,
@@ -225,7 +225,7 @@ export default function FeaturedProducts() {
                 <ProductCard
                   slug={product?.slug}
                   price={priceToUse}
-                  image={product?.productImage}
+                  image={product?.mainImage}
                   title={product?.name}
                   regularPrice={Number(product.regularPrice)}
                   campaignName={product.campaign?.campaignName || ""}

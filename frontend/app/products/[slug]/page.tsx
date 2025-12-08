@@ -9,164 +9,145 @@ import ProductImageGallery from "@/components/ProductPage/ProductImageGallery";
 import ProductTabsNavigation from "@/components/ProductPage/ProductTabsNavigation";
 import RecommendedProductsGrid from "@/components/ProductPage/RecommendedProductsCarousel";
 import VariationSelector from "@/components/ProductPage/VariationSelector";
+import { useComboProductStore } from "@/ZustandStore/useComboProductStore";
 import { useSimpleProductStore } from "@/ZustandStore/useSimpleProductStore";
+import { useVariableProductStore } from "@/ZustandStore/useVariableProduct";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useEffect } from "react";
-
-// type Product = {
-//   id: number;
-//   name: string;
-//   slug: string;
-//   description: string;
-//   price: string;
-//   sale_price: string;
-//   regular_price: string;
-//   hasFreeShipping: boolean;
-//   isTopSelling: boolean;
-//   salesLast72Hours: number;
-//   images: { src: string }[];
-//   type: string;
-//   attributes: Array<{
-//     id: number;
-//     name: string;
-//     slug: string;
-//     options: string[];
-//     position: number;
-//     visible: boolean;
-//     variation: boolean;
-//   }>;
-//   categories?: Array<{
-//     id: number;
-//     name: string;
-//     slug: string;
-//   }>;
-//   meta_data?: Array<{
-//     id: number;
-//     key: string;
-//     value: string;
-//   }>;
-//   full_variations?: Array<{
-//     id: number;
-//     name: string;
-//     price: string;
-//     regular_price: string;
-//     sale_price: string;
-//     image: string;
-//   }>;
-//   related_products?: Array<{
-//     brand: string;
-//     campaign_name: string;
-//     hasFreeShipping: boolean;
-//     id: number;
-//     price: string;
-//     slug: string;
-//     regular_price: string;
-//     title: string;
-//     image: string;
-//     rating: number;
-//     variations: [
-//       {
-//         id: number;
-//         attributes: object;
-//         price: string;
-//         regular_price: string;
-//         sale_price: string;
-//         image: string;
-//       }
-//     ];
-//   }>;
-// };
-
-// // Fetch a single product
-// async function getProductBySlug(slug: string): Promise<Product | null> {
-//   const domain = "https://everlybeautiesbd.com";
-//   const key = process.env.WC_CONSUMER_KEY!;
-//   const secret = process.env.WC_CONSUMER_SECRET!;
-
-//   const res = await fetch(`${domain}/wp-json/wc/v3/products?slug=${slug}`, {
-//     headers: {
-//       Authorization:
-//         "Basic " + Buffer.from(`${key}:${secret}`).toString("base64"),
-//     },
-//     next: { revalidate: 60 },
-//   });
-
-//   if (!res.ok) return null;
-//   const data = await res.json();
-//   return data.length > 0 ? data[0] : null;
-// }
-
-// export async function generateStaticParams() {
-//   const domain = "https://everlybeautiesbd.com";
-//   const key = process.env.WC_CONSUMER_KEY!;
-//   const secret = process.env.WC_CONSUMER_SECRET!;
-
-//   const res = await fetch(`${domain}/wp-json/wc/v3/products?per_page=12`, {
-//     headers: {
-//       Authorization:
-//         "Basic " + Buffer.from(`${key}:${secret}`).toString("base64"),
-//     },
-//   });
-
-//   const products = await res.json();
-
-//   return products.map((product: any) => ({
-//     slug: product.slug,
-//   }));
-// }
+import React, { useEffect, useState } from "react";
 
 export default function ProductPage(props: {
   params: Promise<{ slug: string }>;
 }) {
   const { singleSimpleProduct, getSingleSimpleProductBySlug } =
     useSimpleProductStore();
+  const { singleVariableProduct, getSingleVariableProductBySlug } =
+    useVariableProductStore();
+  const { singleComboProduct, getComboProductBySlug } = useComboProductStore();
+
+  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState<any>(null);
+  const [productType, setProductType] = useState<string>("");
+
   const { slug } = useParams();
 
   useEffect(() => {
-    getSingleSimpleProductBySlug(slug);
-  }, [getSingleSimpleProductBySlug, slug]);
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
 
+        // প্রথমে Simple Product চেক করুন
+        await getSingleSimpleProductBySlug(slug);
 
-  // If product not found, return a simple message
-  if (!singleSimpleProduct) {
-    return <div className="p-6">Product not found.</div>;
+        // যদি Simple Product পাওয়া যায়
+        if (singleSimpleProduct) {
+          setProduct(singleSimpleProduct);
+          setProductType("simple");
+          setLoading(false);
+          return;
+        }
+
+        // Simple Product না পেলে Variable Product চেক করুন
+        if (getSingleVariableProductBySlug) {
+          await getSingleVariableProductBySlug(slug);
+
+          if (singleVariableProduct) {
+            setProduct(singleVariableProduct);
+            setProductType("variable");
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Variable Product না পেলে Combo Product চেক করুন
+        if (getComboProductBySlug) {
+          await getComboProductBySlug(slug);
+
+          if (singleComboProduct) {
+            setProduct(singleComboProduct);
+            setProductType("combo");
+            setLoading(false);
+            return;
+          }
+        }
+
+        // কোন প্রোডাক্ট না পেলে
+        setProduct(null);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, []);
+
+  // যদি লোডিং হয়
+  if (loading) {
+    return (
+      <PublicLayout>
+        <Container className="mx-auto py-8">
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="text-gray-500 mt-4">Loading product...</p>
+          </div>
+        </Container>
+      </PublicLayout>
+    );
   }
 
-  // const brandName =
-  //   singleSimpleProduct?.attributes?.find(
-  //     (attr) => attr.name.toLowerCase() === "brand"
-  //   )?.options?.[0] || " ";
+  // যদি প্রোডাক্ট না পাওয়া যায়
+  if (!product) {
+    return (
+      <PublicLayout>
+        <Container className="mx-auto py-8">
+          <div className="text-center py-20">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Product Not Found
+            </h1>
+            <p className="text-gray-600 mb-6">
+              The product you are looking for does not exist or has been
+              removed.
+            </p>
+            <Link
+              href="/"
+              className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </Container>
+      </PublicLayout>
+    );
+  }
 
-  const categories = singleSimpleProduct?.categories || [];
+  const categories = product?.categories || [];
 
   const getMetaValue = (key: string): string => {
     return (
-      singleSimpleProduct?.meta_data?.find((item:any) => item.key === key)?.value ||
-      ""
+      product?.meta_data?.find((item: any) => item.key === key)?.value || ""
     );
   };
 
   const campaignName = getMetaValue("campaign_name");
   const campaignEndDate = getMetaValue("_campaign_offer_end_date");
 
-  const productId = singleSimpleProduct?.id;
+  const productId = product?.id;
 
-  const ingredientsMetaData = singleSimpleProduct?.meta_data?.find(
-    (meta:any) => meta.key === "ingredients"
+  const ingredientsMetaData = product?.meta_data?.find(
+    (meta: any) => meta.key === "ingredients"
   );
   const ingredientsContent = ingredientsMetaData?.value;
 
   const productTab = {
-    description: singleSimpleProduct?.description,
-    attributes: singleSimpleProduct?.attributes,
+    description: product?.description,
+    attributes: product?.attributes,
     ingredients: ingredientsContent,
-
     shippingInfo: `
       <p>For this product, we offer special gift wrapping for an additional ৳50.</p>
       <p>Please note that deliveries to remote areas may take 1-2 extra days.</p>
     `,
-
     reviews: [
       {
         username: "Tasnim A.",
@@ -185,14 +166,19 @@ export default function ProductPage(props: {
     ],
   };
 
-  const sale = parseFloat(singleSimpleProduct?.salePrice);
-  const regular = parseFloat(singleSimpleProduct?.regularPrice);
+  const sale = parseFloat(product?.salePrice || product?.sale_price || "0");
+  const regular = parseFloat(
+    product?.regularPrice || product?.regular_price || "0"
+  );
 
   const discount = regular - sale;
-  const savePercentage = (discount / regular) * 100;
+  const savePercentage = regular > 0 ? (discount / regular) * 100 : 0;
 
-  const allGalleryImages = singleSimpleProduct
-    ? [singleSimpleProduct.productImage, ...singleSimpleProduct.galleryImages]
+  const allGalleryImages = product
+    ? [
+        product.mainImage || product.productImage || product.image,
+        ...(product.galleryImages || []),
+      ].filter(Boolean)
     : [];
 
   return (
@@ -204,7 +190,7 @@ export default function ProductPage(props: {
           </Link>
 
           {categories.map((category: any) => (
-            <React.Fragment key={category.id}>
+            <React.Fragment key={category.id || category._id}>
               <span>/</span>
               <Link
                 href={`/category/${category.slug}`}
@@ -216,30 +202,34 @@ export default function ProductPage(props: {
           ))}
 
           <span>/</span>
-          <span className="text-dark">{singleSimpleProduct?.name}</span>
+          <span className="text-dark">{product?.name}</span>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-12">
           <ProductImageGallery
-            mainImage={singleSimpleProduct?.productImage}
+            mainImage={
+              product?.mainImage || product?.productImage || product?.image
+            }
             images={allGalleryImages}
-            productName={singleSimpleProduct?.name}
+            productName={product?.name}
           />
 
           <div className="lg:w-1/2">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-semibold tracking-wider text-gray-500">
-                {singleSimpleProduct?.brand}
+                {product?.brand || "Brand"}
               </span>
               <div className="flex gap-2">
-                {singleSimpleProduct?.isTopSelling && (
+                {product?.isTopSelling && (
                   <span className="bg-primary text-white text-xs px-3 py-1 rounded-full !uppercase">
                     Top Selling
                   </span>
                 )}
-                <span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">
-                  {savePercentage.toFixed(0)}% OFF
-                </span>
+                {savePercentage > 0 && (
+                  <span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">
+                    {savePercentage.toFixed(0)}% OFF
+                  </span>
+                )}
               </div>
             </div>
 
@@ -252,23 +242,25 @@ export default function ProductPage(props: {
             )}
 
             <h1 className="text-lg font-semibold md:text-2xl mb-2">
-              {singleSimpleProduct?.name}
+              {product?.name}
             </h1>
 
-            {singleSimpleProduct?.type === "variable" && (
+            {productType === "variable" && product?.variations && (
               <VariationSelector
-                variations={singleSimpleProduct?.full_variations}
+                variations={product?.components}
+                product={product}
               />
             )}
 
             <PriceDiscountSection
-              salePrice={singleSimpleProduct?.salePrice}
-              regularPrice={singleSimpleProduct?.regularPrice}
+              salePrice={sale.toString()}
+              regularPrice={regular.toString()}
+              productType={productType}
             />
 
-            <AddToCart product={singleSimpleProduct} />
+            <AddToCart product={product} productType={productType} />
 
-            {singleSimpleProduct?.hasFreeShipping && (
+            {product?.hasFreeShipping && (
               <div className="border border-gray-100 rounded-xl p-4 mb-6 bg-gray-50">
                 <div className="flex items-start gap-3">
                   <div className="bg-primarylight p-2 rounded-lg">
@@ -381,7 +373,7 @@ export default function ProductPage(props: {
               </div>
             </div>
 
-            {singleSimpleProduct?.salesLast72Hours > 0 && (
+            {product?.salesLast72Hours > 0 && (
               <div className="flex items-center gap-3 bg-primarylight/30 border border-primarylight rounded-lg p-3 mb-8">
                 <div className="relative">
                   <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
@@ -407,8 +399,8 @@ export default function ProductPage(props: {
                 <div>
                   <p className="text-sm font-medium">Fast selling!</p>
                   <p className="text-xs text-gray-600">
-                    Purchased {singleSimpleProduct?.salesLast72Hours}+ times in
-                    last 24 hours
+                    Purchased {product?.salesLast72Hours}+ times in last 24
+                    hours
                   </p>
                 </div>
               </div>
@@ -418,9 +410,7 @@ export default function ProductPage(props: {
 
         <ProductTabsNavigation product={productTab} />
 
-        <RecommendedProductsGrid
-          products={singleSimpleProduct?.related_products}
-        />
+        <RecommendedProductsGrid products={product?.related_products} />
       </Container>
     </PublicLayout>
   );

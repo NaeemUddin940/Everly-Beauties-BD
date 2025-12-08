@@ -1,6 +1,7 @@
 "use client";
 
 import combobg from "@/assets/img/bg/apple-shopping-event-full-bg-opt.jpg";
+import { useComboProductStore } from "@/ZustandStore/useComboProductStore";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -40,7 +41,15 @@ const dummyProducts: ApiProduct[] = [
     image: "../../assets/img/products/1-1-430x430.webp",
     brand: "DermaCare",
     campaign_name: "Summer Special",
-    variations: [],
+    variations: [
+      {
+        _id: "v1",
+        name: "Small Pack",
+        price: 2499,
+        stock: 20,
+        extraBenefits: "Free Face Mask", // extra dynamic field (allowed)
+      },
+    ],
     rating: 4.5,
     hasFreeShipping: true,
   },
@@ -142,6 +151,13 @@ const NextArrow = (props: any) => {
 
 const ComboOffer = () => {
   // Track if device is mobile (less than 768px)
+  const { getAllComboProduct, allComboProducts } = useComboProductStore();
+
+  useEffect(() => {
+    getAllComboProduct();
+  }, [getAllComboProduct]);
+
+  console.log(allComboProducts);
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -267,18 +283,18 @@ const ComboOffer = () => {
               </div>
 
               <Slider {...settings}>
-                {dummyProducts.map((product) => (
-                  <div key={product.id} className="px-1 pb-2 md:px-2 md:pb-3">
+                {allComboProducts.map((product: any) => (
+                  <div key={product._id} className="px-1 pb-2 md:px-2 md:pb-3">
                     <ProductCard
-                      id={product.id}
+                      id={product._id}
                       slug={product.slug}
-                      image={product.image}
+                      image={product.mainImage}
                       title={product.title}
                       brand={product.brand}
                       price={parseFloat(product.price)}
                       regularPrice={parseFloat(product.regular_price)}
                       campaignName={product.campaign_name}
-                      variations={product.variations}
+                      variations={product.components}
                       rating={product.rating}
                       hasFreeShipping={product.hasFreeShipping}
                       onAddToCart={() => handleAddToCart(product)}
